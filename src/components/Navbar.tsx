@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Sparkles, X, ChevronDown, Compass, BookOpen } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Sparkles, X, ChevronDown, Compass, BookOpen, Shield } from 'lucide-react';
 import { formatPrice } from '../utils/cartCalculations';
+import { useShopData } from '../context/ShopDataContext';
+
+export type NavTab = 'catalog' | 'diagnostic' | 'archive' | 'journal' | 'admin';
 
 interface NavbarProps {
-  currentTab: 'catalog' | 'diagnostic' | 'archive' | 'journal';
-  setCurrentTab: (tab: 'catalog' | 'diagnostic' | 'archive' | 'journal') => void;
+  currentTab: NavTab;
+  setCurrentTab: (tab: NavTab) => void;
   currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
   setCurrency: (c: 'USD' | 'EUR' | 'GBP' | 'JPY') => void;
   cartCount: number;
@@ -30,8 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   openWishlist,
   searchQuery,
   setSearchQuery,
-  setSelectedFamily,
 }) => {
+  const { shopSettings } = useShopData();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
 
@@ -46,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Atelier Nocturne • Haute Parfumerie</span>
         </div>
         <div className="w-full md:w-auto text-[#e7e1de] font-normal tracking-[0.15em]">
-          COMPLIMENTARY OVERNIGHT DISPATCH OVER $250 • 2 CURATED MINIATURES WITH EVERY BOTTLE
+          {shopSettings.announcementText}
         </div>
         <div className="hidden md:flex items-center gap-4">
           <div className="relative">
@@ -97,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Center Nav Links */}
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-7">
           <button
             onClick={() => setCurrentTab('catalog')}
             className={`text-xs uppercase tracking-[0.2em] font-medium transition-colors relative py-1 ${
@@ -147,6 +150,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             {currentTab === 'journal' && (
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#D4AF37]" />
             )}
+          </button>
+
+          <button
+            onClick={() => setCurrentTab('admin')}
+            className={`flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] font-medium transition-colors relative py-1 px-2.5 rounded-[0.25rem] border ${
+              currentTab === 'admin'
+                ? 'text-[#0F0E0D] bg-[#D4AF37] border-[#D4AF37] font-bold'
+                : 'text-[#D4AF37] border-[#D4AF37]/40 bg-[#151311] hover:border-[#D4AF37]'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Admin</span>
           </button>
         </nav>
 
@@ -203,11 +218,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-xs uppercase tracking-[0.15em] font-medium hidden sm:inline">
               Bag
             </span>
-            <span className="text-xs font-semibold text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50">
+            <span className="text-xs font-semibold text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50 tabular-nums">
               {cartCount}
             </span>
             {cartTotal > 0 && (
-              <span className="text-xs text-[#cdc5bd] hidden md:inline font-mono">
+              <span className="text-xs text-[#cdc5bd] hidden md:inline font-mono tabular-nums">
                 {formatPrice(cartTotal, currency)}
               </span>
             )}
@@ -260,6 +275,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           className={`${currentTab === 'journal' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
           Journal
+        </button>
+        <button
+          onClick={() => setCurrentTab('admin')}
+          className={`flex items-center gap-1 ${currentTab === 'admin' ? 'text-[#D4AF37] font-semibold' : 'text-[#D4AF37]/80'}`}
+        >
+          <Shield className="w-3 h-3 text-[#D4AF37]" />
+          <span>Admin</span>
         </button>
       </div>
     </header>

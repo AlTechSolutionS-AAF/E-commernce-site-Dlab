@@ -1,26 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Navbar } from './components/Navbar';
-import { HeroSection } from './components/HeroSection';
+import { Navbar, NavTab } from './components/Navbar';
 import { DirectAssessmentQuiz } from './components/DirectAssessmentQuiz';
 import { LeaderboardSection } from './components/LeaderboardSection';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
+import { MultiChannelLinks } from './components/MultiChannelLinks';
+import { AtelierCommendations } from './components/AtelierCommendations';
+import { ClientConciergeFAQ } from './components/ClientConciergeFAQ';
 import { NightMatchFinder } from './components/NightMatchFinder';
 import { OlfactoryArchive } from './components/OlfactoryArchive';
 import { SillageJournal } from './components/SillageJournal';
+import { AdminConsole } from './components/AdminConsole';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { AgeVerificationModal } from './components/AgeVerificationModal';
-import { PRODUCTS, Product, ProductSize, IntensityLevel, PreferredExperience } from './data/products';
-import { CartItem, calculateCartTotals, formatPrice } from './utils/cartCalculations';
-import { Sparkles, ArrowUpDown, ShieldCheck, Check, RotateCcw, Flame, Zap } from 'lucide-react';
+import { PRODUCTS, Product, ProductSize, getProductSynergy } from './data/products';
+import { CartItem, calculateCartTotals } from './utils/cartCalculations';
+import { ShopDataProvider, useShopData } from './context/ShopDataContext';
+import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield } from 'lucide-react';
 
-export default function App() {
-  const [currentTab, setCurrentTab] = useState<'catalog' | 'diagnostic' | 'archive' | 'journal'>('catalog');
+function StorefrontContent() {
+  const { products, shopSettings, promoCodes } = useShopData();
+
+  const [currentTab, setCurrentTab] = useState<NavTab>('catalog');
   const [currency, setCurrency] = useState<'USD' | 'EUR' | 'GBP' | 'JPY'>('USD');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIntensity, setSelectedIntensity] = useState<string>('All');
+  const [selectedSynergy, setSelectedSynergy] = useState<string>('All');
   const [selectedExperience, setSelectedExperience] = useState<string>('All');
   const [selectedSillage, setSelectedSillage] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'longevity' | 'rank'>('featured');
@@ -130,11 +137,11 @@ export default function App() {
     handleToggleWishlist(product);
   };
 
-  // Filtered & Sorted products
+  // Filtered & Sorted products using live catalog from ShopDataContext
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
-      // Search
+    return products.filter((p) => {
       const q = searchQuery.toLowerCase().trim();
+      const synergyMeta = getProductSynergy(p);
       const matchSearch =
         !q ||
         p.name.toLowerCase().includes(q) ||
@@ -142,18 +149,15 @@ export default function App() {
         p.description.toLowerCase().includes(q) ||
         p.intensity.toLowerCase().includes(q) ||
         p.experience.toLowerCase().includes(q) ||
+        synergyMeta.shortLabel.toLowerCase().includes(q) ||
         [...p.notes.top, ...p.notes.heart, ...p.notes.base].some((n) => n.toLowerCase().includes(q));
 
-      // Intensity Level
       const matchIntensity = selectedIntensity === 'All' || p.intensity === selectedIntensity;
-
-      // Preferred Experience
+      const matchSynergy = selectedSynergy === 'All' || synergyMeta.role === selectedSynergy;
       const matchExperience = selectedExperience === 'All' || p.experience === selectedExperience;
-
-      // Sillage
       const matchSillage = selectedSillage === 'All' || p.sillage === selectedSillage;
 
-      return matchSearch && matchIntensity && matchExperience && matchSillage;
+      return matchSearch && matchIntensity && matchSynergy && matchExperience && matchSillage;
     }).sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
@@ -161,9 +165,9 @@ export default function App() {
       if (sortBy === 'rank') return a.rank - b.rank;
       return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
     });
-  }, [searchQuery, selectedIntensity, selectedExperience, selectedSillage, sortBy]);
+  }, [products, searchQuery, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
 
-  const totals = calculateCartTotals(cartItems, promoCode);
+  const totals = calculateCartTotals(cartItems, promoCode, shopSettings, promoCodes);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,29 +203,28 @@ export default function App() {
       <main className="flex-1">
         {currentTab === 'catalog' && (
           <div>
-            {/* Direct Assessment 3-Step Decision Flow right upfront */}
+            {/* Direct Assessment 3-Step Decision Flow + Live 53-Flacon Stream */}
             <DirectAssessmentQuiz
               currency={currency}
               onAddToCart={handleAddToCart}
               onOpenDetail={(prod) => setSelectedProduct(prod)}
             />
 
-            {/* Automated Weekly / 30-Day Favorites Leaderboard */}
+            {/* Automated Weekly 10ml Top 10 & 30-Day Favorites Leaderboard */}
             <LeaderboardSection
               currency={currency}
               onAddToCart={handleAddToCart}
               onOpenDetail={(prod) => setSelectedProduct(prod)}
             />
 
-            {/* Dense Catalog Section with Operational Filtering */}
+            {/* Dense Catalog Section with Operational & Targeted Synergy Filtering */}
             <section id="catalog-grid" aria-labelledby="catalog-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-[#2c2a27]">
-              {/* Filter and Control Bar */}
               <div className="space-y-4 mb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#2c2a27]">
                   {/* Intensity Filters */}
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#969088] mr-2 shrink-0 font-mono">
-                      Intensity Level:
+                      Intensity:
                     </span>
                     {(['All', 'Mild', 'Strong', 'Intense'] as const).map((lvl) => (
                       <button
@@ -240,8 +243,24 @@ export default function App() {
                     ))}
                   </div>
 
-                  {/* Vibe / Experience & Sort Controls */}
-                  <div className="flex flex-wrap items-center gap-3">
+                  {/* Targeted Synergy, Vibe & Sort Controls */}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Targeted Synergy Indicator filter (↑ Ascendant, ↓ Receptive, ∞ Universal) */}
+                    <div className="flex items-center gap-1 text-xs bg-[#1E1C1A] border border-[#D4AF37]/40 rounded-[0.25rem] px-2.5 py-1">
+                      <span className="text-[10px] uppercase tracking-wider text-[#D4AF37] font-mono">Synergy:</span>
+                      <select
+                        value={selectedSynergy}
+                        onChange={(e) => setSelectedSynergy(e.target.value)}
+                        className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
+                        aria-label="Filter by targeted synergy indicator"
+                      >
+                        <option value="All" className="bg-[#1E1C1A]">All Synergy</option>
+                        <option value="Ascendant" className="bg-[#1E1C1A]">↑ Ascendant (Top)</option>
+                        <option value="Receptive" className="bg-[#1E1C1A]">↓ Receptive (Bottom)</option>
+                        <option value="Universal" className="bg-[#1E1C1A]">∞ Universal (Dual)</option>
+                      </select>
+                    </div>
+
                     {/* Preferred Experience dropdown */}
                     <div className="flex items-center gap-1 text-xs bg-[#1E1C1A] border border-[#4b4640]/50 rounded-[0.25rem] px-2.5 py-1">
                       <span className="text-[10px] uppercase tracking-wider text-[#969088]">Vibe:</span>
@@ -297,16 +316,17 @@ export default function App() {
                 {/* Search result count / active filter tags */}
                 <div className="flex items-center justify-between text-xs text-[#969088]">
                   <span>
-                    Displaying <strong className="text-white">{filteredProducts.length}</strong> of {PRODUCTS.length} Extraits
+                    Displaying <strong className="text-white tabular-nums">{filteredProducts.length}</strong> of <span className="tabular-nums">{products.length}</span> Extraits
                     {searchQuery && <span> matching “{searchQuery}”</span>}
                   </span>
 
-                  {(searchQuery || selectedIntensity !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
+                  {(searchQuery || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
                     <button
                       type="button"
                       onClick={() => {
                         setSearchQuery('');
                         setSelectedIntensity('All');
+                        setSelectedSynergy('All');
                         setSelectedExperience('All');
                         setSelectedSillage('All');
                       }}
@@ -319,18 +339,19 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Product Grid (with lazy loading) */}
+              {/* Product Grid with 50ms Staggered Entrances & Native Lazy Loading */}
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-20 bg-[#1E1C1A] rounded-[0.25rem] border border-[#4b4640]/50 space-y-4">
                   <p className="text-base text-[#FFFFFF] uppercase tracking-wider">No matching extraits found.</p>
                   <p className="text-xs text-[#cdc5bd] max-w-md mx-auto">
-                    Try adjusting your intensity level or preferred experience filter.
+                    Try adjusting your intensity level, targeted synergy, or preferred experience filter.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
                       setSearchQuery('');
                       setSelectedIntensity('All');
+                      setSelectedSynergy('All');
                       setSelectedExperience('All');
                       setSelectedSillage('All');
                     }}
@@ -341,7 +362,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                  {filteredProducts.map((product) => (
+                  {filteredProducts.map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
@@ -350,11 +371,21 @@ export default function App() {
                       onToggleWishlist={handleToggleWishlist}
                       onOpenDetail={(prod) => setSelectedProduct(prod)}
                       onAddToCart={(prod, size) => handleAddToCart(prod, size, 1)}
+                      staggerIndex={idx}
                     />
                   ))}
                 </div>
               )}
             </section>
+
+            {/* SHOP DLAB: Multi-Channel Storefront Hub (Webstore, Shopee, Lazada, TikTok, Penang Grab) */}
+            <MultiChannelLinks variant="section" />
+
+            {/* Atelier Commendations: Curated Testimonials & Shadow Review Marquee */}
+            <AtelierCommendations />
+
+            {/* Client Concierge: Elevated Expandable FAQ Accordion */}
+            <ClientConciergeFAQ />
           </div>
         )}
 
@@ -378,6 +409,14 @@ export default function App() {
 
         {/* Sillage Journal Tab */}
         {currentTab === 'journal' && <SillageJournal />}
+
+        {/* Admin Console Tab */}
+        {currentTab === 'admin' && (
+          <AdminConsole
+            currency={currency}
+            onPreviewProduct={(prod) => setSelectedProduct(prod)}
+          />
+        )}
       </main>
 
       {/* Luxury Footer */}
@@ -393,7 +432,7 @@ export default function App() {
                 </span>
               </div>
               <p className="text-xs text-[#969088] leading-relaxed max-w-sm">
-                Haute Parfumerie & nocturnal novelties engineered for consenting adults. Direct WhatsApp ordering & bespoke flacons.
+                Haute Parfumerie & nocturnal novelties engineered for consenting adults. Direct WhatsApp ordering, Penang Same-Day Grab Delivery, Shopee, Lazada & bespoke flacons.
               </p>
               <div className="pt-2 text-[10px] text-[#cdc5bd] flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
@@ -411,6 +450,16 @@ export default function App() {
                 <li><button type="button" onClick={() => setCurrentTab('diagnostic')} className="hover:text-white">Night Match Finder</button></li>
                 <li><button type="button" onClick={() => setCurrentTab('archive')} className="hover:text-white">Raw Ingredients Index</button></li>
                 <li><button type="button" onClick={() => setCurrentTab('journal')} className="hover:text-white">Sillage Journal</button></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTab('admin')}
+                    className="hover:text-[#D4AF37] text-[#D4AF37]/80 flex items-center gap-1"
+                  >
+                    <Shield className="w-3 h-3" aria-hidden="true" />
+                    <span>Atelier Admin Console</span>
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -420,10 +469,10 @@ export default function App() {
                 Concierge
               </h5>
               <ul className="space-y-1.5 text-xs text-[#969088]">
-                <li><span className="hover:text-white cursor-pointer">WhatsApp Hotline (+60108371938)</span></li>
-                <li><span className="hover:text-white cursor-pointer">Bespoke Engraving</span></li>
+                <li><span className="hover:text-white cursor-pointer">WhatsApp Hotline (+{shopSettings.whatsappPhone})</span></li>
+                <li><span className="hover:text-white cursor-pointer">Penang Same-Day Grab</span></li>
+                <li><span className="hover:text-white cursor-pointer">Shopee & Lazada Mall</span></li>
                 <li><span className="hover:text-white cursor-pointer">Discreet Courier Dispatch</span></li>
-                <li><span className="hover:text-white cursor-pointer">Batch Authentication</span></li>
               </ul>
             </div>
 
@@ -472,7 +521,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Product Detail Modal for Aroma Profiles & Safety */}
+      {/* Product Detail Modal for Aroma Profiles, Multi-Channel Links & Safety */}
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
@@ -482,7 +531,7 @@ export default function App() {
         onAddToCart={handleAddToCart}
       />
 
-      {/* Persistent Quick Cart Drawer */}
+      {/* Persistent Quick Cart Drawer with Multi-Channel Links */}
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -528,5 +577,13 @@ export default function App() {
         }}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ShopDataProvider>
+      <StorefrontContent />
+    </ShopDataProvider>
   );
 }

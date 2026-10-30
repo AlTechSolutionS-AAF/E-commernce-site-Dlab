@@ -1,0 +1,183 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email_verified == true && (
+          request.auth.token.email == 'aliakhmadf@gmail.com' ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    // Validation Blueprint: Product
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'id', 'code', 'shortCode', 'name', 'subtitle', 'price', 'sizes',
+          'intensity', 'experience', 'monthlyOrders', 'rank', 'trendingDelta',
+          'concentration', 'harvestYear', 'perfumer', 'batchCount', 'rating',
+          'reviewCount', 'description', 'safetyInstructions', 'poeticQuote',
+          'primaryImage', 'secondaryImage', 'boxImage', 'notes', 'accords',
+          'sillage', 'longevityHours', 'optimalHours', 'scentFamilies',
+          'featured', 'bestseller', 'inStock'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'code', 'shortCode', 'name', 'subtitle', 'price', 'sizes',
+          'intensity', 'experience', 'monthlyOrders', 'rank', 'trendingDelta',
+          'concentration', 'harvestYear', 'perfumer', 'batchCount', 'rating',
+          'reviewCount', 'description', 'safetyInstructions', 'poeticQuote',
+          'primaryImage', 'secondaryImage', 'boxImage', 'notes', 'accords',
+          'sillage', 'longevityHours', 'optimalHours', 'scentFamilies',
+          'featured', 'bestseller', 'inStock'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.code is string && data.code.size() >= 1 && data.code.size() <= 40 &&
+        data.shortCode is string && data.shortCode.size() >= 1 && data.shortCode.size() <= 24 &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 120 &&
+        data.price is number && data.price >= 0 && data.price <= 100000 &&
+        data.sizes is list && data.sizes.size() >= 1 && data.sizes.size() <= 6 && data.sizes[0] is map &&
+        data.intensity in ['Mild', 'Strong', 'Intense'] &&
+        data.experience in ['Relaxing', 'High-energy', 'Sensual', 'Velvet Focus'] &&
+        data.monthlyOrders is number && data.monthlyOrders >= 0 &&
+        data.rank is number && data.rank >= 1 && data.rank <= 999 &&
+        data.trendingDelta is string && data.trendingDelta.size() <= 60 &&
+        data.concentration is string && data.concentration.size() >= 1 && data.concentration.size() <= 60 &&
+        data.harvestYear is string && data.harvestYear.size() <= 60 &&
+        data.perfumer is string && data.perfumer.size() <= 100 &&
+        data.batchCount is number && data.batchCount >= 0 &&
+        data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+        data.reviewCount is number && data.reviewCount >= 0 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 1200 &&
+        data.safetyInstructions is list && data.safetyInstructions.size() <= 10 &&
+        (data.safetyInstructions.size() == 0 || (data.safetyInstructions[0] is string && data.safetyInstructions[0].size() <= 300)) &&
+        data.poeticQuote is string && data.poeticQuote.size() <= 300 &&
+        data.primaryImage is string && data.primaryImage.size() >= 1 && data.primaryImage.size() <= 600 &&
+        data.secondaryImage is string && data.secondaryImage.size() <= 600 &&
+        data.boxImage is string && data.boxImage.size() <= 600 &&
+        data.notes is map && data.notes.keys().hasAll(['top', 'heart', 'base']) && data.notes.keys().hasOnly(['top', 'heart', 'base']) &&
+        data.notes.top is list && data.notes.top.size() <= 10 &&
+        data.notes.heart is list && data.notes.heart.size() <= 10 &&
+        data.notes.base is list && data.notes.base.size() <= 10 &&
+        data.accords is list && data.accords.size() <= 8 &&
+        data.sillage in ['Intimate', 'Radiant', 'Heavy'] &&
+        data.longevityHours is number && data.longevityHours >= 1 && data.longevityHours <= 72 &&
+        data.optimalHours is string && data.optimalHours.size() <= 60 &&
+        data.scentFamilies is list && data.scentFamilies.size() <= 8 &&
+        data.featured is bool &&
+        data.bestseller is bool &&
+        data.inStock is bool;
+    }
+
+    // Validation Blueprint: ShopSettings
+    function isValidShopSettings(data) {
+      return data.keys().hasAll([
+          'whatsappPhone', 'freeShippingThreshold', 'standardShippingFee',
+          'monogramPrice', 'announcementText'
+        ]) &&
+        data.keys().hasOnly([
+          'whatsappPhone', 'freeShippingThreshold', 'standardShippingFee',
+          'monogramPrice', 'announcementText'
+        ]) &&
+        data.whatsappPhone is string && data.whatsappPhone.size() >= 5 && data.whatsappPhone.size() <= 30 && data.whatsappPhone.matches('^[0-9+]+$') &&
+        data.freeShippingThreshold is number && data.freeShippingThreshold >= 0 && data.freeShippingThreshold <= 100000 &&
+        data.standardShippingFee is number && data.standardShippingFee >= 0 && data.standardShippingFee <= 10000 &&
+        data.monogramPrice is number && data.monogramPrice >= 0 && data.monogramPrice <= 10000 &&
+        data.announcementText is string && data.announcementText.size() >= 1 && data.announcementText.size() <= 240;
+    }
+
+    // Validation Blueprint: PromoCode
+    function isValidPromoCode(data) {
+      return data.keys().hasAll(['code', 'discountPercent', 'active', 'description']) &&
+        data.keys().hasOnly(['code', 'discountPercent', 'active', 'description']) &&
+        data.code is string && data.code.size() >= 2 && data.code.size() <= 32 && data.code.matches('^[A-Z0-9_\\-]+$') &&
+        data.discountPercent is number && data.discountPercent >= 1 && data.discountPercent <= 90 &&
+        data.active is bool &&
+        data.description is string && data.description.size() <= 160;
+    }
+
+    // Validation Blueprint: Sample
+    function isValidSample(data) {
+      return data.keys().hasAll(['id', 'name', 'family', 'active']) &&
+        data.keys().hasOnly(['id', 'name', 'family', 'active']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.family is string && data.family.size() >= 1 && data.family.size() <= 80 &&
+        data.active is bool;
+    }
+
+    // Validation Blueprint: Admin
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+        data.keys().hasOnly(['email', 'role']) &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 160 &&
+        data.role == 'admin';
+    }
+
+    // Public Storefront Catalog: Products
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if existing().id is string;
+      allow create: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == productId && isAdmin();
+      allow update: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == existing().id && isAdmin();
+      allow delete: if isValidId(productId) && isAdmin();
+    }
+
+    // Public Storefront Configuration: ShopSettings
+    match /shopSettings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if existing().whatsappPhone is string;
+      allow create: if isValidId(settingId) && isValidShopSettings(incoming()) && isAdmin();
+      allow update: if isValidId(settingId) && isValidShopSettings(incoming()) && isAdmin();
+      allow delete: if isValidId(settingId) && isAdmin();
+    }
+
+    // Public Storefront Promotions: PromoCodes
+    match /promoCodes/{codeId} {
+      allow get: if isValidId(codeId);
+      allow list: if existing().code is string;
+      allow create: if isValidId(codeId) && isValidPromoCode(incoming()) && incoming().code == codeId && isAdmin();
+      allow update: if isValidId(codeId) && isValidPromoCode(incoming()) && incoming().code == existing().code && isAdmin();
+      allow delete: if isValidId(codeId) && isAdmin();
+    }
+
+    // Public Storefront Samples: Samples
+    match /samples/{sampleId} {
+      allow get: if isValidId(sampleId);
+      allow list: if existing().id is string;
+      allow create: if isValidId(sampleId) && isValidSample(incoming()) && incoming().id == sampleId && isAdmin();
+      allow update: if isValidId(sampleId) && isValidSample(incoming()) && incoming().id == existing().id && isAdmin();
+      allow delete: if isValidId(sampleId) && isAdmin();
+    }
+
+    // Admin Registry (Restricted PII / Role Isolation)
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (isAdmin() || (isSignedIn() && request.auth.uid == adminId));
+      allow list: if false;
+      allow create: if isValidId(adminId) && isValidAdmin(incoming()) && isAdmin();
+      allow update: if isValidId(adminId) && isValidAdmin(incoming()) && isAdmin();
+      allow delete: if isValidId(adminId) && isAdmin();
+    }
+  }
+}

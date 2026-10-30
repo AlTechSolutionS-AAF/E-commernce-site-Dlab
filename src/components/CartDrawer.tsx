@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, Gift, Sparkles, Tag, ShieldCheck, ArrowRight, Check, MessageCircle, ShoppingBag } from 'lucide-react';
-import { CartItem, calculateCartTotals, formatPrice, FREE_SHIPPING_THRESHOLD } from '../utils/cartCalculations';
-import { COMPLIMENTARY_SAMPLES, generateMultiItemWhatsAppLink, ProductSize } from '../data/products';
+import { X, Trash2, Plus, Minus, Sparkles, Tag, ShieldCheck, ArrowRight, Check, MessageCircle, ShoppingBag } from 'lucide-react';
+import { CartItem, calculateCartTotals, formatPrice } from '../utils/cartCalculations';
+import { generateMultiItemWhatsAppLink } from '../data/products';
+import { useShopData } from '../context/ShopDataContext';
+import { MultiChannelLinks } from './MultiChannelLinks';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -34,23 +36,29 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   setPromoCode,
   onProceedToCheckout
 }) => {
+  const { shopSettings, promoCodes, samples } = useShopData();
   const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
 
   if (!isOpen) return null;
 
-  const totals = calculateCartTotals(items, promoCode);
-  const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - totals.subtotal);
-  const progressPercent = Math.min(100, Math.round((totals.subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const totals = calculateCartTotals(items, promoCode, shopSettings, promoCodes);
+  const freeShippingThreshold = shopSettings.freeShippingThreshold || 250;
+  const amountToFreeShipping = Math.max(0, freeShippingThreshold - totals.subtotal);
+  const progressPercent = Math.min(100, Math.round((totals.subtotal / freeShippingThreshold) * 100));
+
+  const availableSamples = samples.filter((s) => s.active !== false);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     const clean = promoInput.trim().toUpperCase();
-    if (clean === 'NOCTURNE10' || clean === 'HAUTE15' || clean === 'VIPATELIER') {
-      setPromoCode(clean);
+    const matched = promoCodes.find((p) => p.code.toUpperCase() === clean && p.active);
+    if (matched) {
+      setPromoCode(matched.code.toUpperCase());
       setPromoError('');
     } else {
-      setPromoError('Invalid code. Try NOCTURNE10 or HAUTE15.');
+      const activeNames = promoCodes.filter((p) => p.active).map((p) => p.code).slice(0, 2).join(' or ');
+      setPromoError(`Invalid or inactive code.${activeNames ? ` Try ${activeNames}.` : ''}`);
     }
   };
 
@@ -61,7 +69,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       quantity: it.quantity
     })),
     giftPackaging,
-    totals.total
+    totals.total,
+    shopSettings.whatsappPhone
   );
 
   return (
@@ -86,7 +95,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <h2 id="cart-drawer-title" className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 Quick Bag (Local Storage)
               </h2>
-              <span className="text-xs font-mono text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50">
+              <span className="text-xs font-mono text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50 tabular-nums">
                 {items.length} {items.length === 1 ? 'Flacon' : 'Flacons'}
               </span>
             </div>
@@ -116,7 +125,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   </span>
                 )}
               </span>
-              <span className="font-mono text-[#969088]">{progressPercent}%</span>
+              <span className="font-mono text-[#969088] tabular-nums">{progressPercent}%</span>
             </div>
             <div className="w-full bg-[#1E1C1A] h-1.5 rounded-[0.125rem] mt-2 overflow-hidden border border-[#2c2a27]">
               <div
@@ -205,7 +214,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           >
                             <Minus className="w-3 h-3" aria-hidden="true" />
                           </button>
-                          <span className="px-2 py-1 text-xs font-mono">{item.quantity}</span>
+                          <span className="px-2 py-1 text-xs font-mono tabular-nums">{item.quantity}</span>
                           <button
                             type="button"
                             onClick={() => onUpdateQuantity(index, item.quantity + 1)}
@@ -216,9 +225,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           </button>
                         </div>
 
-                        <span className="text-xs font-semibold text-white font-mono">
+                        <span className="text-xs font-semibold text-white font-mono tabular-nums">
                           {formatPrice(
-                            (item.selectedSize.price + (item.monogram ? 20 : 0)) * item.quantity,
+                            (item.selectedSize.price + (item.monogram ? shopSettings.monogramPrice : 0)) * item.quantity,
                             currency
                           )}
                         </span>
@@ -234,13 +243,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       <Sparkles className="w-3 h-3 text-[#D4AF37]" aria-hidden="true" />
                       Complimentary 2ml Miniatures (Select 2)
                     </span>
-                    <span className="text-[10px] font-mono text-[#969088]">
+                    <span className="text-[10px] font-mono text-[#969088] tabular-nums">
                       {selectedSamples.length} / 2
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5">
-                    {COMPLIMENTARY_SAMPLES.map((smp) => {
+                    {availableSamples.map((smp) => {
                       const isPicked = selectedSamples.includes(smp.id);
                       return (
                         <button
@@ -324,42 +333,42 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-[#cdc5bd]">
                   <span>Subtotal</span>
-                  <span className="font-mono text-white">{formatPrice(totals.subtotal, currency)}</span>
+                  <span className="font-mono text-white tabular-nums">{formatPrice(totals.subtotal, currency)}</span>
                 </div>
 
                 {totals.monogramFee > 0 && (
                   <div className="flex justify-between text-[#cdc5bd]">
                     <span>Bespoke Monogramming</span>
-                    <span className="font-mono text-white">{formatPrice(totals.monogramFee, currency)}</span>
+                    <span className="font-mono text-white tabular-nums">{formatPrice(totals.monogramFee, currency)}</span>
                   </div>
                 )}
 
                 {totals.discount > 0 && (
                   <div className="flex justify-between text-emerald-400">
                     <span>Atelier Privilege Discount</span>
-                    <span className="font-mono">-{formatPrice(totals.discount, currency)}</span>
+                    <span className="font-mono tabular-nums">-{formatPrice(totals.discount, currency)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-[#cdc5bd]">
                   <span>Insured Global Dispatch</span>
-                  <span className="font-mono text-white">
+                  <span className="font-mono text-white tabular-nums">
                     {totals.shipping === 0 ? 'COMPLIMENTARY' : formatPrice(totals.shipping, currency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-semibold text-white pt-2 border-t border-[#2c2a27]">
                   <span className="uppercase tracking-wider">Total</span>
-                  <span className="font-mono text-[#D4AF37]">{formatPrice(totals.total, currency)}</span>
+                  <span className="font-mono text-[#D4AF37] tabular-nums">{formatPrice(totals.total, currency)}</span>
                 </div>
               </div>
 
-              {/* PRIMARY ACTION 1: Send structured multi-item order via WhatsApp */}
+              {/* PRIMARY ACTION 1: Breathing WhatsApp Multi-Item Checkout */}
               <a
                 href={whatsappCheckoutUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors shadow-lg shadow-[#25D366]/10"
+                className="animate-cta-breathe w-full bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
               >
                 <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
                 <span>Send Order via WhatsApp ({items.length} Items)</span>
@@ -374,6 +383,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Or Pay with Card / Apple Pay</span>
                 <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
+
+              {/* Monochrome Multi-Channel Commerce Links inside Cart Drawer */}
+              <MultiChannelLinks
+                variant="compact"
+                productShortCode={items[0]?.product.shortCode}
+                volumeMl={items[0]?.selectedSize.ml}
+                label="Or Checkout via Official Partner Channels"
+              />
 
               <div className="flex items-center justify-center gap-4 text-[9px] uppercase tracking-widest text-[#969088] pt-1 font-mono">
                 <span className="flex items-center gap-1">

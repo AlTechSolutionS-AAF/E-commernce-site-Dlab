@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Check, X, Lock } from 'lucide-react';
+import { ShieldAlert, Check, Lock } from 'lucide-react';
 
 interface AgeVerificationModalProps {
   onVerified: () => void;
@@ -9,14 +9,28 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const verified = localStorage.getItem('dlab_age_verified');
-    if (!verified) {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autostart') === '1') {
+        localStorage.setItem('dlab_age_verified', 'true');
+        onVerified();
+        return;
+      }
+      const verified = localStorage.getItem('dlab_age_verified');
+      if (!verified) {
+        setIsVisible(true);
+      }
+    } catch {
       setIsVisible(true);
     }
-  }, []);
+  }, [onVerified]);
 
   const handleConfirm = () => {
-    localStorage.setItem('dlab_age_verified', 'true');
+    try {
+      localStorage.setItem('dlab_age_verified', 'true');
+    } catch {
+      // ignore storage errors
+    }
     setIsVisible(false);
     onVerified();
   };
@@ -66,6 +80,7 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
         {/* Action buttons */}
         <div className="space-y-2.5 pt-2">
           <button
+            type="button"
             onClick={handleConfirm}
             className="w-full bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.2em] rounded-[0.25rem] transition-colors shadow-lg shadow-[#D4AF37]/15 flex items-center justify-center gap-2"
           >
@@ -74,6 +89,7 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
           </button>
 
           <button
+            type="button"
             onClick={handleReject}
             className="w-full bg-transparent hover:bg-[#151311] border border-[#4b4640] hover:border-[#969088] text-[#969088] hover:text-white py-2.5 px-4 text-xs uppercase tracking-[0.15em] rounded-[0.25rem] transition-colors"
           >

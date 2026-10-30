@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { X, Heart, Plus, Minus, Check, Sparkles, Clock, MessageCircle, ShieldAlert, ShoppingBag, Flame, Zap, ShieldCheck } from 'lucide-react';
+import { X, Heart, Plus, Minus, Check, MessageCircle, ShieldAlert, ShoppingBag } from 'lucide-react';
 import { Product, ProductSize, generateWhatsAppLink } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { useShopData } from '../context/ShopDataContext';
+import { SynergyBadge } from './SynergyBadge';
+import { MultiChannelLinks } from './MultiChannelLinks';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -20,8 +23,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onToggleWishlist,
   onAddToCart
 }) => {
-  if (!product) return null;
-
+  const { shopSettings } = useShopData();
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -30,11 +32,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [added, setAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<'olfactory' | 'safety' | 'reviews'>('olfactory');
 
+  if (!product) return null;
+
   const images = [product.primaryImage, product.secondaryImage, product.boxImage];
   const selectedSize = product.sizes[selectedSizeIndex] || product.sizes[0];
-  const unitPrice = selectedSize.price + (enableMonogram && monogramText.trim() ? 20 : 0);
+  const unitPrice = selectedSize.price + (enableMonogram && monogramText.trim() ? shopSettings.monogramPrice : 0);
 
   const handleAdd = () => {
+    if (!product.inStock) return;
     onAddToCart(
       product,
       selectedSize,
@@ -54,9 +59,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       aria-modal="true"
       aria-labelledby="modal-flacon-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#0F0E0D]/90 backdrop-blur-md overflow-y-auto"
+      onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-2xl overflow-hidden my-auto text-[#e7e1de]"
+        className="animate-stagger-cascade relative w-full max-w-5xl bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-2xl overflow-hidden my-auto text-[#e7e1de]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -71,9 +77,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 max-h-[90vh] overflow-y-auto">
-          {/* Left Column: Visual Showcase & Monogram Flacon Preview */}
-          <div className="lg:col-span-6 bg-[#151311] p-6 lg:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#2c2a27]">
-            <div className="relative aspect-[4/5] rounded-[0.25rem] overflow-hidden border border-[#4b4640]/40 bg-[#0F0E0D]">
+          {/* Left Column: Visual Showcase & Gold Foil Shimmer */}
+          <div className="lg:col-span-5 bg-[#151311] p-6 lg:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#2c2a27]">
+            <div className="gold-foil-shimmer relative aspect-[4/5] rounded-[0.25rem] overflow-hidden border border-[#4b4640]/40 bg-[#0F0E0D]">
               <img
                 src={images[activeImageIndex]}
                 alt={`Flacon ${product.shortCode} ${product.name}`}
@@ -101,14 +107,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Thumbnail switcher */}
+            {/* Thumbnail switcher with staggered entrance */}
             <div className="flex gap-3 mt-4">
               {images.map((img, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`w-16 h-16 rounded-[0.125rem] overflow-hidden border transition-all ${
+                  className={`animate-stagger-cascade stagger-delay-${idx} w-16 h-16 rounded-[0.125rem] overflow-hidden border transition-all ${
                     activeImageIndex === idx ? 'border-[#D4AF37] opacity-100 scale-105' : 'border-[#4b4640]/50 opacity-60 hover:opacity-90'
                   }`}
                   aria-label={`View angle ${idx + 1}`}
@@ -126,10 +132,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Parfumerie Specifications & Configuration */}
-          <div className="lg:col-span-6 p-6 lg:p-8 flex flex-col justify-between space-y-6 text-left">
+          {/* Right Column: Parfumerie Specifications, Multi-Channel Commerce Links & Configuration */}
+          <div className="lg:col-span-7 p-6 lg:p-8 flex flex-col justify-between space-y-5 text-left">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pr-8">
                 <span className="text-[10px] font-mono tracking-[0.25em] text-[#D4AF37] uppercase">
                   {product.shortCode} • {product.code} • {product.harvestYear}
                 </span>
@@ -148,11 +154,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <h2 id="modal-flacon-title" className="text-2xl sm:text-3xl font-semibold tracking-[-0.01em] text-[#FFFFFF] uppercase">
                   {product.shortCode} {product.name}
                 </h2>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] uppercase font-semibold text-[#D4AF37] bg-[#151311] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <SynergyBadge product={product} size="md" />
+                  <span className="text-[10px] uppercase font-semibold text-[#D4AF37] bg-[#151311] px-2.5 py-1 rounded-[0.125rem] border border-[#4b4640]/50">
                     Intensity: {product.intensity}
                   </span>
-                  <span className="text-[10px] uppercase font-semibold text-white bg-[#151311] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50">
+                  <span className="text-[10px] uppercase font-semibold text-white bg-[#151311] px-2.5 py-1 rounded-[0.125rem] border border-[#4b4640]/50">
                     Vibe: {product.experience}
                   </span>
                 </div>
@@ -163,7 +170,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </p>
 
               {/* Tab Selector */}
-              <div className="flex border-b border-[#2c2a27] pt-2">
+              <div className="flex border-b border-[#2c2a27] pt-1">
                 <button
                   type="button"
                   onClick={() => setActiveTab('olfactory')}
@@ -223,17 +230,20 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Accord Composition Bar */}
+                  {/* Accord Composition Bar with staggered entrance */}
                   <div>
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#969088] block mb-2 font-mono">
                       Accord Volatility & Density
                     </span>
                     <div className="space-y-2">
-                      {product.accords.map((accord) => (
-                        <div key={accord.name} className="space-y-1">
+                      {product.accords.map((accord, idx) => (
+                        <div
+                          key={accord.name}
+                          className={`animate-stagger-cascade stagger-delay-${Math.min(idx, 11)} space-y-1`}
+                        >
                           <div className="flex justify-between text-[11px]">
                             <span className="text-[#cdc5bd]">{accord.name}</span>
-                            <span className="text-[#D4AF37] font-mono">{accord.percentage}%</span>
+                            <span className="text-[#D4AF37] font-mono tabular-nums">{accord.percentage}%</span>
                           </div>
                           <div className="w-full bg-[#151311] h-1.5 rounded-[0.125rem] overflow-hidden">
                             <div
@@ -276,26 +286,26 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="space-y-3 bg-[#151311] p-3.5 rounded-[0.25rem] border border-[#2c2a27]">
                   <div className="flex items-center justify-between pb-2 border-b border-[#2c2a27]">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-base font-bold text-[#D4AF37]">{product.rating}</span>
+                      <span className="text-base font-bold text-[#D4AF37] tabular-nums">{product.rating}</span>
                       <span className="text-xs text-[#969088]">/ 5.0 rating from verified collectors</span>
                     </div>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="p-2 bg-[#1E1C1A] rounded-[0.125rem]">
+                    <div className="p-2.5 bg-[#1E1C1A] rounded-[0.125rem] border border-[#2c2a27]">
                       <div className="flex justify-between text-[#cdc5bd] text-[10px]">
-                        <span className="font-semibold text-[#D4AF37]">Marc V. (London)</span>
-                        <span>Verified Batch #210</span>
+                        <span className="font-semibold text-[#D4AF37]">Kyle Chong · Verified Patron</span>
+                        <span>★★★★★</span>
                       </div>
                       <p className="text-[#cdc5bd] mt-1 text-[11px]">
-                        "The {product.intensity.toLowerCase()} sillage is unmatched. Projects like a velvet monolith for over {product.longevityHours} hours."
+                        “Premium quality muscle relaxant, soothing and refreshing scent, non-greasy and fast drying. Projects cleanly for over {product.longevityHours} hours.”
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Size Configuration Selection */}
-              <div className="space-y-2 pt-2">
+              {/* Size Configuration Selection with Staggered Entrance */}
+              <div className="space-y-2 pt-1">
                 <label className="text-[10px] uppercase tracking-[0.2em] text-[#969088] block font-mono">
                   Select Flacon Format
                 </label>
@@ -305,7 +315,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       key={sz.ml}
                       type="button"
                       onClick={() => setSelectedSizeIndex(idx)}
-                      className={`p-2.5 rounded-[0.25rem] border text-left transition-all ${
+                      className={`animate-stagger-cascade stagger-delay-${idx} p-2.5 rounded-[0.25rem] border text-left transition-all ${
                         selectedSizeIndex === idx
                           ? 'border-[#D4AF37] bg-[#151311] text-white shadow-sm'
                           : 'border-[#4b4640]/50 bg-[#1E1C1A] text-[#cdc5bd] hover:border-[#969088]'
@@ -313,7 +323,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       aria-pressed={selectedSizeIndex === idx}
                     >
                       <span className="text-xs font-semibold block">{sz.label}</span>
-                      <span className="text-xs text-[#D4AF37] font-mono block mt-0.5">
+                      <span className="text-xs text-[#D4AF37] font-mono block mt-0.5 tabular-nums">
                         {formatPrice(sz.price, currency)}
                       </span>
                     </button>
@@ -331,7 +341,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       onChange={(e) => setEnableMonogram(e.target.checked)}
                       className="accent-[#D4AF37] w-4 h-4 rounded-[0.125rem]"
                     />
-                    <span className="font-medium">Bespoke Gold-Foil Monogram (+{formatPrice(20, currency)})</span>
+                    <span className="font-medium">Bespoke Gold-Foil Monogram (+{formatPrice(shopSettings.monogramPrice, currency)})</span>
                   </label>
                   <span className="text-[9px] uppercase tracking-wider text-[#D4AF37]">Hand-Stamped</span>
                 </div>
@@ -351,66 +361,79 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Bottom Add to Bag & WhatsApp Actions */}
-            <div className="pt-4 border-t border-[#2c2a27] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              {/* Direct WhatsApp Message Checkout Link */}
-              <a
-                href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-4 py-3 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors shadow-sm"
-              >
-                <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                <span>Order via WhatsApp ({selectedSize.ml}ml)</span>
-              </a>
+            {/* Bottom Add to Bag, Breathing WhatsApp CTA & Monochrome Multi-Channel Commerce Links */}
+            <div className="space-y-3 pt-3 border-t border-[#2c2a27]">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                {/* Breathing Direct WhatsApp Message Checkout Link */}
+                <a
+                  href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml, shopSettings.whatsappPhone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-4 py-3 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
+                  <span>Order via WhatsApp ({selectedSize.ml}ml)</span>
+                </a>
 
-              {/* Add to LocalStorage Bag */}
-              <div className="flex items-center gap-2 flex-1">
-                <div className="flex items-center border border-[#4b4640] rounded-[0.25rem] bg-[#151311]">
+                {/* Add to LocalStorage Bag */}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex items-center border border-[#4b4640] rounded-[0.25rem] bg-[#151311]">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-2.5 py-2 text-[#969088] hover:text-white"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                    <span className="px-2.5 py-2 text-xs font-mono font-semibold text-white tabular-nums">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-2.5 py-2 text-[#969088] hover:text-white"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-2.5 py-2 text-[#969088] hover:text-white"
-                    aria-label="Decrease quantity"
+                    onClick={handleAdd}
+                    disabled={added || !product.inStock}
+                    className={`flex-1 py-3 px-4 rounded-[0.25rem] text-xs uppercase tracking-[0.15em] font-semibold flex items-center justify-center gap-2 transition-all ${
+                      !product.inStock
+                        ? 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                        : added
+                        ? 'bg-emerald-800 text-white'
+                        : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] shadow-lg shadow-[#D4AF37]/15'
+                    }`}
                   >
-                    <Minus className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
-                  <span className="px-2.5 py-2 text-xs font-mono font-semibold text-white">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="px-2.5 py-2 text-[#969088] hover:text-white"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                    {!product.inStock ? (
+                      <span>Out of Stock</span>
+                    ) : added ? (
+                      <>
+                        <Check className="w-4 h-4" aria-hidden="true" />
+                        <span>Added to Bag</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
+                        <span>Add to Bag • {formatPrice(unitPrice * quantity, currency)}</span>
+                      </>
+                    )}
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  disabled={added}
-                  className={`flex-1 py-3 px-4 rounded-[0.25rem] text-xs uppercase tracking-[0.15em] font-semibold flex items-center justify-center gap-2 transition-all ${
-                    added
-                      ? 'bg-emerald-800 text-white'
-                      : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] shadow-lg shadow-[#D4AF37]/15'
-                  }`}
-                >
-                  {added ? (
-                    <>
-                      <Check className="w-4 h-4" aria-hidden="true" />
-                      <span>Added to Bag</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                      <span>Add to Bag • {formatPrice(unitPrice * quantity, currency)}</span>
-                    </>
-                  )}
-                </button>
               </div>
+
+              {/* Monochrome Multi-Channel Commerce Links (Shopee, Lazada, Grab Delivery, TikTok) */}
+              <MultiChannelLinks
+                variant="compact"
+                productShortCode={product.shortCode}
+                volumeMl={selectedSize.ml}
+              />
             </div>
           </div>
         </div>

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { RAW_MATERIALS, FragranceNote, PRODUCTS, Product } from '../data/products';
-import { Globe, Sparkles, Filter, Droplet } from 'lucide-react';
+import { RAW_MATERIALS, Product } from '../data/products';
+import { Globe } from 'lucide-react';
+import { useShopData } from '../context/ShopDataContext';
 
 interface OlfactoryArchiveProps {
   onSelectProduct: (p: Product) => void;
 }
 
 export const OlfactoryArchive: React.FC<OlfactoryArchiveProps> = ({ onSelectProduct }) => {
+  const { products } = useShopData();
   const [selectedFamily, setSelectedFamily] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
@@ -77,7 +79,7 @@ export const OlfactoryArchive: React.FC<OlfactoryArchiveProps> = ({ onSelectProd
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMaterials.map((mat) => {
           // Find matching products containing this note
-          const associatedProducts = PRODUCTS.filter((p) => {
+          const associatedProducts = products.filter((p) => {
             const all = [...p.notes.top, ...p.notes.heart, ...p.notes.base].join(' ').toLowerCase();
             return all.includes(mat.name.toLowerCase().split(' ')[0]);
           });

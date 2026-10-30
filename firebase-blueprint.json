@@ -1,0 +1,136 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A luxury fragrance extrait product in the DLAB Night Match catalog.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "code": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "shortCode": { "type": "string", "minLength": 1, "maxLength": 24 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "subtitle": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "price": { "type": "number" },
+        "sizes": { "type": "array" },
+        "intensity": { "type": "string", "enum": ["Mild", "Strong", "Intense"] },
+        "experience": { "type": "string", "enum": ["Relaxing", "High-energy", "Sensual", "Velvet Focus"] },
+        "monthlyOrders": { "type": "number" },
+        "rank": { "type": "number" },
+        "trendingDelta": { "type": "string", "maxLength": 60 },
+        "concentration": { "type": "string", "maxLength": 60 },
+        "harvestYear": { "type": "string", "maxLength": 60 },
+        "perfumer": { "type": "string", "maxLength": 100 },
+        "batchCount": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "description": { "type": "string", "maxLength": 1200 },
+        "safetyInstructions": { "type": "array" },
+        "poeticQuote": { "type": "string", "maxLength": 300 },
+        "primaryImage": { "type": "string", "maxLength": 600 },
+        "secondaryImage": { "type": "string", "maxLength": 600 },
+        "boxImage": { "type": "string", "maxLength": 600 },
+        "notes": { "type": "object" },
+        "accords": { "type": "array" },
+        "sillage": { "type": "string", "enum": ["Intimate", "Radiant", "Heavy"] },
+        "longevityHours": { "type": "number" },
+        "optimalHours": { "type": "string", "maxLength": 60 },
+        "scentFamilies": { "type": "array" },
+        "featured": { "type": "boolean" },
+        "bestseller": { "type": "boolean" },
+        "inStock": { "type": "boolean" }
+      },
+      "required": [
+        "id",
+        "code",
+        "shortCode",
+        "name",
+        "subtitle",
+        "price",
+        "sizes",
+        "intensity",
+        "experience",
+        "concentration",
+        "description",
+        "primaryImage",
+        "sillage",
+        "longevityHours",
+        "inStock"
+      ]
+    },
+    "ShopSettings": {
+      "title": "ShopSettings",
+      "description": "Global storefront settings and WhatsApp checkout configuration.",
+      "type": "object",
+      "properties": {
+        "whatsappPhone": { "type": "string", "minLength": 5, "maxLength": 30, "pattern": "^[0-9+]+$" },
+        "freeShippingThreshold": { "type": "number" },
+        "standardShippingFee": { "type": "number" },
+        "monogramPrice": { "type": "number" },
+        "announcementText": { "type": "string", "minLength": 1, "maxLength": 240 }
+      },
+      "required": [
+        "whatsappPhone",
+        "freeShippingThreshold",
+        "standardShippingFee",
+        "monogramPrice",
+        "announcementText"
+      ]
+    },
+    "PromoCode": {
+      "title": "PromoCode",
+      "description": "Promotional discount code for checkout.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "minLength": 2, "maxLength": 32, "pattern": "^[A-Z0-9_\\-]+$" },
+        "discountPercent": { "type": "number" },
+        "active": { "type": "boolean" },
+        "description": { "type": "string", "maxLength": 160 }
+      },
+      "required": ["code", "discountPercent", "active", "description"]
+    },
+    "Sample": {
+      "title": "Sample",
+      "description": "Complimentary 2ml sample vial available in the shopping bag.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "family": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "family", "active"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized store administrator entry.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 160 },
+        "role": { "type": "string", "enum": ["admin"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Publicly readable catalog of fragrance extraits; writable by verified administrators."
+    },
+    "/shopSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/ShopSettings" },
+      "description": "Global storefront settings including WhatsApp dispatch number and shipping thresholds."
+    },
+    "/promoCodes/{codeId}": {
+      "schema": { "$ref": "#/entities/PromoCode" },
+      "description": "Discount promo codes available for checkout."
+    },
+    "/samples/{sampleId}": {
+      "schema": { "$ref": "#/entities/Sample" },
+      "description": "Complimentary 2ml miniature samples selectable in the Quick Bag."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Registry of administrator UIDs."
+    }
+  }
+}

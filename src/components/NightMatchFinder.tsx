@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Sparkles, Check, ArrowRight, RotateCcw, Flame, Moon, Compass, ShieldAlert, Award } from 'lucide-react';
-import { PRODUCTS, Product } from '../data/products';
+import { Sparkles, Check, ArrowRight, RotateCcw } from 'lucide-react';
+import { Product } from '../data/products';
 import { calculateScentMatch, ScentDiagnosticInput, ScentMatchResult } from '../utils/scentMatcher';
 import { formatPrice } from '../utils/cartCalculations';
+import { useShopData } from '../context/ShopDataContext';
 
 interface NightMatchFinderProps {
   currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
@@ -15,6 +16,7 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
   onSelectProduct,
   onAddToCart
 }) => {
+  const { products } = useShopData();
   const [step, setStep] = useState<number>(1);
   const [atmosphere, setAtmosphere] = useState<ScentDiagnosticInput['atmosphere']>('speakeasy');
   const [primaryFamily, setPrimaryFamily] = useState<ScentDiagnosticInput['primaryFamily']>('Amber');
@@ -78,12 +80,15 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
   const handleRunDiagnostic = () => {
     setIsAnalyzing(true);
     setTimeout(() => {
-      const matchResults = calculateScentMatch({
-        atmosphere,
-        primaryFamily,
-        sillage,
-        preferredNotes: selectedNotes
-      });
+      const matchResults = calculateScentMatch(
+        {
+          atmosphere,
+          primaryFamily,
+          sillage,
+          preferredNotes: selectedNotes
+        },
+        products.length > 0 ? products : undefined
+      );
       setResults(matchResults);
       setIsAnalyzing(false);
     }, 900);

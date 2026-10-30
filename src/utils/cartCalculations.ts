@@ -1,4 +1,11 @@
-import { Product, ProductSize } from '../data/products';
+import {
+  Product,
+  ProductSize,
+  ShopSettings,
+  PromoCodeItem,
+  DEFAULT_SHOP_SETTINGS,
+  DEFAULT_PROMO_CODES,
+} from '../data/products';
 
 export interface CartItem {
   product: Product;
@@ -21,29 +28,45 @@ export const FREE_SHIPPING_THRESHOLD = 250;
 export const STANDARD_SHIPPING_FEE = 25;
 
 export const PROMO_CODES: Record<string, number> = {
-  NOCTURNE10: 0.10, // 10% off
-  HAUTE15: 0.15,    // 15% off
-  VIPATELIER: 0.20  // 20% off
+  NOCTURNE10: 0.1, // 10% off
+  HAUTE15: 0.15, // 15% off
+  VIPATELIER: 0.2, // 20% off
 };
 
 export function calculateCartTotals(
   items: CartItem[],
-  promoCode?: string
+  promoCode?: string,
+  shopSettings: ShopSettings = DEFAULT_SHOP_SETTINGS,
+  promoCodesList: PromoCodeItem[] = DEFAULT_PROMO_CODES
 ): CartTotals {
   const subtotal = items.reduce((acc, item) => acc + item.selectedSize.price * item.quantity, 0);
-  
+
+  const monogramUnit = shopSettings?.monogramPrice ?? MONOGRAM_UNIT_PRICE;
+  const freeThreshold = shopSettings?.freeShippingThreshold ?? FREE_SHIPPING_THRESHOLD;
+  const shippingFee = shopSettings?.standardShippingFee ?? STANDARD_SHIPPING_FEE;
+
   const monogramFee = items.reduce((acc, item) => {
-    return acc + (item.monogram && item.monogram.trim().length > 0 ? MONOGRAM_UNIT_PRICE * item.quantity : 0);
+    return (
+      acc +
+      (item.monogram && item.monogram.trim().length > 0 ? monogramUnit * item.quantity : 0)
+    );
   }, 0);
 
   let discount = 0;
   if (promoCode) {
-    const rate = PROMO_CODES[promoCode.trim().toUpperCase()] || 0;
+    const cleanCode = promoCode.trim().toUpperCase();
+    const matched = promoCodesList.find(
+      (p) => p.code.toUpperCase() === cleanCode && p.active
+    );
+    const rate = matched
+      ? matched.discountPercent / 100
+      : PROMO_CODES[cleanCode] || 0;
     discount = Math.round(subtotal * rate);
   }
 
-  const eligibleForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0;
-  const shipping = items.length === 0 ? 0 : (eligibleForFreeShipping ? 0 : STANDARD_SHIPPING_FEE);
+  const eligibleForFreeShipping = subtotal >= freeThreshold || subtotal === 0;
+  const shipping =
+    items.length === 0 ? 0 : eligibleForFreeShipping ? 0 : shippingFee;
   const total = Math.max(0, subtotal - discount + monogramFee + shipping);
 
   return {
@@ -52,11 +75,14 @@ export function calculateCartTotals(
     monogramFee,
     shipping,
     total,
-    eligibleForFreeShipping
+    eligibleForFreeShipping,
   };
 }
 
-export function formatPrice(amount: number, currency: 'USD' | 'EUR' | 'GBP' | 'JPY' = 'USD'): string {
+export function formatPrice(
+  amount: number,
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' = 'USD'
+): string {
   switch (currency) {
     case 'EUR':
       return `€${Math.round(amount * 0.92)}`;

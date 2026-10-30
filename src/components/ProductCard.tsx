@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Heart, Eye, Plus, Check, MessageCircle, ShoppingBag, Clock, Flame, Zap } from 'lucide-react';
-import { Product, ProductSize, generateWhatsAppLink } from '../data/products';
+import { Heart, Eye, Plus, Check, MessageCircle, Clock, Flame, Zap } from 'lucide-react';
+import { Product, ProductSize, generateWhatsAppLink, getProductSynergy } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { useShopData } from '../context/ShopDataContext';
+import { SynergyBadge } from './SynergyBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -10,6 +12,7 @@ interface ProductCardProps {
   onToggleWishlist: (product: Product) => void;
   onOpenDetail: (product: Product) => void;
   onAddToCart: (product: Product, size: ProductSize) => void;
+  staggerIndex?: number;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -18,16 +21,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isWishlisted,
   onToggleWishlist,
   onOpenDetail,
-  onAddToCart
+  onAddToCart,
+  staggerIndex = 0
 }) => {
+  const { shopSettings } = useShopData();
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [addedAnimation, setAddedAnimation] = useState(false);
 
   const currentSize = product.sizes[selectedSizeIndex] || product.sizes[0];
+  const synergy = getProductSynergy(product);
+  const staggerClass = `stagger-delay-${Math.min(staggerIndex, 11)}`;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!product.inStock) return;
     onAddToCart(product, currentSize);
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 1400);
@@ -35,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <article
-      className="group relative bg-[#1E1C1A] border border-[#4b4640]/50 hover:border-[#D4AF37]/80 rounded-[0.25rem] transition-all duration-300 flex flex-col justify-between overflow-hidden text-left"
+      className={`animate-stagger-cascade ${staggerClass} group relative bg-[#1E1C1A] border border-[#4b4640]/50 hover:border-[#D4AF37]/80 rounded-[0.25rem] transition-all duration-300 flex flex-col justify-between overflow-hidden text-left`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -49,6 +57,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-[9px] uppercase tracking-[0.2em] text-[#969088] font-mono">
               {product.code}
             </span>
+            {product.bestseller && (
+              <span className="text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.2 bg-[#D4AF37] text-[#0F0E0D] rounded-[0.125rem]">
+                HOT
+              </span>
+            )}
           </div>
           <p className="text-[10px] uppercase tracking-[0.15em] text-[#cdc5bd] font-medium mt-0.5">
             {product.concentration}
@@ -86,6 +99,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           loading="lazy"
         />
 
+        {/* Top-Left Geometric Synergy Indicator Badge on Flacon */}
+        <div
+          title={`${synergy.shortLabel}: ${synergy.description}`}
+          className="absolute top-2 left-2 bg-[#0F0E0D]/90 border border-[#D4AF37]/60 px-2 py-0.5 rounded-[0.125rem] text-[10px] font-mono text-[#D4AF37] flex items-center gap-1"
+        >
+          <span aria-hidden="true" className="font-bold">{synergy.symbol}</span>
+          <span className="text-[9px] uppercase tracking-wider text-[#e7e1de]">{synergy.role}</span>
+        </div>
+
+        {!product.inStock && (
+          <div className="absolute top-2 right-2 bg-rose-950/90 border border-rose-500/50 px-2 py-0.5 rounded-[0.125rem] text-[9px] uppercase tracking-wider text-rose-300 font-semibold font-mono">
+            Sold Out
+          </div>
+        )}
+
         {/* Hover Quick View Trigger */}
         <div className="absolute inset-0 bg-[#0F0E0D]/65 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center p-4">
           <button
@@ -102,7 +130,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Longevity badge */}
-        <div className="absolute bottom-2 left-2 bg-[#0F0E0D]/90 border border-[#4b4640]/80 px-2 py-0.5 rounded-[0.125rem] text-[9px] uppercase tracking-wider text-[#cdc5bd] flex items-center gap-1 font-mono">
+        <div className="absolute bottom-2 left-2 bg-[#0F0E0D]/90 border border-[#4b4640]/80 px-2 py-0.5 rounded-[0.125rem] text-[9px] uppercase tracking-wider text-[#cdc5bd] flex items-center gap-1 font-mono tabular-nums">
           <Clock className="w-2.5 h-2.5 text-[#D4AF37]" aria-hidden="true" />
           <span>{product.longevityHours}h retention</span>
         </div>
@@ -111,8 +139,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Card Content & Details */}
       <div className="p-4 pt-3 space-y-3 flex-1 flex flex-col justify-between">
         <div>
-          {/* Operational Attributes: Intensity Level & Preferred Experience */}
+          {/* Operational Attributes: Targeted Synergy + Intensity Level + Preferred Experience */}
           <div className="flex flex-wrap gap-1.5 mb-2">
+            <SynergyBadge product={product} />
             <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 border border-[#4b4640]/60 text-[#cdc5bd] rounded-[0.125rem] bg-[#151311] flex items-center gap-1">
               <Flame className="w-2.5 h-2.5 text-[#D4AF37]" aria-hidden="true" />
               <span>Intensity: <strong className="text-white">{product.intensity}</strong></span>
@@ -150,7 +179,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 key={sz.ml}
                 type="button"
                 onClick={() => setSelectedSizeIndex(idx)}
-                className={`text-[10px] py-1 uppercase tracking-wider font-medium rounded-[0.125rem] transition-colors ${
+                className={`text-[10px] py-1 uppercase tracking-wider font-medium rounded-[0.125rem] transition-colors tabular-nums ${
                   selectedSizeIndex === idx
                     ? 'bg-[#1E1C1A] text-[#D4AF37] border border-[#D4AF37]/50 shadow-sm'
                     : 'text-[#969088] hover:text-[#FFFFFF]'
@@ -162,24 +191,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             ))}
           </div>
 
-          {/* Pricing & Direct WhatsApp / Add to Bag */}
+          {/* Pricing & Breathing Direct WhatsApp / Add to Bag */}
           <div className="flex items-center justify-between gap-2 pt-1">
             <div>
               <span className="text-xs text-[#969088] block text-[9px] uppercase tracking-wider">
                 {currentSize.label}
               </span>
-              <span className="text-base font-semibold text-[#FFFFFF] font-mono">
+              <span className="text-base font-semibold text-[#FFFFFF] font-mono tabular-nums">
                 {formatPrice(currentSize.price, currency)}
               </span>
             </div>
 
             <div className="flex items-center gap-1.5 flex-1 justify-end">
-              {/* Pre-filled WhatsApp direct button */}
+              {/* Breathing Pre-filled WhatsApp direct button */}
               <a
-                href={generateWhatsAppLink(product.shortCode, product.name, currentSize.ml)}
+                href={generateWhatsAppLink(product.shortCode, product.name, currentSize.ml, shopSettings.whatsappPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] p-2 rounded-[0.25rem] transition-colors flex items-center justify-center shrink-0"
+                className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] p-2 rounded-[0.25rem] transition-colors flex items-center justify-center shrink-0"
                 title={`Order ${product.shortCode} (${currentSize.ml}ml) via WhatsApp`}
                 aria-label={`Order ${product.shortCode} ${product.name} ${currentSize.ml}ml via WhatsApp`}
               >
@@ -191,14 +220,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <button
                 type="button"
                 onClick={handleAdd}
-                disabled={addedAnimation}
+                disabled={addedAnimation || !product.inStock}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.15em] rounded-[0.25rem] transition-all duration-200 ${
-                  addedAnimation
+                  !product.inStock
+                    ? 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                    : addedAnimation
                     ? 'bg-emerald-800 text-white'
                     : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] shadow-sm'
                 }`}
               >
-                {addedAnimation ? (
+                {!product.inStock ? (
+                  <span>Sold Out</span>
+                ) : addedAnimation ? (
                   <>
                     <Check className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Added</span>
