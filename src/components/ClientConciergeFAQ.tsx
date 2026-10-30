@@ -21,6 +21,7 @@ export const ClientConciergeFAQ: React.FC = () => {
 
   return (
     <section
+      id="concierge-faq-section"
       aria-labelledby="concierge-faq-heading"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-[#2c2a27]"
     >

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   collection,
   doc,
@@ -29,6 +29,7 @@ import {
   NewsletterSubscriber,
   getProductSynergy,
 } from '../data/products';
+import { scheduleIdle } from '../utils/scheduleIdle';
 
 interface ShopDataContextValue {
   products: Product[];
@@ -236,6 +237,48 @@ export function sanitizeSubscriber(s: NewsletterSubscriber): NewsletterSubscribe
   };
 }
 
+/**
+ * Returns `prev` when `next` is structurally identical. Firestore snapshot
+ * listeners re-emit whole collections (initial cache hit, server confirmation,
+ * echo of our own optimistic writes); keeping the previous reference lets React
+ * bail out instead of re-rendering every consumer and re-persisting the cache.
+ */
+function keepIfUnchanged<T>(prev: T, next: T): T {
+  try {
+    return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+  } catch {
+    return next;
+  }
+}
+
+/**
+ * Persists `value` to localStorage off the critical render path.
+ * - Serialization runs in an idle callback, and rapid successive changes are
+ *   coalesced (the pending write is cancelled when the value changes again).
+ * - Identical payloads are never re-written, including the initial value that
+ *   was just hydrated from the very same cache entry on boot.
+ */
+function useLocalStorageCache<T>(key: string, value: T): void {
+  const lastWrittenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return scheduleIdle(() => {
+      try {
+        const serialized = JSON.stringify(value);
+        if (serialized === lastWrittenRef.current) return;
+        if (lastWrittenRef.current === null && localStorage.getItem(key) === serialized) {
+          lastWrittenRef.current = serialized;
+          return;
+        }
+        localStorage.setItem(key, serialized);
+        lastWrittenRef.current = serialized;
+      } catch {
+        // ignore (quota exceeded / private mode)
+      }
+    }, 500);
+  }, [key, value]);
+}
+
 export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
@@ -319,54 +362,13 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const clearSyncMessage = useCallback(() => setSyncStatusMessage(null), []);
 
-  // Save to localStorage cache whenever state changes
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-    } catch {
-      // ignore
-    }
-  }, [products]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(shopSettings));
-    } catch {
-      // ignore
-    }
-  }, [shopSettings]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PROMOS, JSON.stringify(promoCodes));
-    } catch {
-      // ignore
-    }
-  }, [promoCodes]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SAMPLES, JSON.stringify(samples));
-    } catch {
-      // ignore
-    }
-  }, [samples]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-    } catch {
-      // ignore
-    }
-  }, [orders]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SUBSCRIBERS, JSON.stringify(subscribers));
-    } catch {
-      // ignore
-    }
-  }, [subscribers]);
+  // Save to localStorage cache whenever state changes (idle-scheduled, deduplicated)
+  useLocalStorageCache(STORAGE_KEYS.PRODUCTS, products);
+  useLocalStorageCache(STORAGE_KEYS.SETTINGS, shopSettings);
+  useLocalStorageCache(STORAGE_KEYS.PROMOS, promoCodes);
+  useLocalStorageCache(STORAGE_KEYS.SAMPLES, samples);
+  useLocalStorageCache(STORAGE_KEYS.ORDERS, orders);
+  useLocalStorageCache(STORAGE_KEYS.SUBSCRIBERS, subscribers);
 
   // Listen to Firebase Auth state
   useEffect(() => {
@@ -387,11 +389,11 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           snap.forEach((d) => loaded.push(d.data() as Product));
           if (loaded.length >= 20) {
             loaded.sort((a, b) => a.rank - b.rank);
-            setProducts(loaded);
+            setProducts((prev) => keepIfUnchanged(prev, loaded));
           } else {
             const cloudMap = new Map(loaded.map((p) => [p.id, p]));
             const merged = PRODUCTS.map((p) => cloudMap.get(p.id) || p);
-            setProducts(merged);
+            setProducts((prev) => keepIfUnchanged(prev, merged));
           }
           setIsCloudSynced(true);
         }
@@ -409,7 +411,8 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       doc(db, 'shopSettings', 'global'),
       (snap) => {
         if (snap.exists()) {
-          setShopSettings(snap.data() as ShopSettings);
+          const next = snap.data() as ShopSettings;
+          setShopSettings((prev) => keepIfUnchanged(prev, next));
           setIsCloudSynced(true);
         }
       },
@@ -428,7 +431,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!snap.empty) {
           const loaded: PromoCodeItem[] = [];
           snap.forEach((d) => loaded.push(d.data() as PromoCodeItem));
-          setPromoCodes(loaded);
+          setPromoCodes((prev) => keepIfUnchanged(prev, loaded));
         }
       },
       (err) => {
@@ -446,7 +449,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!snap.empty) {
           const loaded: SampleItem[] = [];
           snap.forEach((d) => loaded.push(d.data() as SampleItem));
-          setSamples(loaded);
+          setSamples((prev) => keepIfUnchanged(prev, loaded));
         }
       },
       (err) => {
@@ -477,7 +480,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const loaded: OrderSummary[] = [];
           snap.forEach((d) => loaded.push(d.data() as OrderSummary));
           loaded.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-          setOrders(loaded);
+          setOrders((prev) => keepIfUnchanged(prev, loaded));
         }
       },
       () => {
@@ -492,7 +495,7 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const loaded: NewsletterSubscriber[] = [];
           snap.forEach((d) => loaded.push(d.data() as NewsletterSubscriber));
           loaded.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-          setSubscribers(loaded);
+          setSubscribers((prev) => keepIfUnchanged(prev, loaded));
         }
       },
       () => {

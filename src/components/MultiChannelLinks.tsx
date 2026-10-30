@@ -100,6 +100,7 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
 
   return (
     <section
+      id="multi-channel-hub"
       aria-labelledby="shop-dlab-channels-heading"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-[#2c2a27]"
     >

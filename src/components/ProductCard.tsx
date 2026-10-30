@@ -15,7 +15,10 @@ interface ProductCardProps {
   staggerIndex?: number;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+// Memoized: the storefront grid renders every catalog item, so cards must skip
+// re-rendering when unrelated storefront state (cart, drawers, modals) changes.
+// Callers must pass stable callbacks (useCallback) for this to be effective.
+export const ProductCard = React.memo(function ProductCard({
   product,
   currency,
   isWishlisted,
@@ -23,7 +26,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onOpenDetail,
   onAddToCart,
   staggerIndex = 0
-}) => {
+}: ProductCardProps) {
   const { shopSettings } = useShopData();
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -257,4 +260,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
     </article>
   );
-};
+});

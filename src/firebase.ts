@@ -68,7 +68,7 @@ export async function signOutAdmin() {
   return signOut(auth);
 }
 
-async function testConnection() {
+export async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'shopSettings', 'global'));
   } catch (error) {
@@ -78,4 +78,7 @@ async function testConnection() {
   }
 }
 
-testConnection();
+// NOTE: testConnection() is intentionally NOT invoked at import time. The
+// ShopDataProvider's `shopSettings/global` listener already performs this read
+// on boot, so an eager probe only added a duplicate startup request. Call it
+// explicitly (e.g. from an admin diagnostic action) when needed.

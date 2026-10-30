@@ -1,20 +1,49 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useDeferredValue, lazy, Suspense } from 'react';
 import { Navbar, NavTab } from './components/Navbar';
 import { DirectAssessmentQuiz } from './components/DirectAssessmentQuiz';
 import { LeaderboardSection } from './components/LeaderboardSection';
 import { ProductCard } from './components/ProductCard';
-import { ProductDetailModal } from './components/ProductDetailModal';
 import { MultiChannelLinks } from './components/MultiChannelLinks';
 import { AtelierCommendations } from './components/AtelierCommendations';
 import { ClientConciergeFAQ } from './components/ClientConciergeFAQ';
-import { NightMatchFinder } from './components/NightMatchFinder';
-import { OlfactoryArchive } from './components/OlfactoryArchive';
-import { SillageJournal } from './components/SillageJournal';
-import { AdminConsole } from './components/AdminConsole';
-import { CartDrawer } from './components/CartDrawer';
-import { WishlistDrawer } from './components/WishlistDrawer';
-import { CheckoutModal } from './components/CheckoutModal';
 import { AgeVerificationModal } from './components/AgeVerificationModal';
+import { scheduleIdle } from './utils/scheduleIdle';
+
+// Code-split panels that are not needed for the first catalog paint.
+// Secondary tabs load on first visit; overlays are prefetched when the browser is idle.
+const loadProductDetailModal = () => import('./components/ProductDetailModal').then((m) => ({ default: m.ProductDetailModal }));
+const loadCartDrawer = () => import('./components/CartDrawer').then((m) => ({ default: m.CartDrawer }));
+const loadWishlistDrawer = () => import('./components/WishlistDrawer').then((m) => ({ default: m.WishlistDrawer }));
+const loadCheckoutModal = () => import('./components/CheckoutModal').then((m) => ({ default: m.CheckoutModal }));
+
+const ProductDetailModal = lazy(loadProductDetailModal);
+const CartDrawer = lazy(loadCartDrawer);
+const WishlistDrawer = lazy(loadWishlistDrawer);
+const CheckoutModal = lazy(loadCheckoutModal);
+const NightMatchFinder = lazy(() => import('./components/NightMatchFinder').then((m) => ({ default: m.NightMatchFinder })));
+const OlfactoryArchive = lazy(() => import('./components/OlfactoryArchive').then((m) => ({ default: m.OlfactoryArchive })));
+const SillageJournal = lazy(() => import('./components/SillageJournal').then((m) => ({ default: m.SillageJournal })));
+const AdminConsole = lazy(() => import('./components/AdminConsole').then((m) => ({ default: m.AdminConsole })));
+
+/**
+ * Latches to `true` the first time `active` becomes true. Used to defer mounting
+ * (and fetching) a lazy overlay until it is first opened, then keep it mounted so
+ * its internal state (e.g. checkout step / form fields) survives close & reopen
+ * exactly as before.
+ */
+function useMountOnFirstOpen(active: boolean): boolean {
+  const [hasOpened, setHasOpened] = useState(active);
+  if (active && !hasOpened) setHasOpened(true);
+  return hasOpened || active;
+}
+
+function TabLoadingFallback() {
+  return (
+    <div role="status" aria-live="polite" className="max-w-7xl mx-auto px-4 py-24 text-center text-[11px] font-mono uppercase tracking-[0.25em] text-[#969088]">
+      Loading…
+    </div>
+  );
+}
 import {
   PRODUCTS,
   Product,
@@ -109,70 +138,87 @@ function StorefrontContent() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
-  // Cart actions
-  const handleAddToCart = (
-    product: Product,
-    size: ProductSize,
-    quantity = 1,
-    monogram?: string
-  ) => {
-    if (!product.inStock) return;
-    setCartItems((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) => item.product.id === product.id && item.selectedSize.ml === size.ml && item.monogram === monogram
-      );
-      if (existingIndex > -1) {
-        const updated = [...prev];
-        updated[existingIndex].quantity += quantity;
-        return updated;
-      }
-      return [...prev, { product, selectedSize: size, quantity, monogram }];
-    });
-    setIsCartOpen(true);
-  };
+  // Cart actions — stable callbacks with immutable updates, so memoized children
+  // (ProductCard grid, sections) are not re-rendered by unrelated state changes.
+  const handleAddToCart = useCallback(
+    (product: Product, size: ProductSize, quantity = 1, monogram?: string) => {
+      if (!product.inStock) return;
+      setCartItems((prev) => {
+        const existingIndex = prev.findIndex(
+          (item) => item.product.id === product.id && item.selectedSize.ml === size.ml && item.monogram === monogram
+        );
+        if (existingIndex > -1) {
+          return prev.map((item, idx) =>
+            idx === existingIndex ? { ...item, quantity: item.quantity + quantity } : item
+          );
+        }
+        return [...prev, { product, selectedSize: size, quantity, monogram }];
+      });
+      setIsCartOpen(true);
+    },
+    []
+  );
 
-  const handleUpdateQuantity = (index: number, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(index);
-      return;
-    }
-    setCartItems((prev) => {
-      const updated = [...prev];
-      updated[index].quantity = quantity;
-      return updated;
-    });
-  };
+  const handleAddSingleToCart = useCallback(
+    (product: Product, size: ProductSize) => handleAddToCart(product, size, 1),
+    [handleAddToCart]
+  );
 
-  const handleRemoveItem = (index: number) => {
+  const handleRemoveItem = useCallback((index: number) => {
     setCartItems((prev) => prev.filter((_, idx) => idx !== index));
-  };
+  }, []);
 
-  const handleToggleSample = (sampleId: string) => {
-    if (selectedSamples.includes(sampleId)) {
-      setSelectedSamples(selectedSamples.filter((id) => id !== sampleId));
-    } else {
-      if (selectedSamples.length < 2) {
-        setSelectedSamples([...selectedSamples, sampleId]);
-      } else {
-        setSelectedSamples([selectedSamples[1], sampleId]);
-      }
-    }
-  };
+  const handleUpdateQuantity = useCallback((index: number, quantity: number) => {
+    setCartItems((prev) =>
+      quantity <= 0
+        ? prev.filter((_, idx) => idx !== index)
+        : prev.map((item, idx) => (idx === index ? { ...item, quantity } : item))
+    );
+  }, []);
+
+  const handleToggleSample = useCallback((sampleId: string) => {
+    setSelectedSamples((prev) => {
+      if (prev.includes(sampleId)) return prev.filter((id) => id !== sampleId);
+      if (prev.length < 2) return [...prev, sampleId];
+      return [prev[1], sampleId];
+    });
+  }, []);
 
   // Wishlist actions
-  const handleToggleWishlist = (product: Product) => {
-    if (wishlist.some((p) => p.id === product.id)) {
-      setWishlist(wishlist.filter((p) => p.id !== product.id));
-    } else {
-      setWishlist([...wishlist, product]);
-    }
-  };
+  const handleToggleWishlist = useCallback((product: Product) => {
+    setWishlist((prev) =>
+      prev.some((p) => p.id === product.id) ? prev.filter((p) => p.id !== product.id) : [...prev, product]
+    );
+  }, []);
 
-  const handleMoveToCart = (product: Product) => {
-    if (!product.inStock) return;
-    handleAddToCart(product, product.sizes[0], 1);
-    handleToggleWishlist(product);
-  };
+  const handleMoveToCart = useCallback(
+    (product: Product) => {
+      if (!product.inStock) return;
+      handleAddToCart(product, product.sizes[0], 1);
+      handleToggleWishlist(product);
+    },
+    [handleAddToCart, handleToggleWishlist]
+  );
+
+  const openDetail = useCallback((product: Product) => setSelectedProduct(product), []);
+
+  // Mount overlays only once first opened; prefetch their chunks while idle so
+  // the first open is still instant.
+  const shouldMountDetail = useMountOnFirstOpen(selectedProduct !== null);
+  const shouldMountCart = useMountOnFirstOpen(isCartOpen);
+  const shouldMountWishlist = useMountOnFirstOpen(isWishlistOpen);
+  const shouldMountCheckout = useMountOnFirstOpen(isCheckoutOpen);
+
+  useEffect(
+    () =>
+      scheduleIdle(() => {
+        void loadCartDrawer();
+        void loadProductDetailModal();
+        void loadWishlistDrawer();
+        void loadCheckoutModal();
+      }, 3000),
+    []
+  );
 
   const categoryCounts = useMemo(() => {
     const counts: Record<CatalogCategory, number> = {
@@ -190,40 +236,67 @@ function StorefrontContent() {
     return counts;
   }, [products]);
 
+  // Per-product search index (lowercased haystack + derived facets), rebuilt only
+  // when the catalog itself changes — not on every keystroke or filter change.
+  const catalogIndex = useMemo(
+    () =>
+      products.map((p) => {
+        const synergyMeta = getProductSynergy(p);
+        return {
+          product: p,
+          category: getProductCatalogCategory(p),
+          synergyRole: synergyMeta.role,
+          // NUL separator prevents a query from matching across field boundaries.
+          haystack: [
+            p.name,
+            p.shortCode,
+            p.code,
+            p.description,
+            p.intensity,
+            p.experience,
+            synergyMeta.shortLabel,
+            ...p.notes.top,
+            ...p.notes.heart,
+            ...p.notes.base
+          ]
+            .join('\u0000')
+            .toLowerCase()
+        };
+      }),
+    [products]
+  );
+
+  // Defer the search term so typing in the navbar stays responsive while the grid re-filters.
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
   // Filtered & Sorted products using live catalog from ShopDataContext
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const q = searchQuery.toLowerCase().trim();
-      const synergyMeta = getProductSynergy(p);
-      const prodCategory = getProductCatalogCategory(p);
-      const matchSearch =
-        !q ||
-        p.name.toLowerCase().includes(q) ||
-        p.shortCode.toLowerCase().includes(q) ||
-        p.code.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.intensity.toLowerCase().includes(q) ||
-        p.experience.toLowerCase().includes(q) ||
-        synergyMeta.shortLabel.toLowerCase().includes(q) ||
-        [...p.notes.top, ...p.notes.heart, ...p.notes.base].some((n) => n.toLowerCase().includes(q));
+    const q = deferredSearchQuery.toLowerCase().trim();
+    const result: Product[] = [];
+    for (const entry of catalogIndex) {
+      const p = entry.product;
+      if (q && !entry.haystack.includes(q)) continue;
+      if (selectedCatalogCategory !== 'All' && entry.category !== selectedCatalogCategory) continue;
+      if (selectedIntensity !== 'All' && p.intensity !== selectedIntensity) continue;
+      if (selectedSynergy !== 'All' && entry.synergyRole !== selectedSynergy) continue;
+      if (selectedExperience !== 'All' && p.experience !== selectedExperience) continue;
+      if (selectedSillage !== 'All' && p.sillage !== selectedSillage) continue;
+      result.push(p);
+    }
+    // 'featured' keeps catalog order, so no sort is needed.
+    if (sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
+    else if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
+    else if (sortBy === 'longevity') result.sort((a, b) => b.longevityHours - a.longevityHours);
+    else if (sortBy === 'rank') result.sort((a, b) => a.rank - b.rank);
+    return result;
+  }, [catalogIndex, deferredSearchQuery, selectedCatalogCategory, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
 
-      const matchCategory = selectedCatalogCategory === 'All' || prodCategory === selectedCatalogCategory;
-      const matchIntensity = selectedIntensity === 'All' || p.intensity === selectedIntensity;
-      const matchSynergy = selectedSynergy === 'All' || synergyMeta.role === selectedSynergy;
-      const matchExperience = selectedExperience === 'All' || p.experience === selectedExperience;
-      const matchSillage = selectedSillage === 'All' || p.sillage === selectedSillage;
-
-      return matchSearch && matchCategory && matchIntensity && matchSynergy && matchExperience && matchSillage;
-    }).sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
-      if (sortBy === 'longevity') return b.longevityHours - a.longevityHours;
-      if (sortBy === 'rank') return a.rank - b.rank;
-      return 0;
-    });
-  }, [products, searchQuery, selectedCatalogCategory, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
-
-  const totals = calculateCartTotals(cartItems, promoCode, shopSettings, promoCodes);
+  const wishlistIds = useMemo(() => new Set(wishlist.map((p) => p.id)), [wishlist]);
+  const cartCount = useMemo(() => cartItems.reduce((acc, item) => acc + item.quantity, 0), [cartItems]);
+  const totals = useMemo(
+    () => calculateCartTotals(cartItems, promoCode, shopSettings, promoCodes),
+    [cartItems, promoCode, shopSettings, promoCodes]
+  );
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,7 +318,7 @@ function StorefrontContent() {
         setCurrentTab={setCurrentTab}
         currency={currency}
         setCurrency={setCurrency}
-        cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+        cartCount={cartCount}
         cartTotal={totals.total}
         openCart={() => setIsCartOpen(true)}
         wishlistCount={wishlist.length}
@@ -264,14 +337,14 @@ function StorefrontContent() {
             <DirectAssessmentQuiz
               currency={currency}
               onAddToCart={handleAddToCart}
-              onOpenDetail={(prod) => setSelectedProduct(prod)}
+              onOpenDetail={openDetail}
             />
 
             {/* Automated Weekly 10ml Top 10 & 30-Day Favorites Leaderboard */}
             <LeaderboardSection
               currency={currency}
               onAddToCart={handleAddToCart}
-              onOpenDetail={(prod) => setSelectedProduct(prod)}
+              onOpenDetail={openDetail}
             />
 
             {/* Dense Catalog Section with Operational & Targeted Synergy Filtering */}
@@ -474,10 +547,10 @@ function StorefrontContent() {
                       key={product.id}
                       product={product}
                       currency={currency}
-                      isWishlisted={wishlist.some((p) => p.id === product.id)}
+                      isWishlisted={wishlistIds.has(product.id)}
                       onToggleWishlist={handleToggleWishlist}
-                      onOpenDetail={(prod) => setSelectedProduct(prod)}
-                      onAddToCart={(prod, size) => handleAddToCart(prod, size, 1)}
+                      onOpenDetail={openDetail}
+                      onAddToCart={handleAddSingleToCart}
                       staggerIndex={idx}
                     />
                   ))}
@@ -496,34 +569,44 @@ function StorefrontContent() {
           </div>
         )}
 
+        <Suspense fallback={<TabLoadingFallback />}>
         {/* Diagnostic Tab */}
         {currentTab === 'diagnostic' && (
           <NightMatchFinder
             currency={currency}
-            onSelectProduct={(p) => setSelectedProduct(p)}
-            onAddToCart={(p, size) => handleAddToCart(p, size, 1)}
+            onSelectProduct={openDetail}
+            onAddToCart={handleAddSingleToCart}
           />
         )}
 
         {/* Olfactory Index Tab */}
         {currentTab === 'archive' && (
           <OlfactoryArchive
-            onSelectProduct={(p) => {
-              setSelectedProduct(p);
-            }}
+            onSelectProduct={openDetail}
           />
         )}
 
         {/* Sillage Journal Tab */}
-        {currentTab === 'journal' && <SillageJournal />}
+        {currentTab === 'journal' && (
+          <SillageJournal
+            onStartDiagnostic={() => setCurrentTab('diagnostic')}
+            onExploreCatalog={() => {
+              setCurrentTab('catalog');
+              setTimeout(() => {
+                document.getElementById('catalog-grid')?.scrollIntoView({ behavior: 'smooth' });
+              }, 50);
+            }}
+          />
+        )}
 
         {/* Admin Console Tab */}
         {currentTab === 'admin' && (
           <AdminConsole
             currency={currency}
-            onPreviewProduct={(prod) => setSelectedProduct(prod)}
+            onPreviewProduct={openDetail}
           />
         )}
+        </Suspense>
       </main>
 
       {/* Luxury Footer */}
@@ -576,10 +659,58 @@ function StorefrontContent() {
                 Concierge
               </h5>
               <ul className="space-y-1.5 text-xs text-[#969088]">
-                <li><span className="hover:text-white cursor-pointer">WhatsApp Hotline (+{shopSettings.whatsappPhone})</span></li>
-                <li><span className="hover:text-white cursor-pointer">Penang Same-Day Grab</span></li>
-                <li><span className="hover:text-white cursor-pointer">Shopee & Lazada Mall</span></li>
-                <li><span className="hover:text-white cursor-pointer">Discreet Courier Dispatch</span></li>
+                <li>
+                  <a
+                    href={`https://wa.me/${shopSettings.whatsappPhone.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    WhatsApp Hotline (+{shopSettings.whatsappPhone})
+                  </a>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentTab('catalog');
+                      setTimeout(() => {
+                        document.getElementById('multi-channel-hub')?.scrollIntoView({ behavior: 'smooth' });
+                      }, 50);
+                    }}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Penang Same-Day Grab
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentTab('catalog');
+                      setTimeout(() => {
+                        document.getElementById('multi-channel-hub')?.scrollIntoView({ behavior: 'smooth' });
+                      }, 50);
+                    }}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Shopee & Lazada Mall
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentTab('catalog');
+                      setTimeout(() => {
+                        document.getElementById('concierge-faq-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }, 50);
+                    }}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Discreet Courier Dispatch
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -628,61 +759,79 @@ function StorefrontContent() {
         </div>
       </footer>
 
-      {/* Product Detail Modal for Aroma Profiles, Multi-Channel Links & Safety */}
-      <ProductDetailModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        currency={currency}
-        isWishlisted={selectedProduct ? wishlist.some((p) => p.id === selectedProduct.id) : false}
-        onToggleWishlist={handleToggleWishlist}
-        onAddToCart={handleAddToCart}
-      />
+      {/* Overlays are code-split and only mounted after first open (see useMountOnFirstOpen).
+          Each has its own Suspense boundary so one loading chunk never hides another open overlay. */}
+        {/* Product Detail Modal for Aroma Profiles, Multi-Channel Links & Safety */}
+        {shouldMountDetail && (
+          <Suspense fallback={null}>
+          <ProductDetailModal
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            currency={currency}
+            isWishlisted={selectedProduct ? wishlistIds.has(selectedProduct.id) : false}
+            onToggleWishlist={handleToggleWishlist}
+            onAddToCart={handleAddToCart}
+          />
+          </Suspense>
+        )}
 
-      {/* Persistent Quick Cart Drawer with Multi-Channel Links */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cartItems}
-        currency={currency}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        selectedSamples={selectedSamples}
-        onToggleSample={handleToggleSample}
-        giftPackaging={giftPackaging}
-        setGiftPackaging={setGiftPackaging}
-        promoCode={promoCode}
-        setPromoCode={setPromoCode}
-        onProceedToCheckout={() => {
-          setIsCartOpen(false);
-          setIsCheckoutOpen(true);
-        }}
-      />
+        {/* Persistent Quick Cart Drawer with Multi-Channel Links */}
+        {shouldMountCart && (
+          <Suspense fallback={null}>
+          <CartDrawer
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            items={cartItems}
+            currency={currency}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            selectedSamples={selectedSamples}
+            onToggleSample={handleToggleSample}
+            giftPackaging={giftPackaging}
+            setGiftPackaging={setGiftPackaging}
+            promoCode={promoCode}
+            setPromoCode={setPromoCode}
+            onProceedToCheckout={() => {
+              setIsCartOpen(false);
+              setIsCheckoutOpen(true);
+            }}
+          />
+          </Suspense>
+        )}
 
-      {/* Wishlist Drawer */}
-      <WishlistDrawer
-        isOpen={isWishlistOpen}
-        onClose={() => setIsWishlistOpen(false)}
-        wishlist={wishlist}
-        currency={currency}
-        onRemoveFromWishlist={handleToggleWishlist}
-        onMoveToCart={handleMoveToCart}
-        onOpenDetail={(prod) => {
-          setIsWishlistOpen(false);
-          setSelectedProduct(prod);
-        }}
-      />
+        {/* Wishlist Drawer */}
+        {shouldMountWishlist && (
+          <Suspense fallback={null}>
+          <WishlistDrawer
+            isOpen={isWishlistOpen}
+            onClose={() => setIsWishlistOpen(false)}
+            wishlist={wishlist}
+            currency={currency}
+            onRemoveFromWishlist={handleToggleWishlist}
+            onMoveToCart={handleMoveToCart}
+            onOpenDetail={(prod) => {
+              setIsWishlistOpen(false);
+              setSelectedProduct(prod);
+            }}
+          />
+          </Suspense>
+        )}
 
-      {/* Checkout Modal */}
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        items={cartItems}
-        totals={totals}
-        currency={currency}
-        onOrderComplete={() => {
-          setCartItems([]);
-        }}
-      />
+        {/* Checkout Modal */}
+        {shouldMountCheckout && (
+          <Suspense fallback={null}>
+          <CheckoutModal
+            isOpen={isCheckoutOpen}
+            onClose={() => setIsCheckoutOpen(false)}
+            items={cartItems}
+            totals={totals}
+            currency={currency}
+            onOrderComplete={() => {
+              setCartItems([]);
+            }}
+          />
+          </Suspense>
+        )}
     </div>
   );
 }
