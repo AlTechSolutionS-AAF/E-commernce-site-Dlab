@@ -362,7 +362,7 @@ function StorefrontContent() {
                     </h2>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Catalog format and category filter">
+                  <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Catalog format and category filter">
                     {(
                       [
                         { id: 'All', label: 'ALL' },
@@ -636,16 +636,16 @@ function StorefrontContent() {
               <h5 className="text-xs uppercase tracking-[0.2em] font-semibold text-white">
                 The Atelier
               </h5>
-              <ul className="space-y-1.5 text-xs text-[#969088]">
-                <li><button type="button" onClick={() => setCurrentTab('catalog')} className="hover:text-white">All Extraits</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('diagnostic')} className="hover:text-white">Night Match Finder</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('archive')} className="hover:text-white">Raw Ingredients Index</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('journal')} className="hover:text-white">Sillage Journal</button></li>
+              <ul className="space-y-1 text-xs text-[#969088]">
+                <li><button type="button" onClick={() => setCurrentTab('catalog')} className="hover:text-white py-1.5 inline-block text-left">All Extraits</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('diagnostic')} className="hover:text-white py-1.5 inline-block text-left">Night Match Finder</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('archive')} className="hover:text-white py-1.5 inline-block text-left">Raw Ingredients Index</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('journal')} className="hover:text-white py-1.5 inline-block text-left">Sillage Journal</button></li>
                 <li>
                   <button
                     type="button"
                     onClick={() => setCurrentTab('admin')}
-                    className="hover:text-[#D4AF37] text-[#D4AF37]/80 flex items-center gap-1"
+                    className="hover:text-[#D4AF37] text-[#D4AF37]/80 flex items-center gap-1 py-1.5"
                   >
                     <Shield className="w-3 h-3" aria-hidden="true" />
                     <span>Atelier Admin Console</span>
@@ -659,13 +659,13 @@ function StorefrontContent() {
               <h5 className="text-xs uppercase tracking-[0.2em] font-semibold text-white">
                 Concierge
               </h5>
-              <ul className="space-y-1.5 text-xs text-[#969088]">
+              <ul className="space-y-1 text-xs text-[#969088]">
                 <li>
                   <a
                     href={`https://wa.me/${shopSettings.whatsappPhone.replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
                     WhatsApp Hotline (+{shopSettings.whatsappPhone})
                   </a>
@@ -679,7 +679,7 @@ function StorefrontContent() {
                         document.getElementById('multi-channel-hub')?.scrollIntoView({ behavior: 'smooth' });
                       }, 50);
                     }}
-                    className="hover:text-white transition-colors text-left"
+                    className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
                     Penang Same-Day Grab
                   </button>
@@ -693,7 +693,7 @@ function StorefrontContent() {
                         document.getElementById('multi-channel-hub')?.scrollIntoView({ behavior: 'smooth' });
                       }, 50);
                     }}
-                    className="hover:text-white transition-colors text-left"
+                    className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
                     Shopee & Lazada Mall
                   </button>
@@ -707,7 +707,7 @@ function StorefrontContent() {
                         document.getElementById('concierge-faq-section')?.scrollIntoView({ behavior: 'smooth' });
                       }, 50);
                     }}
-                    className="hover:text-white transition-colors text-left"
+                    className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
                     Discreet Courier Dispatch
                   </button>

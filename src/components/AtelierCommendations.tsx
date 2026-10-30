@@ -131,7 +131,7 @@ export const AtelierCommendations: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <strong className="text-xs font-semibold text-white">{item.patron}</strong>
-                    <span className="text-xs text-[#D4AF37] tracking-widest" aria-label="5 out of 5 stars">
+                    <span className="text-xs text-[#D4AF37] tracking-widest" role="img" aria-label="5 out of 5 stars">
                       ★★★★★
                     </span>
                   </div>
@@ -169,7 +169,7 @@ export const AtelierCommendations: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <strong className="text-xs font-semibold text-white">{item.patron}</strong>
-                    <span className="text-xs text-[#D4AF37] tracking-widest" aria-label="5 out of 5 stars">
+                    <span className="text-xs text-[#D4AF37] tracking-widest" role="img" aria-label="5 out of 5 stars">
                       ★★★★★
                     </span>
                   </div>
