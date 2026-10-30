@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F2D06B"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#997A1E"/>
+    </radialGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1C1A"/>
+      <stop offset="100%" stop-color="#0F0E0D"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="92" fill="none" stroke="#D4AF37" stroke-width="4" stroke-opacity="0.4"/>
+  
+  <!-- Flacon Outline / Emblem -->
+  <path d="M 226 90 L 286 90 L 286 140 L 336 180 L 336 390 L 176 390 L 176 180 L 226 140 Z" fill="none" stroke="url(#goldGlow)" stroke-width="12" stroke-linejoin="round"/>
+  
+  <!-- Stopper -->
+  <rect x="236" y="60" width="40" height="30" rx="4" fill="url(#goldGlow)"/>
+  
+  <!-- Obsidian Monogram -->
+  <text x="256" y="275" font-family="'Courier New', Courier, monospace, 'Inter', sans-serif" font-size="44" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="8">DLAB</text>
+  <text x="256" y="320" font-family="'Courier New', Courier, monospace, 'Inter', sans-serif" font-size="16" font-weight="600" fill="#D4AF37" text-anchor="middle" letter-spacing="6">NIGHT MATCH</text>
+</svg>

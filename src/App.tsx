@@ -8,6 +8,7 @@ import { AtelierCommendations } from './components/AtelierCommendations';
 import { ClientConciergeFAQ } from './components/ClientConciergeFAQ';
 import { AgeVerificationModal } from './components/AgeVerificationModal';
 import { scheduleIdle } from './utils/scheduleIdle';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 // Code-split panels that are not needed for the first catalog paint.
 // Secondary tabs load on first visit; overlays are prefetched when the browser is idle.
