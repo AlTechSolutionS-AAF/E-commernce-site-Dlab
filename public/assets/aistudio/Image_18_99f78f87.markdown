@@ -1,0 +1,190 @@
+---
+name: DLAB Night Match
+colors:
+  surface: '#151311'
+  surface-dim: '#151311'
+  surface-bright: '#3b3936'
+  surface-container-lowest: '#100e0c'
+  surface-container-low: '#1d1b19'
+  surface-container: '#211f1d'
+  surface-container-high: '#2c2a27'
+  surface-container-highest: '#373432'
+  on-surface: '#e7e1de'
+  on-surface-variant: '#cdc5bd'
+  inverse-surface: '#e7e1de'
+  inverse-on-surface: '#32302e'
+  outline: '#969088'
+  outline-variant: '#4b4640'
+  surface-tint: '#cac6c3'
+  primary: '#cac6c3'
+  on-primary: '#32302f'
+  primary-container: '#0f0e0d'
+  on-primary-container: '#7e7b79'
+  inverse-primary: '#605e5c'
+  secondary: '#e9c349'
+  on-secondary: '#3c2f00'
+  secondary-container: '#af8d11'
+  on-secondary-container: '#342800'
+  tertiary: '#c8c6c7'
+  on-tertiary: '#313031'
+  tertiary-container: '#0e0e0f'
+  on-tertiary-container: '#7c7b7c'
+  error: '#ffb4ab'
+  on-error: '#690005'
+  error-container: '#93000a'
+  on-error-container: '#ffdad6'
+  primary-fixed: '#e6e1df'
+  primary-fixed-dim: '#cac6c3'
+  on-primary-fixed: '#1d1b1a'
+  on-primary-fixed-variant: '#484645'
+  secondary-fixed: '#ffe088'
+  secondary-fixed-dim: '#e9c349'
+  on-secondary-fixed: '#241a00'
+  on-secondary-fixed-variant: '#574500'
+  tertiary-fixed: '#e5e2e3'
+  tertiary-fixed-dim: '#c8c6c7'
+  on-tertiary-fixed: '#1c1b1c'
+  on-tertiary-fixed-variant: '#474647'
+  background: '#151311'
+  on-background: '#e7e1de'
+  surface-variant: '#373432'
+  obsidian: '#0F0E0D'
+  neon-gold: '#D4AF37'
+  pure-white: '#FFFFFF'
+  surface-dark: '#1E1C1A'
+typography:
+  headline-xl:
+    fontFamily: Inter
+    fontSize: 48px
+    fontWeight: '600'
+    lineHeight: 56px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Inter
+    fontSize: 36px
+    fontWeight: '600'
+    lineHeight: 44px
+    letterSpacing: -0.01em
+  headline-md:
+    fontFamily: Inter
+    fontSize: 24px
+    fontWeight: '500'
+    lineHeight: 32px
+  headline-sm:
+    fontFamily: Inter
+    fontSize: 18px
+    fontWeight: '500'
+    lineHeight: 24px
+  body-lg:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
+  body-md:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 20px
+  body-sm:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '400'
+    lineHeight: 16px
+  label-md:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '500'
+    lineHeight: 16px
+    letterSpacing: 0.05em
+  label-sm:
+    fontFamily: Inter
+    fontSize: 10px
+    fontWeight: '500'
+    lineHeight: 14px
+    letterSpacing: 0.08em
+rounded:
+  sm: 0.125rem
+  DEFAULT: 0.25rem
+  md: 0.375rem
+  lg: 0.5rem
+  xl: 0.75rem
+  full: 9999px
+spacing:
+  gutter: 24px
+  margin: 32px
+  space-xs: 4px
+  space-sm: 8px
+  space-md: 16px
+  space-lg: 32px
+  space-xl: 64px
+---
+
+## Brand & Style
+
+This design system establishes a high-contrast, dependable dark execution tailored for an exclusive luxury e-commerce experience. The aesthetic merges the sophisticated atmosphere of nocturnal luxury with systematic, utilitarian precision. 
+
+### Brand Personality
+- **Sophisticated:** Imbued with the quiet confidence of high-end perfumery and after-dark allure.
+- **Uncompromising:** Sharp, structured, and deliberate in every visual interaction.
+- **Utilitarian Elegance:** Stripping away decorative excess in favor of a clean, highly legible framework that lets the product take center stage.
+
+### Design Style
+Rooted in a strict high-contrast dark execution, the layout utilizes deep obsidian backgrounds punctuated by luminous metallic accents and razor-sharp typographic hierarchies. Generous whitespace and structural discipline create an immersive, boutique-style digital storefront.
+
+## Colors
+
+The color palette is built on a foundation of absolute dark tones, creating a dramatic canvas that accentuates the rich amber and gold hues of luxury formulations.
+
+- **Primary (`#0F0E0D`):** The core background tone, wrapping the viewport in deep, absorbing black.
+- **Secondary (`#D4AF37`):** A striking neon gold used selectively for focal points, active states, and high-value call-to-actions.
+- **Neutral Surface (`#1E1C1A`):** Used for cards, elevated containers, and structural dividers to provide subtle tonal separation.
+- **Text (`#FFFFFF`):** High-contrast pure white for optimal legibility and stark luxury editorial styling.
+
+## Typography
+
+The typography system relies exclusively on `Inter` to deliver a clean, universally understood, and utilitarian e-commerce layout. By strictly varying weight, size, and tracking rather than mixing font families, the interface achieves a modern, architectural rhythm.
+
+### Scale & Hierarchy
+- Headlines command attention through measured tracking and bold weights, avoiding superfluous ornamentation.
+- Body text remains neutral, highly functional, and optimized for dense product descriptions and editorial storytelling.
+- Labels utilize uppercase tracking to evoke high-end product labeling and minimalist packaging design.
+
+## Layout & Spacing
+
+A disciplined fluid grid system governs the layout, prioritizing breathing room and deliberate product isolation. 
+
+### Spacing Rhythm
+- **Gutters & Margins:** Generous outer margins (`32px` base) frame the viewport, while `24px` grid gutters maintain structural alignment across collections.
+- **Component Scale:** The `space-*` scale ensures predictable spatial intervals, preventing visual clutter and emphasizing individual product cards.
+- **Responsive Adaptations:** On mobile viewports, margins scale down to `16px` while maintaining consistent vertical rhythm between editorial blocks.
+
+## Elevation & Depth
+
+Depth is articulated through subtle tonal layering and low-contrast outlines rather than heavy drop shadows. 
+
+- **Surface Tiers:** The deep obsidian background (`#0F0E0D`) serves as the base layer, with elevated containers rendered in `#1E1C1A` to create a restrained, matte dimensionality.
+- **Ghost Borders:** Interactive elements and cards utilize razor-thin, low-opacity white or gold outlines to delineate boundaries without breaking the minimalist dark aesthetic.
+
+## Shapes
+
+Adhering strictly to a refined, architectural edge profile (`roundedness: 1`), UI elements feature crisp `0.25rem` corners. This slight softening prevents visual harshness while preserving the razor-sharp, high-end industrial design language appropriate for luxury cosmetics and fragrance packaging.
+
+## Components
+
+Every component reflects the systematic, high-contrast dark execution of the visual identity.
+
+### Buttons
+- **Primary:** Neon gold (`#D4AF37`) background with high-contrast dark text, sharp edges (`0.25rem` roundedness), and subtle hover state luminosity.
+- **Secondary / Ghost:** Transparent background with a `1px` solid white or gold outline, shifting to a solid neutral surface on hover.
+
+### Chips & Tags
+- Compact, pill-adjacent or strictly squared tags featuring a `1px` border, used for categorizing fragrance notes (e.g., *Woody*, *Amber*, *Musk*).
+
+### Input Fields
+- Dark surface backgrounds (`#1E1C1A`) with clean, monoline borders. Focus states transition instantly to neon gold, reinforcing precision and interactivity.
+
+### Cards
+- Product cards utilize the surface-dark background with zero elevation shadows, relying entirely on framing, high-resolution photography, and meticulous typography to convey luxury.
+
+### Checkboxes & Radios
+- Custom-rendered geometric toggles featuring crisp borders, utilizing solid neon gold fills for selected states.
