@@ -103,11 +103,23 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
 
                       <div className="pt-2">
                         <button
+                          type="button"
+                          disabled={!prod.inStock}
                           onClick={() => onMoveToCart(prod)}
-                          className="w-full bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-[0.125rem] flex items-center justify-center gap-1"
+                          className={`w-full py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-[0.125rem] flex items-center justify-center gap-1 transition-colors ${
+                            prod.inStock
+                              ? 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D]'
+                              : 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                          }`}
                         >
-                          <Plus className="w-3 h-3" />
-                          <span>Move to Bag</span>
+                          {prod.inStock ? (
+                            <>
+                              <Plus className="w-3 h-3" />
+                              <span>Move to Bag</span>
+                            </>
+                          ) : (
+                            <span>Sold Out</span>
+                          )}
                         </button>
                       </div>
                     </div>

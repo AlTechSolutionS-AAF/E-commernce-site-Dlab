@@ -25,6 +25,9 @@ import {
   DEFAULT_PROMO_CODES,
   SampleItem,
   COMPLIMENTARY_SAMPLES,
+  OrderSummary,
+  NewsletterSubscriber,
+  getProductSynergy,
 } from '../data/products';
 
 interface ShopDataContextValue {
@@ -32,6 +35,8 @@ interface ShopDataContextValue {
   shopSettings: ShopSettings;
   promoCodes: PromoCodeItem[];
   samples: SampleItem[];
+  orders: OrderSummary[];
+  subscribers: NewsletterSubscriber[];
   currentUser: User | null;
   authReady: boolean;
   isCloudSynced: boolean;
@@ -46,6 +51,9 @@ interface ShopDataContextValue {
   deletePromoCode: (code: string) => Promise<void>;
   upsertSample: (sample: SampleItem) => Promise<void>;
   deleteSample: (sampleId: string) => Promise<void>;
+  submitOrder: (order: OrderSummary) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: OrderSummary['status']) => Promise<void>;
+  subscribeNewsletter: (email: string, promoCode?: string) => Promise<void>;
   seedOrResetDefaults: () => Promise<void>;
 }
 
@@ -56,6 +64,8 @@ const STORAGE_KEYS = {
   SETTINGS: 'dlab_admin_settings_v1',
   PROMOS: 'dlab_admin_promos_v1',
   SAMPLES: 'dlab_admin_samples_v1',
+  ORDERS: 'dlab_admin_orders_v1',
+  SUBSCRIBERS: 'dlab_admin_subscribers_v1',
 };
 
 // Defensive sanitizer ensuring payload strictly matches firebase-blueprint.json & firestore.rules
@@ -63,6 +73,11 @@ export function sanitizeProductPayload(p: Product): Product {
   const cleanId = (p.id || `dlab-${Date.now()}`)
     .replace(/[^a-zA-Z0-9_-]/g, '-')
     .slice(0, 64);
+  const resolvedSynergy =
+    p.synergyRole && ['Ascendant', 'Receptive', 'Universal'].includes(p.synergyRole)
+      ? p.synergyRole
+      : getProductSynergy({ ...p, id: cleanId }).role;
+
   return {
     id: cleanId,
     code: (p.code || 'EXT-00/NEW').trim().slice(0, 40),
@@ -73,9 +88,9 @@ export function sanitizeProductPayload(p: Product): Product {
     sizes:
       Array.isArray(p.sizes) && p.sizes.length > 0
         ? p.sizes.slice(0, 6).map((s) => ({
-            ml: Number(s.ml) || 10,
+            ml: Math.max(1, Math.min(1000, Number(s.ml) || 10)),
             label: String(s.label || `${s.ml}ml Flacon`).slice(0, 60),
-            price: Math.max(0, Number(s.price) || 65),
+            price: Math.max(0, Math.min(100000, Number(s.price) || 65)),
           }))
         : [
             { ml: 10, label: '10ml Pocket Flacon', price: 65 },
@@ -86,6 +101,7 @@ export function sanitizeProductPayload(p: Product): Product {
     experience: ['Relaxing', 'High-energy', 'Sensual', 'Velvet Focus'].includes(p.experience)
       ? p.experience
       : 'Sensual',
+    synergyRole: resolvedSynergy,
     monthlyOrders: Math.max(0, Number(p.monthlyOrders) || 0),
     rank: Math.max(1, Math.min(999, Number(p.rank) || 1)),
     trendingDelta: String(p.trendingDelta || '+10% this month').slice(0, 60),
@@ -119,13 +135,13 @@ export function sanitizeProductPayload(p: Product): Product {
     ).slice(0, 600),
     notes: {
       top: Array.isArray(p.notes?.top)
-        ? p.notes.top.slice(0, 10).map((n) => String(n).trim())
+        ? p.notes.top.slice(0, 10).map((n) => String(n).trim().slice(0, 80))
         : ['Saffron'],
       heart: Array.isArray(p.notes?.heart)
-        ? p.notes.heart.slice(0, 10).map((n) => String(n).trim())
+        ? p.notes.heart.slice(0, 10).map((n) => String(n).trim().slice(0, 80))
         : ['Birch Tar'],
       base: Array.isArray(p.notes?.base)
-        ? p.notes.base.slice(0, 10).map((n) => String(n).trim())
+        ? p.notes.base.slice(0, 10).map((n) => String(n).trim().slice(0, 80))
         : ['Baltic Amber'],
     },
     accords: Array.isArray(p.accords)
@@ -139,7 +155,7 @@ export function sanitizeProductPayload(p: Product): Product {
     longevityHours: Math.max(1, Math.min(72, Number(p.longevityHours) || 16)),
     optimalHours: String(p.optimalHours || '22:00 — 04:00').slice(0, 60),
     scentFamilies: Array.isArray(p.scentFamilies)
-      ? p.scentFamilies.slice(0, 8).map((f) => String(f).trim())
+      ? p.scentFamilies.slice(0, 8).map((f) => String(f).trim().slice(0, 60))
       : ['Amber'],
     featured: Boolean(p.featured),
     bestseller: Boolean(p.bestseller),
@@ -184,6 +200,39 @@ export function sanitizeSample(s: SampleItem): SampleItem {
     name: String(s.name || '2ml Sample Vial').trim().slice(0, 120),
     family: String(s.family || 'Amber & Smoke').trim().slice(0, 80),
     active: Boolean(s.active),
+  };
+}
+
+export function sanitizeOrder(o: OrderSummary): OrderSummary {
+  const cleanId = (o.id || `ord-${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .slice(0, 64);
+  return {
+    id: cleanId,
+    orderRef: String(o.orderRef || 'DLAB-2026-0001').trim().slice(0, 40),
+    batchId: String(o.batchId || 'BTCH-100-RESERVE').trim().slice(0, 40),
+    patronName: String(o.patronName || 'Atelier Patron').trim().slice(0, 120),
+    email: String(o.email || 'patron@dlab.studio').trim().slice(0, 160),
+    city: String(o.city || 'Penang').trim().slice(0, 80),
+    country: String(o.country || 'Malaysia').trim().slice(0, 80),
+    itemCount: Math.max(1, Math.min(100, Number(o.itemCount) || 1)),
+    itemsSummary: String(o.itemsSummary || '1x Extrait Flacon').trim().slice(0, 600),
+    totalAmount: Math.max(0, Math.min(1000000, Number(o.totalAmount) || 0)),
+    currency: ['USD', 'EUR', 'GBP', 'JPY'].includes(o.currency) ? o.currency : 'USD',
+    status: ['pending', 'dispatched', 'completed'].includes(o.status) ? o.status : 'pending',
+    createdAt: String(o.createdAt || new Date().toISOString()).slice(0, 40),
+  };
+}
+
+export function sanitizeSubscriber(s: NewsletterSubscriber): NewsletterSubscriber {
+  const cleanId = (s.id || `sub-${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .slice(0, 64);
+  return {
+    id: cleanId,
+    email: String(s.email || '').trim().toLowerCase().slice(0, 160),
+    promoCode: String(s.promoCode || 'NOCTURNE10').trim().toUpperCase().slice(0, 32),
+    createdAt: String(s.createdAt || new Date().toISOString()).slice(0, 40),
   };
 }
 
@@ -237,6 +286,32 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return COMPLIMENTARY_SAMPLES;
   });
 
+  const [orders, setOrders] = useState<OrderSummary[]>(() => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEYS.ORDERS);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>(() => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEYS.SUBSCRIBERS);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isCloudSynced, setIsCloudSynced] = useState(false);
@@ -276,6 +351,22 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // ignore
     }
   }, [samples]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+    } catch {
+      // ignore
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SUBSCRIBERS, JSON.stringify(subscribers));
+    } catch {
+      // ignore
+    }
+  }, [subscribers]);
 
   // Listen to Firebase Auth state
   useEffect(() => {
@@ -374,6 +465,46 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       unsubSamples();
     };
   }, []);
+
+  // Admin-only listeners for PII-protected orders and newsletter subscribers
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubOrders = onSnapshot(
+      collection(db, 'orders'),
+      (snap) => {
+        if (!snap.empty) {
+          const loaded: OrderSummary[] = [];
+          snap.forEach((d) => loaded.push(d.data() as OrderSummary));
+          loaded.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+          setOrders(loaded);
+        }
+      },
+      () => {
+        // Non-admin or offline fallback
+      }
+    );
+
+    const unsubSubscribers = onSnapshot(
+      collection(db, 'newsletterSubscribers'),
+      (snap) => {
+        if (!snap.empty) {
+          const loaded: NewsletterSubscriber[] = [];
+          snap.forEach((d) => loaded.push(d.data() as NewsletterSubscriber));
+          loaded.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+          setSubscribers(loaded);
+        }
+      },
+      () => {
+        // Non-admin or offline fallback
+      }
+    );
+
+    return () => {
+      unsubOrders();
+      unsubSubscribers();
+    };
+  }, [currentUser]);
 
   const loginWithGoogle = async () => {
     try {
@@ -529,6 +660,55 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const submitOrder = async (rawOrder: OrderSummary) => {
+    const clean = sanitizeOrder(rawOrder);
+    setOrders((prev) => [clean, ...prev]);
+
+    try {
+      await setDoc(doc(db, 'orders', clean.id), clean);
+    } catch {
+      // Stored locally if offline
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: OrderSummary['status']) => {
+    const target = orders.find((o) => o.id === orderId);
+    if (!target) return;
+    const updated = sanitizeOrder({ ...target, status });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
+
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(db, 'orders', cleanIdFromOrder(updated)), updated);
+        setSyncStatusMessage(`Order ${updated.orderRef} status updated to ${status.toUpperCase()}.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, `orders/${updated.id}`);
+      }
+    } else {
+      setSyncStatusMessage(`Order ${updated.orderRef} marked ${status.toUpperCase()} in session.`);
+    }
+  };
+
+  function cleanIdFromOrder(o: OrderSummary) {
+    return o.id;
+  }
+
+  const subscribeNewsletter = async (email: string, promoCode = 'NOCTURNE10') => {
+    const clean = sanitizeSubscriber({
+      id: `sub-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      email,
+      promoCode,
+      createdAt: new Date().toISOString(),
+    });
+    setSubscribers((prev) => [clean, ...prev.filter((s) => s.email !== clean.email)]);
+
+    try {
+      await setDoc(doc(db, 'newsletterSubscribers', clean.id), clean);
+    } catch {
+      // Stored locally if offline
+    }
+  };
+
   const seedOrResetDefaults = async () => {
     setProducts(PRODUCTS);
     setShopSettings(DEFAULT_SHOP_SETTINGS);
@@ -570,6 +750,8 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         shopSettings,
         promoCodes,
         samples,
+        orders,
+        subscribers,
         currentUser,
         authReady,
         isCloudSynced,
@@ -584,6 +766,9 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deletePromoCode,
         upsertSample,
         deleteSample,
+        submitOrder,
+        updateOrderStatus,
+        subscribeNewsletter,
         seedOrResetDefaults,
       }}
     >

@@ -159,6 +159,29 @@ export interface SampleItem {
   active: boolean;
 }
 
+export interface OrderSummary {
+  id: string;
+  orderRef: string;
+  batchId: string;
+  patronName: string;
+  email: string;
+  city: string;
+  country: string;
+  itemCount: number;
+  itemsSummary: string;
+  totalAmount: number;
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  status: 'pending' | 'dispatched' | 'completed';
+  createdAt: string;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  promoCode: string;
+  createdAt: string;
+}
+
 export const WHATSAPP_PHONE = '60108371938';
 
 export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
@@ -201,26 +224,45 @@ export function generateWhatsAppLink(
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 }
 
+export interface WhatsAppMultiOrderOptions {
+  sampleNames?: string[];
+  promoCode?: string;
+  formattedTotal?: string;
+  monogramUnitFee?: number;
+}
+
 export function generateMultiItemWhatsAppLink(
-  items: { product: Product; size: ProductSize; quantity: number }[],
+  items: { product: Product; size: ProductSize; quantity: number; monogram?: string }[],
   giftPackaging: boolean,
   totalAmount: number,
-  phone: string = WHATSAPP_PHONE
+  phone: string = WHATSAPP_PHONE,
+  options?: WhatsAppMultiOrderOptions
 ): string {
   const cleanPhone = (phone || WHATSAPP_PHONE).replace(/[^0-9]/g, '');
+  const monogramFee = options?.monogramUnitFee ?? 20;
   const lines: string[] = [
     'Hello DLAB Atelier, I want to place an order:',
     ''
   ];
 
   items.forEach((item, i) => {
+    const unitPrice = item.size.price + (item.monogram ? monogramFee : 0);
+    const monogramSuffix = item.monogram ? ` [Monogram: ${item.monogram}]` : '';
     lines.push(
-      `${i + 1}. ${item.product.shortCode} ${item.product.name} (${item.size.ml}ml) x ${item.quantity} - $${item.size.price * item.quantity}`
+      `${i + 1}. ${item.product.shortCode} ${item.product.name} (${item.size.ml}ml)${monogramSuffix} x ${item.quantity} - $${unitPrice * item.quantity}`
     );
   });
 
+  if (options?.sampleNames && options.sampleNames.length > 0) {
+    lines.push(`Complimentary 2ml Samples: ${options.sampleNames.join(', ')}`);
+  }
+
+  if (options?.promoCode) {
+    lines.push(`Promo Code Applied: ${options.promoCode}`);
+  }
+
   lines.push('');
-  lines.push(`Total Amount: $${totalAmount}`);
+  lines.push(`Total Amount: ${options?.formattedTotal || `$${totalAmount}`}`);
   if (giftPackaging) {
     lines.push('Packaging: Complimentary Obsidian Coffret with Black Wax Seal');
   }

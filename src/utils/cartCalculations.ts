@@ -1,11 +1,11 @@
 import {
-  Product,
-  ProductSize,
-  ShopSettings,
-  PromoCodeItem,
+  type Product,
+  type ProductSize,
+  type ShopSettings,
+  type PromoCodeItem,
   DEFAULT_SHOP_SETTINGS,
   DEFAULT_PROMO_CODES,
-} from '../data/products';
+} from '../data/products.ts';
 
 export interface CartItem {
   product: Product;

@@ -1,12 +1,113 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Document ID: ^[a-zA-Z0-9_\-]+$ (1..64 chars)
+    // Fields:
+    //   - id: string (required, immutable, matches docId)
+    //   - code: string (required, 1..40 chars)
+    //   - shortCode: string (required, 1..24 chars)
+    //   - name: string (required, 1..120 chars)
+    //   - subtitle: string (required, 1..120 chars)
+    //   - price: number (required, 0..100000)
+    //   - sizes: list of maps { ml: number, label: string, price: number } (required, 1..6 items)
+    //   - intensity: string enum ['Mild', 'Strong', 'Intense'] (required)
+    //   - experience: string enum ['Relaxing', 'High-energy', 'Sensual', 'Velvet Focus'] (required)
+    //   - synergyRole: string enum ['Ascendant', 'Receptive', 'Universal'] (optional)
+    //   - monthlyOrders: number (required, >= 0)
+    //   - rank: number (required, 1..999)
+    //   - trendingDelta: string (required, <= 60 chars)
+    //   - concentration: string (required, 1..60 chars)
+    //   - harvestYear: string (required, <= 60 chars)
+    //   - perfumer: string (required, <= 100 chars)
+    //   - batchCount: number (required, >= 0)
+    //   - rating: number (required, 0..5)
+    //   - reviewCount: number (required, >= 0)
+    //   - description: string (required, 1..1200 chars)
+    //   - safetyInstructions: list of strings (required, <= 10 items, each <= 300 chars)
+    //   - poeticQuote: string (required, <= 300 chars)
+    //   - primaryImage: string URL (required, 1..600 chars)
+    //   - secondaryImage: string URL (required, <= 600 chars)
+    //   - boxImage: string URL (required, <= 600 chars)
+    //   - notes: map { top: list, heart: list, base: list } (required, each <= 10 strings)
+    //   - accords: list of maps { name: string, percentage: number, color: string } (required, <= 8 items)
+    //   - sillage: string enum ['Intimate', 'Radiant', 'Heavy'] (required)
+    //   - longevityHours: number (required, 1..72)
+    //   - optimalHours: string (required, <= 60 chars)
+    //   - scentFamilies: list of strings (required, <= 8 items)
+    //   - featured: bool (required)
+    //   - bestseller: bool (required)
+    //   - inStock: bool (required)
+    //
+    // Collection: shopSettings
+    // Document ID: 'global' (or valid ID)
+    // Fields:
+    //   - whatsappPhone: string (required, 5..30 chars, digits/+)
+    //   - freeShippingThreshold: number (required, 0..100000)
+    //   - standardShippingFee: number (required, 0..10000)
+    //   - monogramPrice: number (required, 0..10000)
+    //   - announcementText: string (required, 1..240 chars)
+    //
+    // Collection: promoCodes
+    // Document ID: promo code string (2..32 chars)
+    // Fields:
+    //   - code: string (required, immutable, 2..32 chars)
+    //   - discountPercent: number (required, 1..90)
+    //   - active: bool (required)
+    //   - description: string (required, <= 160 chars)
+    //
+    // Collection: samples
+    // Document ID: sample ID string (1..64 chars)
+    // Fields:
+    //   - id: string (required, immutable, 1..64 chars)
+    //   - name: string (required, 1..120 chars)
+    //   - family: string (required, 1..80 chars)
+    //   - active: bool (required)
+    //
+    // Collection: orders (Contains Patron PII - Admin Read/Update Only, Public Create)
+    // Document ID: order ID string (1..64 chars)
+    // Fields:
+    //   - id: string (required, immutable, matches docId)
+    //   - orderRef: string (required, immutable, 3..40 chars)
+    //   - batchId: string (required, immutable, 3..40 chars)
+    //   - patronName: string (required, 1..120 chars)
+    //   - email: string (required, valid email, 3..160 chars)
+    //   - city: string (required, 1..80 chars)
+    //   - country: string (required, 1..80 chars)
+    //   - itemCount: number (required, 1..100)
+    //   - itemsSummary: string (required, 1..600 chars)
+    //   - totalAmount: number (required, 0..1000000)
+    //   - currency: string enum ['USD', 'EUR', 'GBP', 'JPY'] (required)
+    //   - status: string enum ['pending', 'dispatched', 'completed'] (required)
+    //   - createdAt: string ISO date (required, immutable, 10..40 chars)
+    //
+    // Collection: newsletterSubscribers (Contains Patron Email PII - Admin Read Only, Public Create)
+    // Document ID: subscriber ID string (1..64 chars)
+    // Fields:
+    //   - id: string (required, immutable, matches docId)
+    //   - email: string (required, valid email, 3..160 chars)
+    //   - promoCode: string (required, 2..32 chars)
+    //   - createdAt: string ISO date (required, immutable, 10..40 chars)
+    //
+    // Collection: admins (Restricted RBAC Registry)
+    // Document ID: Firebase Auth UID
+    // Fields:
+    //   - email: string (required, valid email, 3..160 chars)
+    //   - role: string ('admin')
+    // ===============================================================
+
     // 1. Global Safety Net: Default-deny catch-all
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Global Primitives
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
     function isValidId(id) {
       return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -19,21 +120,70 @@ service cloud.firestore {
       return resource.data;
     }
 
-    function isSignedIn() {
+    function isAuthenticated() {
       return request.auth != null;
     }
 
+    function isSignedIn() {
+      return isAuthenticated();
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
-      return isSignedIn() &&
+      return isAuthenticated() &&
         request.auth.token.email_verified == true && (
           request.auth.token.email == 'aliakhmadf@gmail.com' ||
           exists(/databases/$(database)/documents/admins/$(request.auth.uid))
         );
     }
 
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.size() >= 3 &&
+        email.size() <= 160 &&
+        email.matches('^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    function isValidSizeEntry(entry) {
+      return entry is map &&
+        entry.keys().hasAll(['ml', 'label', 'price']) &&
+        entry.keys().hasOnly(['ml', 'label', 'price']) &&
+        entry.ml is number && entry.ml >= 1 && entry.ml <= 1000 &&
+        entry.label is string && entry.label.size() >= 1 && entry.label.size() <= 60 &&
+        entry.price is number && entry.price >= 0 && entry.price <= 100000;
+    }
+
+    function isValidAccordEntry(accord) {
+      return accord is map &&
+        accord.keys().hasAll(['name', 'percentage', 'color']) &&
+        accord.keys().hasOnly(['name', 'percentage', 'color']) &&
+        accord.name is string && accord.name.size() >= 1 && accord.name.size() <= 60 &&
+        accord.percentage is number && accord.percentage >= 1 && accord.percentage <= 100 &&
+        accord.color is string && accord.color.size() >= 1 && accord.color.size() <= 20;
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in BOTH create and update)
+    // ===============================================================
+
     // Validation Blueprint: Product
     function isValidProduct(data) {
-      return data.keys().hasAll([
+      return hasRequiredFields([
           'id', 'code', 'shortCode', 'name', 'subtitle', 'price', 'sizes',
           'intensity', 'experience', 'monthlyOrders', 'rank', 'trendingDelta',
           'concentration', 'harvestYear', 'perfumer', 'batchCount', 'rating',
@@ -42,9 +192,9 @@ service cloud.firestore {
           'sillage', 'longevityHours', 'optimalHours', 'scentFamilies',
           'featured', 'bestseller', 'inStock'
         ]) &&
-        data.keys().hasOnly([
+        hasOnlyAllowedFields([
           'id', 'code', 'shortCode', 'name', 'subtitle', 'price', 'sizes',
-          'intensity', 'experience', 'monthlyOrders', 'rank', 'trendingDelta',
+          'intensity', 'experience', 'synergyRole', 'monthlyOrders', 'rank', 'trendingDelta',
           'concentration', 'harvestYear', 'perfumer', 'batchCount', 'rating',
           'reviewCount', 'description', 'safetyInstructions', 'poeticQuote',
           'primaryImage', 'secondaryImage', 'boxImage', 'notes', 'accords',
@@ -57,9 +207,13 @@ service cloud.firestore {
         data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
         data.subtitle is string && data.subtitle.size() >= 1 && data.subtitle.size() <= 120 &&
         data.price is number && data.price >= 0 && data.price <= 100000 &&
-        data.sizes is list && data.sizes.size() >= 1 && data.sizes.size() <= 6 && data.sizes[0] is map &&
+        data.sizes is list && data.sizes.size() >= 1 && data.sizes.size() <= 6 &&
+        isValidSizeEntry(data.sizes[0]) &&
+        (data.sizes.size() < 2 || isValidSizeEntry(data.sizes[1])) &&
+        (data.sizes.size() < 3 || isValidSizeEntry(data.sizes[2])) &&
         data.intensity in ['Mild', 'Strong', 'Intense'] &&
         data.experience in ['Relaxing', 'High-energy', 'Sensual', 'Velvet Focus'] &&
+        (!('synergyRole' in data) || data.synergyRole in ['Ascendant', 'Receptive', 'Universal']) &&
         data.monthlyOrders is number && data.monthlyOrders >= 0 &&
         data.rank is number && data.rank >= 1 && data.rank <= 999 &&
         data.trendingDelta is string && data.trendingDelta.size() <= 60 &&
@@ -72,19 +226,27 @@ service cloud.firestore {
         data.description is string && data.description.size() >= 1 && data.description.size() <= 1200 &&
         data.safetyInstructions is list && data.safetyInstructions.size() <= 10 &&
         (data.safetyInstructions.size() == 0 || (data.safetyInstructions[0] is string && data.safetyInstructions[0].size() <= 300)) &&
+        (data.safetyInstructions.size() < 2 || (data.safetyInstructions[1] is string && data.safetyInstructions[1].size() <= 300)) &&
+        (data.safetyInstructions.size() < 3 || (data.safetyInstructions[2] is string && data.safetyInstructions[2].size() <= 300)) &&
         data.poeticQuote is string && data.poeticQuote.size() <= 300 &&
         data.primaryImage is string && data.primaryImage.size() >= 1 && data.primaryImage.size() <= 600 &&
         data.secondaryImage is string && data.secondaryImage.size() <= 600 &&
         data.boxImage is string && data.boxImage.size() <= 600 &&
         data.notes is map && data.notes.keys().hasAll(['top', 'heart', 'base']) && data.notes.keys().hasOnly(['top', 'heart', 'base']) &&
         data.notes.top is list && data.notes.top.size() <= 10 &&
+        (data.notes.top.size() == 0 || (data.notes.top[0] is string && data.notes.top[0].size() <= 80)) &&
         data.notes.heart is list && data.notes.heart.size() <= 10 &&
+        (data.notes.heart.size() == 0 || (data.notes.heart[0] is string && data.notes.heart[0].size() <= 80)) &&
         data.notes.base is list && data.notes.base.size() <= 10 &&
+        (data.notes.base.size() == 0 || (data.notes.base[0] is string && data.notes.base[0].size() <= 80)) &&
         data.accords is list && data.accords.size() <= 8 &&
+        (data.accords.size() == 0 || isValidAccordEntry(data.accords[0])) &&
+        (data.accords.size() < 2 || isValidAccordEntry(data.accords[1])) &&
         data.sillage in ['Intimate', 'Radiant', 'Heavy'] &&
         data.longevityHours is number && data.longevityHours >= 1 && data.longevityHours <= 72 &&
         data.optimalHours is string && data.optimalHours.size() <= 60 &&
         data.scentFamilies is list && data.scentFamilies.size() <= 8 &&
+        (data.scentFamilies.size() == 0 || (data.scentFamilies[0] is string && data.scentFamilies[0].size() <= 60)) &&
         data.featured is bool &&
         data.bestseller is bool &&
         data.inStock is bool;
@@ -92,11 +254,11 @@ service cloud.firestore {
 
     // Validation Blueprint: ShopSettings
     function isValidShopSettings(data) {
-      return data.keys().hasAll([
+      return hasRequiredFields([
           'whatsappPhone', 'freeShippingThreshold', 'standardShippingFee',
           'monogramPrice', 'announcementText'
         ]) &&
-        data.keys().hasOnly([
+        hasOnlyAllowedFields([
           'whatsappPhone', 'freeShippingThreshold', 'standardShippingFee',
           'monogramPrice', 'announcementText'
         ]) &&
@@ -109,8 +271,8 @@ service cloud.firestore {
 
     // Validation Blueprint: PromoCode
     function isValidPromoCode(data) {
-      return data.keys().hasAll(['code', 'discountPercent', 'active', 'description']) &&
-        data.keys().hasOnly(['code', 'discountPercent', 'active', 'description']) &&
+      return hasRequiredFields(['code', 'discountPercent', 'active', 'description']) &&
+        hasOnlyAllowedFields(['code', 'discountPercent', 'active', 'description']) &&
         data.code is string && data.code.size() >= 2 && data.code.size() <= 32 && data.code.matches('^[A-Z0-9_\\-]+$') &&
         data.discountPercent is number && data.discountPercent >= 1 && data.discountPercent <= 90 &&
         data.active is bool &&
@@ -119,19 +281,56 @@ service cloud.firestore {
 
     // Validation Blueprint: Sample
     function isValidSample(data) {
-      return data.keys().hasAll(['id', 'name', 'family', 'active']) &&
-        data.keys().hasOnly(['id', 'name', 'family', 'active']) &&
+      return hasRequiredFields(['id', 'name', 'family', 'active']) &&
+        hasOnlyAllowedFields(['id', 'name', 'family', 'active']) &&
         data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
         data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
         data.family is string && data.family.size() >= 1 && data.family.size() <= 80 &&
         data.active is bool;
     }
 
+    // Validation Blueprint: Order
+    function isValidOrder(data) {
+      return hasRequiredFields([
+          'id', 'orderRef', 'batchId', 'patronName', 'email',
+          'city', 'country', 'itemCount', 'itemsSummary',
+          'totalAmount', 'currency', 'status', 'createdAt'
+        ]) &&
+        hasOnlyAllowedFields([
+          'id', 'orderRef', 'batchId', 'patronName', 'email',
+          'city', 'country', 'itemCount', 'itemsSummary',
+          'totalAmount', 'currency', 'status', 'createdAt'
+        ]) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.orderRef is string && data.orderRef.size() >= 3 && data.orderRef.size() <= 40 &&
+        data.batchId is string && data.batchId.size() >= 3 && data.batchId.size() <= 40 &&
+        data.patronName is string && data.patronName.size() >= 1 && data.patronName.size() <= 120 &&
+        isValidEmail(data.email) &&
+        data.city is string && data.city.size() >= 1 && data.city.size() <= 80 &&
+        data.country is string && data.country.size() >= 1 && data.country.size() <= 80 &&
+        data.itemCount is number && data.itemCount >= 1 && data.itemCount <= 100 &&
+        data.itemsSummary is string && data.itemsSummary.size() >= 1 && data.itemsSummary.size() <= 600 &&
+        data.totalAmount is number && data.totalAmount >= 0 && data.totalAmount <= 1000000 &&
+        data.currency in ['USD', 'EUR', 'GBP', 'JPY'] &&
+        data.status in ['pending', 'dispatched', 'completed'] &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40;
+    }
+
+    // Validation Blueprint: NewsletterSubscriber
+    function isValidSubscriber(data) {
+      return hasRequiredFields(['id', 'email', 'promoCode', 'createdAt']) &&
+        hasOnlyAllowedFields(['id', 'email', 'promoCode', 'createdAt']) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$') &&
+        isValidEmail(data.email) &&
+        data.promoCode is string && data.promoCode.size() >= 2 && data.promoCode.size() <= 32 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40;
+    }
+
     // Validation Blueprint: Admin
     function isValidAdmin(data) {
-      return data.keys().hasAll(['email', 'role']) &&
-        data.keys().hasOnly(['email', 'role']) &&
-        data.email is string && data.email.size() >= 3 && data.email.size() <= 160 &&
+      return hasRequiredFields(['email', 'role']) &&
+        hasOnlyAllowedFields(['email', 'role']) &&
+        isValidEmail(data.email) &&
         data.role == 'admin';
     }
 
@@ -140,7 +339,7 @@ service cloud.firestore {
       allow get: if isValidId(productId);
       allow list: if existing().id is string;
       allow create: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == productId && isAdmin();
-      allow update: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == existing().id && isAdmin();
+      allow update: if isValidId(productId) && isValidProduct(incoming()) && areImmutableFieldsUnchanged(['id']) && isAdmin();
       allow delete: if isValidId(productId) && isAdmin();
     }
 
@@ -158,7 +357,7 @@ service cloud.firestore {
       allow get: if isValidId(codeId);
       allow list: if existing().code is string;
       allow create: if isValidId(codeId) && isValidPromoCode(incoming()) && incoming().code == codeId && isAdmin();
-      allow update: if isValidId(codeId) && isValidPromoCode(incoming()) && incoming().code == existing().code && isAdmin();
+      allow update: if isValidId(codeId) && isValidPromoCode(incoming()) && areImmutableFieldsUnchanged(['code']) && isAdmin();
       allow delete: if isValidId(codeId) && isAdmin();
     }
 
@@ -167,13 +366,29 @@ service cloud.firestore {
       allow get: if isValidId(sampleId);
       allow list: if existing().id is string;
       allow create: if isValidId(sampleId) && isValidSample(incoming()) && incoming().id == sampleId && isAdmin();
-      allow update: if isValidId(sampleId) && isValidSample(incoming()) && incoming().id == existing().id && isAdmin();
+      allow update: if isValidId(sampleId) && isValidSample(incoming()) && areImmutableFieldsUnchanged(['id']) && isAdmin();
       allow delete: if isValidId(sampleId) && isAdmin();
+    }
+
+    // Patron Commissioned Orders (PII Protected: Public Create with pending status, Admin Read/Update/Delete)
+    match /orders/{orderId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(orderId) && isValidOrder(incoming()) && incoming().id == orderId && (incoming().status == 'pending' || isAdmin());
+      allow update: if isValidId(orderId) && isValidOrder(incoming()) && areImmutableFieldsUnchanged(['id', 'orderRef', 'batchId', 'createdAt']) && isAdmin();
+      allow delete: if isValidId(orderId) && isAdmin();
+    }
+
+    // Atelier Nocturne Gazette Subscribers (PII Protected: Public Create, Admin Read/Update/Delete)
+    match /newsletterSubscribers/{subId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(subId) && isValidSubscriber(incoming()) && incoming().id == subId;
+      allow update: if isValidId(subId) && isValidSubscriber(incoming()) && areImmutableFieldsUnchanged(['id', 'createdAt']) && isAdmin();
+      allow delete: if isValidId(subId) && isAdmin();
     }
 
     // Admin Registry (Restricted PII / Role Isolation)
     match /admins/{adminId} {
-      allow get: if isValidId(adminId) && (isAdmin() || (isSignedIn() && request.auth.uid == adminId));
+      allow get: if isValidId(adminId) && (isAdmin() || isOwner(adminId));
       allow list: if false;
       allow create: if isValidId(adminId) && isValidAdmin(incoming()) && isAdmin();
       allow update: if isValidId(adminId) && isValidAdmin(incoming()) && isAdmin();

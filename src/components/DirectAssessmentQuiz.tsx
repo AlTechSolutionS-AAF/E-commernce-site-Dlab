@@ -433,8 +433,8 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                   <span className="text-xl font-bold text-white font-mono tabular-nums">
                     {formatPrice(matchResult.selectedSize.price, currency)}
                   </span>
-                  <span className="text-[10px] uppercase tracking-wider text-[#969088]">
-                    In-Stock for Immediate Same-Day Dispatch
+                  <span className={`text-[10px] uppercase tracking-wider ${matchResult.product.inStock ? 'text-[#969088]' : 'text-rose-400'}`}>
+                    {matchResult.product.inStock ? 'In-Stock for Immediate Same-Day Dispatch' : 'Currently Out of Stock'}
                   </span>
                 </div>
 
@@ -460,14 +460,18 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                   <button
                     type="button"
                     onClick={handleAdd}
-                    disabled={added}
+                    disabled={added || !matchResult.product.inStock}
                     className={`px-5 py-3 text-xs uppercase tracking-[0.15em] font-semibold rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors ${
-                      added
+                      !matchResult.product.inStock
+                        ? 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                        : added
                         ? 'bg-emerald-800 text-white'
                         : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D]'
                     }`}
                   >
-                    {added ? (
+                    {!matchResult.product.inStock ? (
+                      <span>Sold Out</span>
+                    ) : added ? (
                       <>
                         <Check className="w-4 h-4" aria-hidden="true" />
                         <span>Added</span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck, CheckCircle2, Lock, Sparkles, CreditCard, ArrowRight, Printer } from 'lucide-react';
 import { CartItem, CartTotals, formatPrice } from '../utils/cartCalculations';
+import { useShopData } from '../context/ShopDataContext';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   currency,
   onOrderComplete
 }) => {
+  const { submitOrder } = useShopData();
   const [step, setStep] = useState<'details' | 'processing' | 'confirmed'>('details');
   const [name, setName] = useState('Alexander Vance');
   const [email, setEmail] = useState('vance.alexander@nocturne.studio');
@@ -38,6 +40,34 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const randomBatch = `BTCH-${Math.floor(100 + Math.random() * 900)}-RESERVE`;
     setOrderRef(randomOrder);
     setBatchId(randomBatch);
+
+    const summaryText = items
+      .map(
+        (it) =>
+          `${it.quantity}x ${it.product.shortCode} ${it.product.name} (${it.selectedSize.ml}ml${
+            it.monogram ? `, Monogram: ${it.monogram}` : ''
+          })`
+      )
+      .join(' · ')
+      .slice(0, 600);
+
+    const totalUnits = items.reduce((acc, it) => acc + it.quantity, 0);
+
+    void submitOrder({
+      id: randomOrder.toLowerCase(),
+      orderRef: randomOrder,
+      batchId: randomBatch,
+      patronName: name,
+      email,
+      city,
+      country,
+      itemCount: Math.max(1, totalUnits),
+      itemsSummary: summaryText || '1x Extrait Flacon',
+      totalAmount: totals.total,
+      currency,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    });
 
     setTimeout(() => {
       setStep('confirmed');

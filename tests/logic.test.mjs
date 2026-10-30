@@ -13,7 +13,7 @@ import {
   WEEKLY_TOP_10_METRICS
 } from '../src/data/products.ts';
 
-test('direct10SecondAssessment returns single high-confidence match with chosen size', () => {
+test('direct10SecondAssessment returns single high-confidence in-stock match with chosen size', () => {
   const result = direct10SecondAssessment({
     intensity: 'Intense',
     experience: 'High-energy',
@@ -21,9 +21,17 @@ test('direct10SecondAssessment returns single high-confidence match with chosen 
   });
 
   assert.ok(result.product);
+  assert.equal(result.product.inStock, true);
   assert.equal(result.product.shortCode, 'NO.06 C4');
   assert.equal(result.selectedSize.ml, 10);
   assert.ok(result.confidenceScore >= 90);
+
+  const sensualResult = direct10SecondAssessment({
+    intensity: 'Intense',
+    experience: 'Sensual',
+    selectedSizeMl: 30
+  });
+  assert.equal(sensualResult.product.inStock, true);
 });
 
 test('generateWhatsAppLink generates correct encoded URL for direct ordering with default or custom phone', () => {
@@ -37,14 +45,22 @@ test('generateWhatsAppLink generates correct encoded URL for direct ordering wit
   assert.ok(customUrl.includes('30ml'));
 });
 
-test('generateMultiItemWhatsAppLink formats multiple bottles cleanly and supports custom phone', () => {
+test('generateMultiItemWhatsAppLink formats multiple bottles, monogram, samples, and promo code cleanly', () => {
   const items = [
-    { product: PRODUCTS[0], size: PRODUCTS[0].sizes[0], quantity: 1 },
-    { product: PRODUCTS[1], size: PRODUCTS[1].sizes[1], quantity: 2 }
+    { product: PRODUCTS[5], size: PRODUCTS[5].sizes[0], quantity: 1, monogram: 'DLB' },
+    { product: PRODUCTS[3], size: PRODUCTS[3].sizes[1], quantity: 2 }
   ];
-  const url = generateMultiItemWhatsAppLink(items, true, 455, '60123456789');
+  const url = generateMultiItemWhatsAppLink(items, true, 440, '60123456789', {
+    sampleNames: ['NO.01 Amsterdam Obsidienne 2ml', 'NO.06 C4 Nocturne 2ml'],
+    promoCode: 'NOCTURNE10',
+    formattedTotal: '€405',
+    monogramUnitFee: 20
+  });
   assert.ok(url.includes('wa.me/60123456789'));
   assert.ok(url.includes('Obsidian%20Coffret'));
+  assert.ok(url.includes('Monogram%3A%20DLB'));
+  assert.ok(url.includes('NOCTURNE10'));
+  assert.ok(url.includes('%E2%82%AC405'));
 });
 
 test('calculateCartTotals calculates subtotal with 10ml, 30ml, 40ml sizes and dynamic shopSettings & promoCodes', () => {
@@ -85,11 +101,14 @@ test('calculateCartTotals calculates subtotal with 10ml, 30ml, 40ml sizes and dy
   assert.equal(totals.total, 173); // 185 + 25 - 37
 });
 
-test('getProductSynergy maps products deterministically to Ascendant, Receptive, or Universal', () => {
+test('getProductSynergy maps products deterministically and respects explicit synergyRole overrides', () => {
   const roles = new Set(PRODUCTS.map((p) => getProductSynergy(p).role));
   assert.ok(roles.has('Ascendant'));
   assert.ok(roles.has('Receptive'));
   assert.ok(roles.has('Universal'));
+
+  const overridden = { ...PRODUCTS[0], synergyRole: 'Universal' };
+  assert.equal(getProductSynergy(overridden).role, 'Universal');
 });
 
 test('generateChannelLink builds valid URLs for Shopee, Lazada, Grab Delivery, TikTok, and Webstore', () => {

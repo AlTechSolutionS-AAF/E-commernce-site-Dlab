@@ -28,7 +28,7 @@ import { ShopDataProvider, useShopData } from './context/ShopDataContext';
 import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield } from 'lucide-react';
 
 function StorefrontContent() {
-  const { products, shopSettings, promoCodes } = useShopData();
+  const { products, shopSettings, promoCodes, subscribeNewsletter } = useShopData();
 
   const [currentTab, setCurrentTab] = useState<NavTab>('catalog');
   const [currency, setCurrency] = useState<'USD' | 'EUR' | 'GBP' | 'JPY'>('USD');
@@ -46,7 +46,7 @@ function StorefrontContent() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  // Persistent LocalStorage Shopping Bag
+  // Persistent LocalStorage Shopping Bag (defaulting to #1 Weekly Top Seller NO.06 C4 which is in stock)
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem('dlab_quick_bag');
@@ -59,10 +59,11 @@ function StorefrontContent() {
     } catch (e) {
       console.warn('Could not parse saved cart', e);
     }
+    const defaultInStock = PRODUCTS.find((p) => p.id === '10ml-06' && p.inStock) || PRODUCTS.find((p) => p.inStock) || PRODUCTS[0];
     return [
       {
-        product: PRODUCTS[0],
-        selectedSize: PRODUCTS[0].sizes[0],
+        product: defaultInStock,
+        selectedSize: defaultInStock.sizes[0],
         quantity: 1
       }
     ];
@@ -76,7 +77,30 @@ function StorefrontContent() {
     }
   }, [cartItems]);
 
-  const [wishlist, setWishlist] = useState<Product[]>([PRODUCTS[1]]);
+  const [wishlist, setWishlist] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('dlab_wishlist');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse saved wishlist', e);
+    }
+    const defaultWish = PRODUCTS.find((p) => p.id === '10ml-04' && p.inStock) || PRODUCTS.find((p) => p.inStock) || PRODUCTS[1];
+    return [defaultWish];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dlab_wishlist', JSON.stringify(wishlist));
+    } catch (e) {
+      console.warn('Could not save wishlist to localStorage', e);
+    }
+  }, [wishlist]);
+
   const [selectedSamples, setSelectedSamples] = useState<string[]>(['smp-01', 'smp-06']);
   const [giftPackaging, setGiftPackaging] = useState(true);
   const [promoCode, setPromoCode] = useState('');
@@ -92,6 +116,7 @@ function StorefrontContent() {
     quantity = 1,
     monogram?: string
   ) => {
+    if (!product.inStock) return;
     setCartItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) => item.product.id === product.id && item.selectedSize.ml === size.ml && item.monogram === monogram
@@ -144,6 +169,7 @@ function StorefrontContent() {
   };
 
   const handleMoveToCart = (product: Product) => {
+    if (!product.inStock) return;
     handleAddToCart(product, product.sizes[0], 1);
     handleToggleWishlist(product);
   };
@@ -202,6 +228,7 @@ function StorefrontContent() {
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newsletterEmail.trim()) {
+      void subscribeNewsletter(newsletterEmail.trim(), 'NOCTURNE10');
       setNewsletterSubscribed(true);
       setPromoCode('NOCTURNE10');
     }

@@ -1,4 +1,4 @@
-import { Product, PRODUCTS, IntensityLevel, PreferredExperience, ProductSize } from '../data/products';
+import { type Product, PRODUCTS, type IntensityLevel, type PreferredExperience, type ProductSize } from '../data/products.ts';
 
 export interface QuickAssessmentInput {
   intensity: IntensityLevel;
@@ -18,8 +18,12 @@ export function direct10SecondAssessment(
   input: QuickAssessmentInput,
   productList: Product[] = PRODUCTS
 ): QuickAssessmentMatch {
+  // Prefer in-stock items when available so patrons are never matched with sold-out flacons
+  const inStockCandidates = productList.filter((p) => p.inStock);
+  const candidates = inStockCandidates.length > 0 ? inStockCandidates : productList;
+
   // Score candidates based on exact intensity and experience alignment
-  const ranked = productList.map((prod) => {
+  const ranked = candidates.map((prod) => {
     let score = 65;
 
     if (prod.id.startsWith('10ml-')) {
@@ -39,7 +43,7 @@ export function direct10SecondAssessment(
       score += 20;
     } else if (
       input.experience === 'Sensual' &&
-      (prod.id === '10ml-01' || prod.id === '10ml-11' || prod.id === 'dlab-01' || prod.id === 'dlab-02')
+      (prod.id === '10ml-11' || prod.id === '10ml-01' || prod.id === 'dlab-01' || prod.id === 'dlab-02')
     ) {
       score += 16;
     } else if (input.experience === 'Relaxing' && (prod.id === '10ml-04' || prod.id === 'dlab-04')) {
@@ -94,7 +98,10 @@ export interface ScentMatchResult {
 }
 
 export function calculateScentMatch(input: ScentDiagnosticInput, productList: Product[] = PRODUCTS): ScentMatchResult[] {
-  const scored = productList.map(prod => {
+  const inStockCandidates = productList.filter((p) => p.inStock);
+  const candidates = inStockCandidates.length > 0 ? inStockCandidates : productList;
+
+  const scored = candidates.map(prod => {
     let score = 55;
 
     if (prod.scentFamilies.includes(input.primaryFamily)) {
@@ -136,5 +143,5 @@ export function calculateScentMatch(input: ScentDiagnosticInput, productList: Pr
     };
   });
 
-  return scored.sort((a, b) => b.matchScore - a.matchScore);
+  return scored.sort((a, b) => b.matchScore - a.matchScore || a.product.rank - b.product.rank);
 }

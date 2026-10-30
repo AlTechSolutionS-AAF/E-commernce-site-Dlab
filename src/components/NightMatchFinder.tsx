@@ -177,10 +177,18 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <button
+                    type="button"
+                    disabled={!results[0].product.inStock}
                     onClick={() => onAddToCart(results[0].product, results[0].product.sizes[0])}
-                    className="bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-6 py-3 text-xs uppercase tracking-[0.2em] font-semibold rounded-[0.25rem] transition-colors"
+                    className={`px-6 py-3 text-xs uppercase tracking-[0.2em] font-semibold rounded-[0.25rem] transition-colors ${
+                      results[0].product.inStock
+                        ? 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D]'
+                        : 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                    }`}
                   >
-                    Add Matched Flacon ({formatPrice(results[0].product.sizes[0].price, currency)})
+                    {results[0].product.inStock
+                      ? `Add Matched Flacon (${formatPrice(results[0].product.sizes[0].price, currency)})`
+                      : 'Matched Flacon Out of Stock'}
                   </button>
 
                   <button

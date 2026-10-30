@@ -23,10 +23,12 @@ import {
   Product,
   IntensityLevel,
   PreferredExperience,
+  SynergyRole,
   ShopSettings,
   PromoCodeItem,
   SampleItem,
   generateWhatsAppLink,
+  getProductSynergy,
 } from '../data/products';
 import { useShopData } from '../context/ShopDataContext';
 import { formatPrice } from '../utils/cartCalculations';
@@ -50,6 +52,7 @@ const EMPTY_PRODUCT_TEMPLATE: Product = {
   ],
   intensity: 'Strong',
   experience: 'Velvet Focus',
+  synergyRole: 'Ascendant',
   monthlyOrders: 180,
   rank: 7,
   trendingDelta: '+15% this month',
@@ -97,6 +100,8 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
     shopSettings,
     promoCodes,
     samples,
+    orders,
+    subscribers,
     currentUser,
     syncStatusMessage,
     clearSyncMessage,
@@ -109,12 +114,13 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
     deletePromoCode,
     upsertSample,
     deleteSample,
+    updateOrderStatus,
     seedOrResetDefaults,
   } = useShopData();
 
-  const [activeSubTab, setActiveSubTab] = useState<'products' | 'settings' | 'promotions'>(
-    'products'
-  );
+  const [activeSubTab, setActiveSubTab] = useState<
+    'products' | 'settings' | 'promotions' | 'orders'
+  >('products');
   const [searchFilter, setSearchFilter] = useState('');
   const [intensityFilter, setIntensityFilter] = useState<'All' | IntensityLevel>('All');
 
@@ -164,17 +170,14 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
   };
 
   const openEditModal = (prod: Product) => {
-    // Ensure 3 standard sizes exist for clean editing
+    // Preserve actual product size tiers (1, 2, or 3 sizes) without forcing single-size items into 3 tiers
     const sizesCopy =
-      prod.sizes.length >= 3
+      prod.sizes.length >= 1
         ? prod.sizes.map((s) => ({ ...s }))
-        : [
-            prod.sizes[0] || { ml: 10, label: '10ml Pocket Flacon', price: 65 },
-            prod.sizes[1] || { ml: 30, label: '30ml Atelier Flacon', price: prod.price || 180 },
-            prod.sizes[2] || { ml: 40, label: '40ml Heavy Crystal Edition', price: 240 },
-          ];
+        : [{ ml: 10, label: '10ml Pocket Flacon', price: prod.price || 65 }];
     const clone: Product = {
       ...prod,
+      synergyRole: prod.synergyRole ?? getProductSynergy(prod).role,
       sizes: sizesCopy,
     };
     setEditingProduct(clone);
@@ -218,11 +221,20 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
         .map((s) => s.trim())
         .filter(Boolean);
 
-    const price30 = editingProduct.sizes[1]?.price || editingProduct.sizes[0]?.price || 180;
+    // For single-size products, use sizes[0].price; for multi-size, use the 30ml tier price or sizes[0].price
+    const resolvedBasePrice =
+      editingProduct.sizes.length === 1
+        ? editingProduct.sizes[0]?.price || editingProduct.price || 180
+        : editingProduct.sizes.find((s) => s.ml === 30)?.price ||
+          editingProduct.sizes[1]?.price ||
+          editingProduct.sizes[0]?.price ||
+          editingProduct.price ||
+          180;
 
     const finalProduct: Product = {
       ...editingProduct,
-      price: price30,
+      price: resolvedBasePrice,
+      synergyRole: editingProduct.synergyRole ?? getProductSynergy(editingProduct).role,
       notes: {
         top: parseComma(topNotesInput),
         heart: parseComma(heartNotesInput),
@@ -459,6 +471,21 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
             <Tag className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Promo Codes & 2ml Samples</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('orders')}
+            className={`px-4 py-2 text-xs font-medium uppercase tracking-wider rounded-[0.25rem] flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 ${
+              activeSubTab === 'orders'
+                ? 'bg-[#D4AF37] text-[#0F0E0D] font-semibold'
+                : 'bg-[#151311] text-[#cdc5bd] hover:text-white border border-[#4b4640]/40'
+            }`}
+          >
+            <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>
+              Orders & Gazette ({orders.length} / {subscribers.length})
+            </span>
+          </button>
         </div>
       </div>
 
@@ -520,7 +547,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                     <th className="py-3 px-4">Extrait Flacon</th>
                     <th className="py-3 px-4">Intensity & Vibe</th>
                     <th className="py-3 px-4 text-right">10ml</th>
-                    <th className="py-3 px-4 text-right">30ml</th>
+                    <th className="py-3 px-4 text-right">30ml / Base</th>
                     <th className="py-3 px-4 text-right">40ml</th>
                     <th className="py-3 px-4 text-center">Stock Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
@@ -528,9 +555,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                 </thead>
                 <tbody className="divide-y divide-[#2c2a27] text-xs">
                   {filteredCatalog.map((prod) => {
-                    const p10 = prod.sizes.find((s) => s.ml === 10)?.price ?? prod.sizes[0]?.price ?? 0;
-                    const p30 = prod.sizes.find((s) => s.ml === 30)?.price ?? prod.sizes[1]?.price ?? prod.price;
-                    const p40 = prod.sizes.find((s) => s.ml === 40)?.price ?? prod.sizes[2]?.price ?? 0;
+                    const p10 = prod.sizes.find((s) => s.ml === 10)?.price;
+                    const p30 = prod.sizes.find((s) => s.ml === 30)?.price ?? prod.price;
+                    const p40 = prod.sizes.find((s) => s.ml === 40)?.price;
+                    const resolvedSynergy = prod.synergyRole ?? getProductSynergy(prod).role;
 
                     return (
                       <tr
@@ -572,12 +600,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                           <span className="mx-1.5 text-[#4b4640]">·</span>
                           <span className="text-[#cdc5bd]">{prod.experience}</span>
                           <span className="block text-[10px] text-[#969088] font-mono tabular-nums">
-                            {prod.monthlyOrders} orders / 30d
+                            {resolvedSynergy} · {prod.monthlyOrders} orders / 30d
                           </span>
                         </td>
 
                         <td className="py-3 px-4 text-right font-mono tabular-nums text-white whitespace-nowrap">
-                          {formatPrice(p10, currency)}
+                          {p10 !== undefined ? formatPrice(p10, currency) : <span className="text-[#4b4640]">—</span>}
                         </td>
 
                         <td className="py-3 px-4 text-right font-mono tabular-nums text-[#D4AF37] font-semibold whitespace-nowrap">
@@ -585,7 +613,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                         </td>
 
                         <td className="py-3 px-4 text-right font-mono tabular-nums text-white whitespace-nowrap">
-                          {formatPrice(p40, currency)}
+                          {p40 !== undefined ? formatPrice(p40, currency) : <span className="text-[#4b4640]">—</span>}
                         </td>
 
                         <td className="py-3 px-4 text-center whitespace-nowrap">
@@ -983,6 +1011,136 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
         </div>
       )}
 
+      {/* TAB 4: COMMISSIONED ORDERS & GAZETTE SUBSCRIBERS */}
+      {activeSubTab === 'orders' && (
+        <div className="space-y-8">
+          {/* Commissioned Orders Ledger */}
+          <div className="bg-[#1E1C1A] border border-[#4b4640]/60 rounded-[0.25rem] p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2c2a27] pb-3">
+              <div>
+                <h2 className="text-base font-semibold text-white uppercase">
+                  Commissioned Extrait Orders ({orders.length})
+                </h2>
+                <p className="text-xs text-[#cdc5bd] mt-0.5">
+                  Track bespoke flacon commissions placed via Atelier Checkout and manage dispatch status.
+                </p>
+              </div>
+            </div>
+
+            {orders.length === 0 ? (
+              <div className="py-10 text-center text-xs text-[#969088] font-mono">
+                No commissioned orders recorded yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#2c2a27] bg-[#151311] text-[11px] uppercase tracking-wider text-[#969088] font-mono">
+                      <th className="py-3 px-4">Order Ref / Batch</th>
+                      <th className="py-3 px-4">Patron & Destination</th>
+                      <th className="py-3 px-4">Commissioned Items</th>
+                      <th className="py-3 px-4 text-right">Total</th>
+                      <th className="py-3 px-4 text-center">Dispatch Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2c2a27] text-xs">
+                    {orders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-[#151311]/70 transition-colors">
+                        <td className="py-3 px-4 font-mono whitespace-nowrap">
+                          <span className="text-[#D4AF37] font-bold block">{ord.orderRef}</span>
+                          <span className="text-[11px] text-[#cdc5bd] block">{ord.batchId}</span>
+                          <span className="text-[10px] text-[#969088]">
+                            {new Date(ord.createdAt).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-white block">{ord.patronName}</span>
+                          <span className="text-[11px] text-[#cdc5bd] font-mono block">
+                            {ord.email}
+                          </span>
+                          <span className="text-[11px] text-[#969088] block">
+                            {ord.city}, {ord.country}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-[#e7e1de] max-w-md">
+                          <span className="block leading-relaxed">{ord.itemsSummary}</span>
+                          {ord.samplesSummary && (
+                            <span className="block text-[11px] text-[#D4AF37] mt-0.5">
+                              2ml Vials: {ord.samplesSummary}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono tabular-nums text-[#D4AF37] font-semibold whitespace-nowrap">
+                          {ord.totalAmount}
+                        </td>
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <select
+                            aria-label={`Dispatch status for ${ord.orderRef}`}
+                            value={ord.status}
+                            onChange={(e) =>
+                              updateOrderStatus(
+                                ord.id,
+                                e.target.value as 'pending' | 'dispatched' | 'completed'
+                              )
+                            }
+                            className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold rounded-[0.125rem] border bg-[#151311] ${
+                              ord.status === 'completed'
+                                ? 'border-emerald-500/40 text-emerald-300'
+                                : ord.status === 'dispatched'
+                                ? 'border-[#D4AF37]/60 text-[#D4AF37]'
+                                : 'border-[#4b4640] text-[#cdc5bd]'
+                            }`}
+                          >
+                            <option value="pending">Pending Bottling</option>
+                            <option value="dispatched">Dispatched</option>
+                            <option value="completed">Delivered</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Nocturnal Gazette Subscribers */}
+          <div className="bg-[#1E1C1A] border border-[#4b4640]/60 rounded-[0.25rem] p-6 space-y-4">
+            <div className="border-b border-[#2c2a27] pb-3">
+              <h2 className="text-base font-semibold text-white uppercase">
+                Nocturnal Gazette Subscribers ({subscribers.length})
+              </h2>
+              <p className="text-xs text-[#cdc5bd] mt-0.5">
+                Patrons subscribed to private harvest alerts and archive dispatches.
+              </p>
+            </div>
+
+            {subscribers.length === 0 ? (
+              <div className="py-8 text-center text-xs text-[#969088] font-mono">
+                No newsletter subscribers recorded yet.
+              </div>
+            ) : (
+              <div className="divide-y divide-[#2c2a27]">
+                {subscribers.map((sub) => (
+                  <div
+                    key={sub.id}
+                    className="py-2.5 flex items-center justify-between gap-4 text-xs"
+                  >
+                    <span className="font-mono text-white">{sub.email}</span>
+                    <div className="flex items-center gap-4 text-[11px] font-mono">
+                      <span className="text-[#D4AF37]">Code: {sub.promoCode}</span>
+                      <span className="text-[#969088]">
+                        {new Date(sub.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* PRODUCT EDITOR MODAL */}
       {editingProduct && (
         <div
@@ -1055,7 +1213,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
               </div>
 
               {/* Row 2: Operational Attributes */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 <div>
                   <label className="text-[#cdc5bd] block mb-1">Intensity Level</label>
                   <select
@@ -1090,6 +1248,24 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                     <option value="Sensual">Sensual</option>
                     <option value="Relaxing">Relaxing</option>
                     <option value="Velvet Focus">Velvet Focus</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[#cdc5bd] block mb-1">Synergy Role</label>
+                  <select
+                    value={editingProduct.synergyRole ?? getProductSynergy(editingProduct).role}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        synergyRole: e.target.value as SynergyRole,
+                      })
+                    }
+                    className="w-full bg-[#151311] border border-[#4b4640] text-white px-3 py-2 rounded-[0.25rem]"
+                  >
+                    <option value="Ascendant">Ascendant (Yang / Radiant)</option>
+                    <option value="Receptive">Receptive (Yin / Magnetic)</option>
+                    <option value="Universal">Universal (Harmonic)</option>
                   </select>
                 </div>
 
@@ -1129,34 +1305,120 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
                 </div>
               </div>
 
-              {/* Row 3: 3-Tier Bottle Volume Pricing */}
+              {/* Row 3: Flexible Bottle Volume Pricing */}
               <div className="bg-[#151311] border border-[#2c2a27] p-4 rounded-[0.25rem] space-y-3">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#D4AF37] block font-semibold">
-                  Multi-Volume Bottle Pricing (USD)
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#D4AF37] block font-semibold">
+                    Flacon Volume Tiers & Pricing (USD)
+                  </span>
+                  {editingProduct.sizes.length < 3 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextMl =
+                          editingProduct.sizes.length === 1
+                            ? 30
+                            : editingProduct.sizes.length === 2
+                            ? 40
+                            : 50;
+                        setEditingProduct({
+                          ...editingProduct,
+                          sizes: [
+                            ...editingProduct.sizes,
+                            {
+                              ml: nextMl,
+                              label: `${nextMl}ml Atelier Flacon`,
+                              price: (editingProduct.sizes[0]?.price || 68) + 80,
+                            },
+                          ],
+                        });
+                      }}
+                      className="text-[10px] font-mono uppercase tracking-wider text-[#D4AF37] hover:underline flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" aria-hidden="true" />
+                      <span>Add Size Tier</span>
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {editingProduct.sizes.map((sz, idx) => (
-                    <div key={idx} className="space-y-1.5 bg-[#1E1C1A] p-3 rounded-[0.25rem] border border-[#4b4640]/40">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-white">{sz.ml}ml Bottle</span>
-                        <span className="text-[10px] text-[#969088]">{sz.label}</span>
+                    <div
+                      key={idx}
+                      className="space-y-2 bg-[#1E1C1A] p-3 rounded-[0.25rem] border border-[#4b4640]/40"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono font-bold text-white text-[11px]">
+                          Tier #{idx + 1} ({sz.ml}ml)
+                        </span>
+                        {editingProduct.sizes.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextSizes = editingProduct.sizes.filter((_, i) => i !== idx);
+                              setEditingProduct({ ...editingProduct, sizes: nextSizes });
+                            }}
+                            className="text-[10px] text-[#969088] hover:text-rose-400 uppercase font-mono"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
-                      <label className="text-[10px] text-[#cdc5bd] block">Price ($ USD)</label>
-                      <input
-                        type="number"
-                        min={1}
-                        required
-                        value={sz.price}
-                        onChange={(e) => {
-                          const updatedSizes = [...editingProduct.sizes];
-                          updatedSizes[idx] = {
-                            ...updatedSizes[idx],
-                            price: Number(e.target.value),
-                          };
-                          setEditingProduct({ ...editingProduct, sizes: updatedSizes });
-                        }}
-                        className="w-full bg-[#151311] border border-[#4b4640] text-white font-mono tabular-nums px-2.5 py-1.5 rounded-[0.25rem]"
-                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-[#cdc5bd] block">Volume (ml/g)</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={500}
+                            required
+                            value={sz.ml}
+                            onChange={(e) => {
+                              const updatedSizes = [...editingProduct.sizes];
+                              updatedSizes[idx] = {
+                                ...updatedSizes[idx],
+                                ml: Number(e.target.value),
+                              };
+                              setEditingProduct({ ...editingProduct, sizes: updatedSizes });
+                            }}
+                            className="w-full bg-[#151311] border border-[#4b4640] text-white font-mono tabular-nums px-2 py-1 rounded-[0.25rem]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-[#cdc5bd] block">Price ($ USD)</label>
+                          <input
+                            type="number"
+                            min={1}
+                            required
+                            value={sz.price}
+                            onChange={(e) => {
+                              const updatedSizes = [...editingProduct.sizes];
+                              updatedSizes[idx] = {
+                                ...updatedSizes[idx],
+                                price: Number(e.target.value),
+                              };
+                              setEditingProduct({ ...editingProduct, sizes: updatedSizes });
+                            }}
+                            className="w-full bg-[#151311] border border-[#4b4640] text-white font-mono tabular-nums px-2 py-1 rounded-[0.25rem]"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-[#cdc5bd] block">Edition Label</label>
+                        <input
+                          type="text"
+                          required
+                          value={sz.label}
+                          onChange={(e) => {
+                            const updatedSizes = [...editingProduct.sizes];
+                            updatedSizes[idx] = {
+                              ...updatedSizes[idx],
+                              label: e.target.value,
+                            };
+                            setEditingProduct({ ...editingProduct, sizes: updatedSizes });
+                          }}
+                          className="w-full bg-[#151311] border border-[#4b4640] text-white text-[11px] px-2 py-1 rounded-[0.25rem]"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1278,9 +1540,9 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
               {/* Row 7: Image URL & Stock Flags */}
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                 <div className="sm:col-span-6">
-                  <label className="text-[#cdc5bd] block mb-1">Primary Flacon Image URL</label>
+                  <label className="text-[#cdc5bd] block mb-1">Primary Flacon Image URL / Path</label>
                   <input
-                    type="url"
+                    type="text"
                     required
                     value={editingProduct.primaryImage}
                     onChange={(e) =>

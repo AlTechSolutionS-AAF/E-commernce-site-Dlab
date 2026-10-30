@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, ShieldCheck, Flame, Compass } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 interface HeroSectionProps {
   onStartDiagnostic: () => void;
@@ -15,15 +15,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Subtle ambient luxury radial backdrop */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#D4AF37]/10 via-[#af8d11]/5 to-transparent blur-3xl pointer-events-none rounded-full" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
           {/* Left Column: Brand Statement & CTA */}
           <div className="lg:col-span-7 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1E1C1A] border border-[#D4AF37]/40 rounded-[0.25rem]">
               <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
               <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.25em] uppercase text-[#D4AF37]">
-                THE ARCHITECTURE OF SHADOW • HARVEST 2025
+                THE ARCHITECTURE OF SHADOW • HARVEST 2026
               </span>
             </div>
 
@@ -35,41 +34,43 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h1>
 
             <p className="text-sm sm:text-base text-[#cdc5bd] max-w-xl leading-relaxed font-normal">
-              Formulated at the 35% to 40% concentration threshold. Extracted under twilight in Grasse and Phnom Penh, engineered specifically for the lingering hours between midnight and dawn.
+              Formulated at the 35% to 42% concentration threshold. Extracted under twilight in Grasse and Phnom Penh, engineered specifically for the lingering hours between midnight and dawn.
             </p>
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <button
+                type="button"
                 onClick={onStartDiagnostic}
                 className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-6 py-3.5 text-xs font-semibold tracking-[0.2em] uppercase rounded-[0.25rem] transition-all duration-200 shadow-lg shadow-[#D4AF37]/10 group"
               >
-                <Sparkles className="w-4 h-4 text-[#0F0E0D] group-hover:rotate-12 transition-transform" />
+                <Sparkles className="w-4 h-4 text-[#0F0E0D] group-hover:rotate-12 transition-transform" aria-hidden="true" />
                 <span>Begin Night Match Diagnostic</span>
-                <ArrowRight className="w-4 h-4 text-[#0F0E0D] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-[#0F0E0D] group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </button>
 
               <button
+                type="button"
                 onClick={onExploreCatalog}
                 className="inline-flex items-center justify-center gap-2 bg-[#1E1C1A] hover:bg-[#2c2a27] text-[#FFFFFF] border border-[#4b4640] hover:border-[#D4AF37] px-6 py-3.5 text-xs font-medium tracking-[0.2em] uppercase rounded-[0.25rem] transition-colors"
               >
-                <span>View All Flacons</span>
+                <span>View All 93 Catalog Items</span>
               </button>
             </div>
 
             {/* Micro specs */}
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[#2c2a27] max-w-lg">
               <div>
-                <p className="text-lg font-semibold text-[#FFFFFF] tracking-tight">35-40%</p>
+                <p className="text-lg font-semibold text-[#FFFFFF] tracking-tight font-mono tabular-nums">35–42%</p>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-[#969088] mt-0.5">Pure Extrait</p>
               </div>
               <div>
-                <p className="text-lg font-semibold text-[#D4AF37] tracking-tight">18+ Hours</p>
+                <p className="text-lg font-semibold text-[#D4AF37] tracking-tight font-mono tabular-nums">18+ Hours</p>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-[#969088] mt-0.5">Sillage Longevity</p>
               </div>
               <div>
-                <p className="text-lg font-semibold text-[#FFFFFF] tracking-tight">300 Bottles</p>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-[#969088] mt-0.5">Numbered Batch</p>
+                <p className="text-lg font-semibold text-[#FFFFFF] tracking-tight font-mono tabular-nums">93 Archive</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[#969088] mt-0.5">Flacons & Editions</p>
               </div>
             </div>
           </div>
@@ -81,8 +82,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="relative rounded-[0.25rem] overflow-hidden border border-[#4b4640]/60 bg-[#1E1C1A] p-2 transition-all duration-300 group-hover:border-[#D4AF37]/60 shadow-2xl">
                 <div className="relative aspect-[4/5] overflow-hidden bg-[#151311] rounded-[0.125rem]">
                   <img
-                    src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85"
-                    alt="Ambre Obsidienne Extrait"
+                    src="/products/10ml/06.webp?v=20261029c"
+                    alt="NO.06 C4 Nocturne Extrait"
                     className="w-full h-full object-cover object-center filter brightness-95 contrast-105 group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0F0E0D] via-transparent to-transparent opacity-80" />
@@ -92,19 +93,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-[9px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-                          FEATURED NOCTURNE
+                          #1 WEEKLY TOP EXTRAIT
                         </span>
                         <h4 className="text-sm font-semibold tracking-wide text-white uppercase mt-0.5">
-                          Ambre Obsidienne
+                          NO.06 C4 Nocturne
                         </h4>
                       </div>
                       <span className="text-xs font-mono text-[#D4AF37] bg-[#0F0E0D] px-2 py-1 rounded-[0.125rem] border border-[#4b4640]">
-                        EXT-01/OBS
+                        EXT-06/C4N
                       </span>
                     </div>
                     <div className="mt-2 text-[10px] text-[#cdc5bd] flex items-center justify-between pt-1.5 border-t border-[#2c2a27]">
-                      <span>Baltic Amber • Birch Tar • Saffron</span>
-                      <span className="text-[#969088]">Grasse, FR</span>
+                      <span>Smoked Oud • Black Cardamom • Saffron</span>
+                      <span className="text-[#969088]">42% Extrait</span>
                     </div>
                   </div>
                 </div>
@@ -116,7 +117,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>

@@ -62,15 +62,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     }
   };
 
+  const pickedSampleNames = selectedSamples
+    .map((id) => availableSamples.find((s) => s.id === id)?.name)
+    .filter((name): name is string => Boolean(name));
+
   const whatsappCheckoutUrl = generateMultiItemWhatsAppLink(
     items.map((it) => ({
       product: it.product,
       size: it.selectedSize,
-      quantity: it.quantity
+      quantity: it.quantity,
+      monogram: it.monogram
     })),
     giftPackaging,
     totals.total,
-    shopSettings.whatsappPhone
+    shopSettings.whatsappPhone,
+    {
+      sampleNames: pickedSampleNames,
+      promoCode: promoCode || undefined,
+      formattedTotal: formatPrice(totals.total, currency),
+      monogramUnitFee: shopSettings.monogramPrice
+    }
   );
 
   return (
