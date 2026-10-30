@@ -52,7 +52,7 @@ interface ShopDataContextValue {
 const ShopDataContext = createContext<ShopDataContextValue | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'dlab_admin_products_v1',
+  PRODUCTS: 'dlab_admin_products_v2_93',
   SETTINGS: 'dlab_admin_settings_v1',
   PROMOS: 'dlab_admin_promos_v1',
   SAMPLES: 'dlab_admin_samples_v1',
@@ -294,8 +294,14 @@ export const ShopDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!snap.empty) {
           const loaded: Product[] = [];
           snap.forEach((d) => loaded.push(d.data() as Product));
-          loaded.sort((a, b) => a.rank - b.rank);
-          setProducts(loaded);
+          if (loaded.length >= 20) {
+            loaded.sort((a, b) => a.rank - b.rank);
+            setProducts(loaded);
+          } else {
+            const cloudMap = new Map(loaded.map((p) => [p.id, p]));
+            const merged = PRODUCTS.map((p) => cloudMap.get(p.id) || p);
+            setProducts(merged);
+          }
           setIsCloudSynced(true);
         }
       },

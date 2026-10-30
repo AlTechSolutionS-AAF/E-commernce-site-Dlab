@@ -15,7 +15,14 @@ import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { AgeVerificationModal } from './components/AgeVerificationModal';
-import { PRODUCTS, Product, ProductSize, getProductSynergy } from './data/products';
+import {
+  PRODUCTS,
+  Product,
+  ProductSize,
+  CatalogCategory,
+  getProductSynergy,
+  getProductCatalogCategory
+} from './data/products';
 import { CartItem, calculateCartTotals } from './utils/cartCalculations';
 import { ShopDataProvider, useShopData } from './context/ShopDataContext';
 import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield } from 'lucide-react';
@@ -26,6 +33,7 @@ function StorefrontContent() {
   const [currentTab, setCurrentTab] = useState<NavTab>('catalog');
   const [currency, setCurrency] = useState<'USD' | 'EUR' | 'GBP' | 'JPY'>('USD');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<CatalogCategory>('All');
   const [selectedIntensity, setSelectedIntensity] = useState<string>('All');
   const [selectedSynergy, setSelectedSynergy] = useState<string>('All');
   const [selectedExperience, setSelectedExperience] = useState<string>('All');
@@ -43,7 +51,10 @@ function StorefrontContent() {
     try {
       const saved = localStorage.getItem('dlab_quick_bag');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.product?.id && parsed[0]?.selectedSize?.price) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('Could not parse saved cart', e);
@@ -51,7 +62,7 @@ function StorefrontContent() {
     return [
       {
         product: PRODUCTS[0],
-        selectedSize: PRODUCTS[0].sizes[0], // 10ml, $65
+        selectedSize: PRODUCTS[0].sizes[0],
         quantity: 1
       }
     ];
@@ -137,35 +148,54 @@ function StorefrontContent() {
     handleToggleWishlist(product);
   };
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<CatalogCategory, number> = {
+      All: products.length,
+      '10ml': 0,
+      '30ml': 0,
+      '40ml': 0,
+      solid: 0,
+      accessory: 0
+    };
+    products.forEach((p) => {
+      const cat = getProductCatalogCategory(p);
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [products]);
+
   // Filtered & Sorted products using live catalog from ShopDataContext
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const q = searchQuery.toLowerCase().trim();
       const synergyMeta = getProductSynergy(p);
+      const prodCategory = getProductCatalogCategory(p);
       const matchSearch =
         !q ||
         p.name.toLowerCase().includes(q) ||
         p.shortCode.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
         p.intensity.toLowerCase().includes(q) ||
         p.experience.toLowerCase().includes(q) ||
         synergyMeta.shortLabel.toLowerCase().includes(q) ||
         [...p.notes.top, ...p.notes.heart, ...p.notes.base].some((n) => n.toLowerCase().includes(q));
 
+      const matchCategory = selectedCatalogCategory === 'All' || prodCategory === selectedCatalogCategory;
       const matchIntensity = selectedIntensity === 'All' || p.intensity === selectedIntensity;
       const matchSynergy = selectedSynergy === 'All' || synergyMeta.role === selectedSynergy;
       const matchExperience = selectedExperience === 'All' || p.experience === selectedExperience;
       const matchSillage = selectedSillage === 'All' || p.sillage === selectedSillage;
 
-      return matchSearch && matchIntensity && matchSynergy && matchExperience && matchSillage;
+      return matchSearch && matchCategory && matchIntensity && matchSynergy && matchExperience && matchSillage;
     }).sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
       if (sortBy === 'longevity') return b.longevityHours - a.longevityHours;
       if (sortBy === 'rank') return a.rank - b.rank;
-      return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      return 0;
     });
-  }, [products, searchQuery, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
+  }, [products, searchQuery, selectedCatalogCategory, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
 
   const totals = calculateCartTotals(cartItems, promoCode, shopSettings, promoCodes);
 
@@ -220,6 +250,54 @@ function StorefrontContent() {
             {/* Dense Catalog Section with Operational & Targeted Synergy Filtering */}
             <section id="catalog-grid" aria-labelledby="catalog-heading" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-[#2c2a27]">
               <div className="space-y-4 mb-8">
+                {/* Catalog Header & Volume / Category Tabs matching original site */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-4 border-b border-[#2c2a27]">
+                  <div className="space-y-1 text-left">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold block">
+                      COMPLETE ARCHIVE • 93 ITEMS
+                    </span>
+                    <h2 id="catalog-heading" className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white">
+                      FULL DLAB CATALOG
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Catalog format and category filter">
+                    {(
+                      [
+                        { id: 'All', label: 'ALL' },
+                        { id: '10ml', label: '10ML AROMA' },
+                        { id: '30ml', label: '30ML AROMA' },
+                        { id: '40ml', label: '40ML AROMA' },
+                        { id: 'solid', label: 'SOLID TYPE' },
+                        { id: 'accessory', label: 'ACCESSORIES' }
+                      ] as { id: CatalogCategory; label: string }[]
+                    ).map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setSelectedCatalogCategory(tab.id)}
+                        className={`text-[11px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-[0.125rem] border transition-all flex items-center gap-1.5 ${
+                          selectedCatalogCategory === tab.id
+                            ? 'border-[#D4AF37] bg-[#D4AF37] text-[#0F0E0D] font-bold'
+                            : 'border-[#4b4640]/60 bg-[#151311] text-[#cdc5bd] hover:border-[#D4AF37]/60 hover:text-white'
+                        }`}
+                        aria-pressed={selectedCatalogCategory === tab.id}
+                      >
+                        <span>{tab.label}</span>
+                        <span
+                          className={`text-[10px] tabular-nums px-1 py-0.2 rounded-[0.125rem] ${
+                            selectedCatalogCategory === tab.id
+                              ? 'bg-[#0F0E0D]/20 text-[#0F0E0D]'
+                              : 'bg-[#1E1C1A] text-[#D4AF37]'
+                          }`}
+                        >
+                          {categoryCounts[tab.id]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#2c2a27]">
                   {/* Intensity Filters */}
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
@@ -303,7 +381,7 @@ function StorefrontContent() {
                         className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
                         aria-label="Sort product catalog"
                       >
-                        <option value="featured" className="bg-[#1E1C1A]">Curated Order</option>
+                        <option value="featured" className="bg-[#1E1C1A]">Catalog Number</option>
                         <option value="rank" className="bg-[#1E1C1A]">Top 10 Rank</option>
                         <option value="price-asc" className="bg-[#1E1C1A]">Price: Low to High</option>
                         <option value="price-desc" className="bg-[#1E1C1A]">Price: High to Low</option>
@@ -316,15 +394,16 @@ function StorefrontContent() {
                 {/* Search result count / active filter tags */}
                 <div className="flex items-center justify-between text-xs text-[#969088]">
                   <span>
-                    Displaying <strong className="text-white tabular-nums">{filteredProducts.length}</strong> of <span className="tabular-nums">{products.length}</span> Extraits
+                    Displaying <strong className="text-white tabular-nums">{filteredProducts.length}</strong> of <span className="tabular-nums">{products.length}</span> Catalog Items
                     {searchQuery && <span> matching “{searchQuery}”</span>}
                   </span>
 
-                  {(searchQuery || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
+                  {(searchQuery || selectedCatalogCategory !== 'All' || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
                     <button
                       type="button"
                       onClick={() => {
                         setSearchQuery('');
+                        setSelectedCatalogCategory('All');
                         setSelectedIntensity('All');
                         setSelectedSynergy('All');
                         setSelectedExperience('All');
@@ -342,14 +421,15 @@ function StorefrontContent() {
               {/* Product Grid with 50ms Staggered Entrances & Native Lazy Loading */}
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-20 bg-[#1E1C1A] rounded-[0.25rem] border border-[#4b4640]/50 space-y-4">
-                  <p className="text-base text-[#FFFFFF] uppercase tracking-wider">No matching extraits found.</p>
+                  <p className="text-base text-[#FFFFFF] uppercase tracking-wider">No matching items found.</p>
                   <p className="text-xs text-[#cdc5bd] max-w-md mx-auto">
-                    Try adjusting your intensity level, targeted synergy, or preferred experience filter.
+                    Try adjusting your category tab, intensity level, targeted synergy, or preferred experience filter.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
                       setSearchQuery('');
+                      setSelectedCatalogCategory('All');
                       setSelectedIntensity('All');
                       setSelectedSynergy('All');
                       setSelectedExperience('All');

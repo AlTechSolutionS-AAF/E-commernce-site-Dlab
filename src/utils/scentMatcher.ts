@@ -20,34 +20,41 @@ export function direct10SecondAssessment(
 ): QuickAssessmentMatch {
   // Score candidates based on exact intensity and experience alignment
   const ranked = productList.map((prod) => {
-    let score = 70;
+    let score = 65;
+
+    if (prod.id.startsWith('10ml-')) {
+      score += 5;
+    }
 
     if (prod.intensity === input.intensity) {
-      score += 20;
+      score += 18;
     }
 
     if (prod.experience === input.experience) {
+      score += 18;
+    }
+
+    // Specific flagship ties
+    if (input.experience === 'High-energy' && (prod.id === '10ml-06' || prod.id === 'dlab-06')) {
+      score += 20;
+    } else if (
+      input.experience === 'Sensual' &&
+      (prod.id === '10ml-01' || prod.id === '10ml-11' || prod.id === 'dlab-01' || prod.id === 'dlab-02')
+    ) {
+      score += 16;
+    } else if (input.experience === 'Relaxing' && (prod.id === '10ml-04' || prod.id === 'dlab-04')) {
+      score += 20;
+    } else if (input.experience === 'Velvet Focus' && (prod.id === '10ml-14' || prod.id === 'dlab-03')) {
       score += 20;
     }
 
-    // Specific product ties
-    if (input.experience === 'High-energy' && prod.id === 'dlab-06') {
-      score += 15;
-    } else if (input.experience === 'Sensual' && (prod.id === 'dlab-01' || prod.id === 'dlab-02')) {
-      score += 12;
-    } else if (input.experience === 'Relaxing' && prod.id === 'dlab-04') {
-      score += 15;
-    } else if (input.experience === 'Velvet Focus' && prod.id === 'dlab-03') {
-      score += 15;
-    }
-
     const confidenceScore = Math.min(99, score);
-    return { prod, confidenceScore };
+    return { prod, score, confidenceScore };
   });
 
-  ranked.sort((a, b) => b.confidenceScore - a.confidenceScore);
+  ranked.sort((a, b) => b.score - a.score || a.prod.rank - b.prod.rank);
   const bestProd = ranked[0].prod;
-  const chosenSize = bestProd.sizes.find((s) => s.ml === input.selectedSizeMl) || bestProd.sizes[1];
+  const chosenSize = bestProd.sizes.find((s) => s.ml === input.selectedSizeMl) || bestProd.sizes[0];
 
   let headlineSummary = '';
   if (input.intensity === 'Intense' && input.experience === 'High-energy') {

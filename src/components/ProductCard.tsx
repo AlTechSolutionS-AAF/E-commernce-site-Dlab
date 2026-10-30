@@ -173,10 +173,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Size Selection Toggle Pills (10ml, 30ml, 40ml) */}
         <div className="space-y-2 pt-2">
-          <div className="grid grid-cols-3 gap-1 bg-[#151311] p-0.5 rounded-[0.25rem] border border-[#2c2a27]">
+          <div
+            className={`grid ${
+              product.sizes.length === 1
+                ? 'grid-cols-1'
+                : product.sizes.length === 2
+                ? 'grid-cols-2'
+                : 'grid-cols-3'
+            } gap-1 bg-[#151311] p-0.5 rounded-[0.25rem] border border-[#2c2a27]`}
+          >
             {product.sizes.map((sz, idx) => (
               <button
-                key={sz.ml}
+                key={`${sz.ml}-${idx}`}
                 type="button"
                 onClick={() => setSelectedSizeIndex(idx)}
                 className={`text-[10px] py-1 uppercase tracking-wider font-medium rounded-[0.125rem] transition-colors tabular-nums ${
@@ -186,7 +194,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 }`}
                 aria-pressed={selectedSizeIndex === idx}
               >
-                {sz.ml}ml
+                {product.sizes.length === 1 ? sz.label : `${sz.ml}ml`}
               </button>
             ))}
           </div>

@@ -86,33 +86,49 @@ test('calculateCartTotals calculates subtotal with 10ml, 30ml, 40ml sizes and dy
 });
 
 test('getProductSynergy maps products deterministically to Ascendant, Receptive, or Universal', () => {
-  const roles = new Set(PRODUCTS.map((p) => getProductSynergy(p)));
+  const roles = new Set(PRODUCTS.map((p) => getProductSynergy(p).role));
   assert.ok(roles.has('Ascendant'));
   assert.ok(roles.has('Receptive'));
   assert.ok(roles.has('Universal'));
 });
 
 test('generateChannelLink builds valid URLs for Shopee, Lazada, Grab Delivery, TikTok, and Webstore', () => {
-  const shopeeUrl = generateChannelLink('shopee', 'NO.06 C4', 'NOCTURNE', 10);
-  const lazadaUrl = generateChannelLink('lazada', 'NO.06 C4', 'NOCTURNE', 10);
-  const grabUrl = generateChannelLink('grab', 'NO.06 C4', 'NOCTURNE', 10, '60108371938');
-  const tiktokUrl = generateChannelLink('tiktok', 'NO.06 C4', 'NOCTURNE', 10);
-  const webstoreUrl = generateChannelLink('webstore', 'NO.06 C4', 'NOCTURNE', 10);
+  const shopeeUrl = generateChannelLink('shopee', 'NO.06 C4', 10);
+  const lazadaUrl = generateChannelLink('lazada', 'NO.06 C4', 10);
+  const grabUrl = generateChannelLink('grab', 'NO.06 C4', 10, '60108371938');
+  const tiktokUrl = generateChannelLink('tiktok', 'NO.06 C4', 10, '60108371938');
+  const webstoreUrl = generateChannelLink('webstore', 'NO.06 C4', 10);
 
   assert.ok(shopeeUrl.includes('shopee.com.my'));
   assert.ok(lazadaUrl.includes('lazada.com.my'));
   assert.ok(grabUrl.includes('wa.me/60108371938') && grabUrl.includes('Grab%20Delivery'));
-  assert.ok(tiktokUrl.includes('tiktok.com'));
-  assert.ok(webstoreUrl.includes('dlab-atelier.com'));
+  assert.ok(tiktokUrl.includes('wa.me/60108371938') && tiktokUrl.includes('TikTok'));
+  assert.ok(webstoreUrl.includes('dlabperfume.vercel.app'));
 });
 
 test('CONCIERGE_FAQS and ATELIER_COMMENDATIONS contain authentic luxury copy and Weekly Top 10 shares sum cleanly', () => {
   assert.equal(CONCIERGE_FAQS.length, 8);
-  assert.ok(CONCIERGE_FAQS.some((faq) => faq.elevatedTitle === 'Dispatch & Courier Timelines'));
-  assert.ok(CONCIERGE_FAQS.some((faq) => faq.elevatedTitle === 'Client Privacy & Discreet Dispatch'));
-  assert.ok(ATELIER_COMMENDATIONS.some((r) => r.quote.includes('Premium quality muscle relaxant')));
+  assert.ok(CONCIERGE_FAQS.some((faq) => faq.title === 'Dispatch & Courier Timelines'));
+  assert.ok(CONCIERGE_FAQS.some((faq) => faq.title === 'Client Privacy & Discreet Dispatch'));
+  assert.ok(ATELIER_COMMENDATIONS.some((r) => r.excerpt.includes('Premium quality muscle relaxant')));
   assert.equal(WEEKLY_TOP_10_METRICS.length, 10);
   assert.equal(WEEKLY_TOP_10_METRICS[0].code, 'NO.06');
   assert.equal(WEEKLY_TOP_10_METRICS[0].sharePercent, 22.7);
 });
+
+test('PRODUCTS contains all 93 products from the original site across 10ml, 30ml, 40ml, Solid Type, and Accessories', () => {
+  assert.equal(PRODUCTS.length, 93);
+  const count10 = PRODUCTS.filter((p) => p.id.startsWith('10ml-')).length;
+  const count30 = PRODUCTS.filter((p) => p.id.startsWith('30ml-')).length;
+  const count40 = PRODUCTS.filter((p) => p.id.startsWith('40ml-')).length;
+  const countSolid = PRODUCTS.filter((p) => p.id.startsWith('solid-')).length;
+  const countAcc = PRODUCTS.filter((p) => p.id.startsWith('mickey-cap-') || p.id.startsWith('leakproof-')).length;
+
+  assert.equal(count10, 47);
+  assert.equal(count30, 19);
+  assert.equal(count40, 10);
+  assert.equal(countSolid, 1);
+  assert.equal(countAcc, 16);
+});
+
 

@@ -35,7 +35,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
   }, []);
 
   const topProducts = useMemo(() => {
-    return [...products].sort((a, b) => a.rank - b.rank);
+    return [...products].sort((a, b) => a.rank - b.rank).slice(0, 6);
   }, [products]);
 
   const rankOneMetric = WEEKLY_TOP_10_METRICS[0];

@@ -1,5 +1,6 @@
 export type IntensityLevel = 'Mild' | 'Strong' | 'Intense';
 export type PreferredExperience = 'Relaxing' | 'High-energy' | 'Sensual' | 'Velvet Focus';
+export type CatalogCategory = 'All' | '10ml' | '30ml' | '40ml' | 'solid' | 'accessory';
 
 /**
  * Targeted Synergy Indicator replacing the utilitarian Blue/Red dot system:
@@ -58,7 +59,7 @@ export interface ProductSize {
 export interface Product {
   id: string;
   code: string;
-  shortCode: string; // e.g. "NO.01", "NO.06 C4"
+  shortCode: string; // e.g. "NO.01", "NO.06 C4", "30ML · NO.01"
   name: string;
   subtitle: string;
   price: number;
@@ -96,6 +97,30 @@ export interface Product {
   inStock: boolean;
 }
 
+export function getProductCatalogCategory(product: Pick<Product, 'id' | 'shortCode'>): Exclude<CatalogCategory, 'All'> {
+  const id = (product.id || '').toLowerCase();
+  const code = (product.shortCode || '').toUpperCase();
+  if (id.startsWith('30ml-') || code.startsWith('30ML')) return '30ml';
+  if (id.startsWith('40ml-') || code.startsWith('40ML')) return '40ml';
+  if (id.startsWith('solid-') || code.startsWith('SOLID')) return 'solid';
+  if (id.startsWith('mickey-cap-') || id.startsWith('leakproof-') || code.startsWith('CAP') || code.startsWith('VIAL')) return 'accessory';
+  return '10ml';
+}
+
+const ASCENDANT_IDS = new Set([
+  '10ml-14', '10ml-26', '10ml-31', '10ml-35', '10ml-38', '10ml-41', '10ml-43',
+  '30ml-10', '30ml-19',
+  '40ml-02',
+  'dlab-03'
+]);
+
+const RECEPTIVE_IDS = new Set([
+  '10ml-01', '10ml-04', '10ml-06', '10ml-27', '10ml-32', '10ml-36', '10ml-37', '10ml-42', '10ml-44', '10ml-45',
+  '30ml-01', '30ml-02', '30ml-03', '30ml-07', '30ml-11', '30ml-16',
+  '40ml-03', '40ml-04', '40ml-06', '40ml-09', '40ml-10',
+  'dlab-01', 'dlab-04', 'dlab-06'
+]);
+
 /**
  * Deterministic helper to resolve a product's Targeted Synergy Indicator (`↑`, `↓`, `∞`),
  * even for products loaded from Firestore where `synergyRole` is not stored as a separate field.
@@ -104,16 +129,14 @@ export function getProductSynergy(product: Pick<Product, 'id' | 'shortCode' | 'i
   if (product.synergyRole && SYNERGY_METADATA[product.synergyRole]) {
     return SYNERGY_METADATA[product.synergyRole];
   }
-  const code = (product.shortCode || '').toUpperCase();
-  if (code.includes('NO.14') || code.includes('NO.26') || code.includes('NO.35') || code.includes('NO.38') || code.includes('NO.41') || product.id === 'dlab-03') {
+  if (ASCENDANT_IDS.has(product.id)) {
     return SYNERGY_METADATA.Ascendant;
   }
-  if (code.includes('NO.01') || code.includes('NO.04') || code.includes('NO.06') || code.includes('NO.37') || code.includes('NO.45') || product.id === 'dlab-01' || product.id === 'dlab-04' || product.id === 'dlab-06') {
+  if (RECEPTIVE_IDS.has(product.id)) {
     return SYNERGY_METADATA.Receptive;
   }
   return SYNERGY_METADATA.Universal;
 }
-
 export interface ShopSettings {
   whatsappPhone: string;
   freeShippingThreshold: number;
@@ -295,324 +318,8933 @@ export function generateChannelLink(
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'dlab-01',
-    code: 'EXT-01/AMS',
-    shortCode: 'NO.01',
-    name: 'AMBRE OBSIDIENNE · AMSTERDAM',
-    subtitle: 'Extrait de Parfum 38% · Receptive Synergy',
-    price: 185,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 65 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 185 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 245 }
+    "id": "10ml-01",
+    "code": "RP01-AMST-10ML",
+    "shortCode": "NO.01",
+    "name": "AMSTERDAM",
+    "subtitle": "10ML EXTRAIT · Signature Amsterdam Reserve",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 185
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Intense',
-    experience: 'Sensual',
-    synergyRole: 'Receptive',
-    monthlyOrders: 412,
-    rank: 1,
-    trendingDelta: '+18% this week',
-    concentration: '38% Pure Extrait',
-    harvestYear: '2025 Reserve',
-    perfumer: 'Laurent Vaneau, Grasse',
-    batchCount: 320,
-    rating: 4.9,
-    reviewCount: 48,
-    description: 'The iconic NO.01 Amsterdam reserve. Aged Baltic amber resin dissolved in raw birch tar, spiked with wild saffron threads and Madagascan bourbon vanilla for deep somatic relaxation.',
-    safetyInstructions: [
-      'For external aromatic and ambient diffusion only.',
-      'Do not ingest. Avoid direct contact with eyes and mucous membranes.',
-      'Store in a cool, dark location away from open flames or high heat.',
-      'Ensure adequate ambient room ventilation during concentrated diffusion.'
+    "intensity": "Intense",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 412,
+    "rank": 17,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 240,
+    "rating": 5,
+    "reviewCount": 18,
+    "description": "The iconic NO.01 Amsterdam reserve. Aged Baltic amber resin dissolved in raw birch tar and Madagascan bourbon vanilla for effortless receptive relaxation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“Warmth retrieved from the edge of midnight, frozen in black glass.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/01.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/40ml/04.webp',
-    boxImage: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=85',
-    notes: {
-      top: ['Kashmiri Saffron', 'Bitter Orange Peel', 'Pink Peppercorn'],
-      heart: ['Charred Birch Tar', 'Smoked Labdanum', 'Orris Concrete'],
-      base: ['Aged Baltic Amber', 'Bourbon Vanilla Bean', 'Obsidian Resin']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/01.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/01.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
     },
-    accords: [
-      { name: 'Smoked Amber', percentage: 42, color: '#D4AF37' },
-      { name: 'Warm Resins', percentage: 28, color: '#af8d11' },
-      { name: 'Dark Woods', percentage: 18, color: '#373432' },
-      { name: 'Spiced Vanilla', percentage: 12, color: '#e9c349' }
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
     ],
-    sillage: 'Heavy',
-    longevityHours: 18,
-    optimalHours: '23:00 — 05:00',
-    scentFamilies: ['Amber', 'Smoky', 'Gourmand'],
-    featured: true,
-    bestseller: true,
-    inStock: true
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": true,
+    "inStock": false
   },
   {
-    id: 'dlab-06',
-    code: 'EXT-06/C4',
-    shortCode: 'NO.06 C4',
-    name: 'NOCTURNE',
-    subtitle: 'Extrait de Parfum 40% · #1 Weekly Top Seller (22.7%)',
-    price: 195,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 68 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 195 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 260 }
+    "id": "10ml-02",
+    "code": "RP01-AMNI-10ML",
+    "shortCode": "NO.02",
+    "name": "AMYL NIGHT",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Intense',
-    experience: 'High-energy',
-    synergyRole: 'Receptive',
-    monthlyOrders: 528,
-    rank: 2,
-    trendingDelta: '👑 22.7% Weekly Share',
-    concentration: '40% Pure Extrait',
-    harvestYear: '2025 Grand Cru',
-    perfumer: 'Camille Reynaud',
-    batchCount: 290,
-    rating: 5.0,
-    reviewCount: 94,
-    description: 'Ranked #1 in the Weekly Top 10 (22.7% of all 10ml commissions). A catalytic surge of high-octane birch tar, sparkling pink pepper crystals, volcanic vetiver, and dark metallic musk.',
-    safetyInstructions: [
-      'High concentration formulation: 1–2 ambient pulses are sufficient.',
-      'Keep tightly sealed when not in active use to preserve volatile esters.',
-      'External aromatic application only. Do not apply to irritated skin.',
-      'Keep away from heat sources and out of reach of children.'
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 24,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 257,
+    "rating": 4.9,
+    "reviewCount": 29,
+    "description": "Authentic DLAB Amyl Night (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“An ignition of twilight flint and thunderous velocity.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/06.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/30ml/03.webp',
-    boxImage: 'https://dlab-night-match.vercel.app/products/40ml/09.webp',
-    notes: {
-      top: ['Pink Peppercorn', 'Sparkling Elemi', 'Icy Mineral Flint'],
-      heart: ['Charred Birch Tar', 'Haitian Vetiver Root', 'Black Salt'],
-      base: ['Cambodian Agarwood', 'Metallic Musk', 'Dark Ambergris']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/02.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/02.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
     },
-    accords: [
-      { name: 'Birch & Pyrogenic', percentage: 46, color: '#D4AF37' },
-      { name: 'Volcanic Vetiver', percentage: 26, color: '#4b4640' },
-      { name: 'Metallic Spice', percentage: 16, color: '#cdc5bd' },
-      { name: 'Dark Resins', percentage: 12, color: '#af8d11' }
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
     ],
-    sillage: 'Heavy',
-    longevityHours: 20,
-    optimalHours: '00:00 — Dawn',
-    scentFamilies: ['Smoky', 'Woody', 'Spiced'],
-    featured: true,
-    bestseller: true,
-    inStock: true
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
   },
   {
-    id: 'dlab-02',
-    code: 'EXT-11/EXP',
-    shortCode: 'NO.11',
-    name: 'OUD NOCTURNE · EXTREME POWER',
-    subtitle: 'Extrait de Parfum 40% · #2 Weekly Rank (9.1%)',
-    price: 210,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 75 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 210 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 280 }
+    "id": "10ml-03",
+    "code": "RP01-AMYL-10ML",
+    "shortCode": "NO.03",
+    "name": "AMYL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Intense',
-    experience: 'Sensual',
-    synergyRole: 'Universal',
-    monthlyOrders: 341,
-    rank: 3,
-    trendingDelta: '🏅 9.1% Weekly Share',
-    concentration: '40% Pure Extrait',
-    harvestYear: '2024 Aged Maceration',
-    perfumer: 'Camille Reynaud',
-    batchCount: 210,
-    rating: 4.9,
-    reviewCount: 56,
-    description: 'Universal dual-synergy formulation. Wild Cambodian agarwood steeped in nocturnal smoke, laced with dark Turkish rose otto and Indonesian patchouli aged thirty-six months.',
-    safetyInstructions: [
-      'Pure extrait containing natural raw resins. Keep upright before opening.',
-      'Store in a dark temperature-controlled cabinet.',
-      'For ambient and aromatic use only. Keep away from ignition sources.'
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 154,
+    "rank": 10,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 274,
+    "rating": 5,
+    "reviewCount": 40,
+    "description": "Authentic DLAB Amyl (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“An impenetrable veil of sacred timber and velvet shadows.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/11.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c',
-    boxImage: 'https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=900&q=85',
-    notes: {
-      top: ['Cardamom Pods', 'Elemi Resin', 'Wild Bergamot'],
-      heart: ['Turkish Rose Absolute', 'Cistus Labdanum', 'Leather Accord'],
-      base: ['Cambodian Agarwood', 'Indonesian Patchouli', 'Castoreum']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/03.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/03.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
     },
-    accords: [
-      { name: 'Agarwood / Oud', percentage: 45, color: '#2c2a27' },
-      { name: 'Balsamic Smoke', percentage: 25, color: '#D4AF37' },
-      { name: 'Deep Rose', percentage: 18, color: '#969088' },
-      { name: 'Aged Patchouli', percentage: 12, color: '#4b4640' }
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
     ],
-    sillage: 'Heavy',
-    longevityHours: 20,
-    optimalHours: '00:00 — Dawn',
-    scentFamilies: ['Woody', 'Smoky', 'Leather'],
-    featured: true,
-    bestseller: true,
-    inStock: true
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": true,
+    "inStock": false
   },
   {
-    id: 'dlab-03',
-    code: 'EXT-14/HFR',
-    shortCode: 'NO.14',
-    name: 'CUIR BRÛLÉ · HELL FIRE',
-    subtitle: 'Extrait de Parfum 35% · Ascendant Top Synergy',
-    price: 175,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 62 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 175 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 235 }
+    "id": "10ml-04",
+    "code": "RP01-BLBO-10ML",
+    "shortCode": "NO.04",
+    "name": "BLUE BOY",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Strong',
-    experience: 'Velvet Focus',
-    synergyRole: 'Ascendant',
-    monthlyOrders: 298,
-    rank: 4,
-    trendingDelta: '+14% this week',
-    concentration: '35% Pure Extrait',
-    harvestYear: '2025 Reserve',
-    perfumer: 'Laurent Vaneau, Grasse',
-    batchCount: 400,
-    rating: 4.9,
-    reviewCount: 52,
-    description: 'Tailored specifically for Ascendant (Top) synergy. Worn saddlery leather buffed with Italian iris, cade wood, dried black plum, and dark rum reduction for commanding focus.',
-    safetyInstructions: [
-      'Aromatic formulation. Keep away from eyes and broken skin.',
-      'Keep tightly sealed in original obsidian packaging.',
-      'Store away from open heat or combustible materials.'
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 264,
+    "rank": 6,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 291,
+    "rating": 5,
+    "reviewCount": 51,
+    "description": "Authentic DLAB Blue Boy (10ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“Tanned hide scorched in twilight embers.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/14.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/30ml/14.webp',
-    boxImage: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=900&q=85',
-    notes: {
-      top: ['Smoked Rum', 'Coriander Seed', 'Dried Black Plum'],
-      heart: ['Cuir de Russie', 'Florentine Orris Root', 'Cade Wood'],
-      base: ['Styrax Balsam', 'Atlas Cedar', 'Ambergris Tincture']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/04.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/04.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
     },
-    accords: [
-      { name: 'Smoked Leather', percentage: 48, color: '#373432' },
-      { name: 'Rum & Plum', percentage: 22, color: '#D4AF37' },
-      { name: 'Powdery Orris', percentage: 18, color: '#cdc5bd' },
-      { name: 'Animalic Amber', percentage: 12, color: '#af8d11' }
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
     ],
-    sillage: 'Radiant',
-    longevityHours: 16,
-    optimalHours: '21:00 — 03:00',
-    scentFamilies: ['Leather', 'Smoky', 'Gourmand'],
-    featured: true,
-    bestseller: true,
-    inStock: true
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
   },
   {
-    id: 'dlab-04',
-    code: 'EXT-04/BLB',
-    shortCode: 'NO.04',
-    name: 'SANTAL CÉLESTE · BLUE BOY',
-    subtitle: 'Extrait de Parfum 35% · Receptive Synergy',
-    price: 180,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 65 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 180 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 240 }
+    "id": "10ml-05",
+    "code": "RP01-FIS-10ML",
+    "shortCode": "NO.05",
+    "name": "FIST",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Mild',
-    experience: 'Relaxing',
-    synergyRole: 'Receptive',
-    monthlyOrders: 274,
-    rank: 5,
-    trendingDelta: '+11% this week',
-    concentration: '35% Pure Extrait',
-    harvestYear: '2025 Reserve',
-    perfumer: 'Camille Reynaud',
-    batchCount: 350,
-    rating: 4.9,
-    reviewCount: 41,
-    description: 'Sustainably sourced Australian sandalwood whipped into silky almond cream, calming botanical herbs, Somali incense smoke, and cool mineral flint for soothing post-workout and evening relaxation.',
-    safetyInstructions: [
-      'Gentle, meditative formulation. Ideal for soothing evening relaxation.',
-      'Keep capped tightly in cool ambient conditions.',
-      'Do not ingest. External use only.'
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 90,
+    "rank": 27,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 308,
+    "rating": 4.9,
+    "reviewCount": 62,
+    "description": "Authentic DLAB Fist (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“Silken sacred wood glowing beneath moonlit granite.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/04.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/30ml/02.webp',
-    boxImage: 'https://dlab-night-match.vercel.app/products/40ml/06.webp',
-    notes: {
-      top: ['Cardamom', 'Violet Leaf', 'Sesame Milk'],
-      heart: ['Mysore Sandalwood Accord', 'Somali Frankincense', 'Papyrus'],
-      base: ['Cashmeran', 'White Amber', 'Clean Cedar']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/05.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/05.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
     },
-    accords: [
-      { name: 'Creamy Sandalwood', percentage: 50, color: '#D4AF37' },
-      { name: 'Mineral Incense', percentage: 24, color: '#969088' },
-      { name: 'Soft Musks', percentage: 16, color: '#cdc5bd' },
-      { name: 'Spiced Papyrus', percentage: 10, color: '#4b4640' }
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
     ],
-    sillage: 'Radiant',
-    longevityHours: 15,
-    optimalHours: '19:00 — 02:00',
-    scentFamilies: ['Woody', 'Spiced'],
-    featured: true,
-    bestseller: false,
-    inStock: true
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
   },
   {
-    id: 'dlab-05',
-    code: 'EXT-22/JJU',
-    shortCode: 'NO.22',
-    name: 'FLORAL CRYSTAL NOIR · JUNGLE ULTRA',
-    subtitle: 'Extrait de Parfum 36% · #3 Weekly Rank (9.1%)',
-    price: 175,
-    sizes: [
-      { ml: 10, label: '10ml Pocket Flacon', price: 62 },
-      { ml: 30, label: '30ml Atelier Flacon', price: 175 },
-      { ml: 40, label: '40ml Heavy Crystal Edition', price: 235 }
+    "id": "10ml-06",
+    "code": "RP01-C4-10ML",
+    "shortCode": "NO.06 C4",
+    "name": "C4",
+    "subtitle": "10ML EXTRAIT · #1 Weekly Top Seller (22.7%)",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
     ],
-    intensity: 'Strong',
-    experience: 'Sensual',
-    synergyRole: 'Universal',
-    monthlyOrders: 318,
-    rank: 6,
-    trendingDelta: '🏅 9.1% Weekly Share',
-    concentration: '36% Pure Extrait',
-    harvestYear: '2025 Grand Cru',
-    perfumer: 'Laurent Vaneau, Grasse',
-    batchCount: 280,
-    rating: 4.8,
-    reviewCount: 47,
-    description: 'Universal dual-synergy formulation (#3 Weekly Top 10). Night-blooming tuberose and black jasmine petals immersed in smoked cocoa liqueur and velvet patchouli.',
-    safetyInstructions: [
-      'Concentrated botanical absolute formulation. Keep sealed when idle.',
-      'External aromatic use only.',
-      'Keep in cool darkness away from direct solar radiation.'
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 528,
+    "rank": 1,
+    "trendingDelta": "👑 22.7% Weekly Share",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 325,
+    "rating": 5,
+    "reviewCount": 73,
+    "description": "Ranked #1 in the Weekly Top 10 (22.7% of all 10ml commissions). The signature NO.06 C4 formulation engineered for deep receptive relaxation and high-energy nocturnal momentum.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
     ],
-    poeticQuote: '“Heavy blossoms blooming only after the world has fallen asleep.”',
-    primaryImage: 'https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c',
-    secondaryImage: 'https://dlab-night-match.vercel.app/products/10ml/18.webp?v=20261029c',
-    boxImage: 'https://dlab-night-match.vercel.app/products/30ml/05.webp',
-    notes: {
-      top: ['Black Pepper', 'Blood Mandarin', 'Dark Plum'],
-      heart: ['Night Tuberose', 'Black Jasmine Absolute', 'Cacao Pod'],
-      base: ['Benzoin Siam', 'Golden Patchouli', 'Crystal Musk']
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/06.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/06.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
     },
-    accords: [
-      { name: 'Narcotic White Florals', percentage: 40, color: '#e7e1de' },
-      { name: 'Dark Cocoa', percentage: 25, color: '#373432' },
-      { name: 'Warm Balsams', percentage: 22, color: '#D4AF37' },
-      { name: 'Animalic Musk', percentage: 13, color: '#af8d11' }
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
     ],
-    sillage: 'Heavy',
-    longevityHours: 17,
-    optimalHours: '22:00 — 04:00',
-    scentFamilies: ['Floral', 'Amber', 'Gourmand'],
-    featured: false,
-    bestseller: true,
-    inStock: true
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-07",
+    "code": "RP01-CANN-10ML",
+    "shortCode": "NO.07",
+    "name": "CANNABIS",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 154,
+    "rank": 11,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 342,
+    "rating": 5,
+    "reviewCount": 84,
+    "description": "Authentic DLAB Cannabis (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/07.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/07.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-08",
+    "code": "RP01-DRST-10ML",
+    "shortCode": "NO.08",
+    "name": "DRAGON STRONG",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 30,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 359,
+    "rating": 4.9,
+    "reviewCount": 19,
+    "description": "Authentic DLAB Dragon Strong (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/08.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/08.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "10ml-09",
+    "code": "RP01-ENGOLA-10ML",
+    "shortCode": "NO.09",
+    "name": "ENGLISH GOLD LABEL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 31,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 376,
+    "rating": 4.9,
+    "reviewCount": 30,
+    "description": "Authentic DLAB English Gold Label (10ml) nocturnal formulation. Engineered for universal synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/09.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/09.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-10",
+    "code": "RP01-ENRO-10ML",
+    "shortCode": "NO.10",
+    "name": "ENGLISH ROYAL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 32,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 393,
+    "rating": 4.9,
+    "reviewCount": 41,
+    "description": "Authentic DLAB English Royal (10ml) nocturnal formulation. Engineered for universal synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/10.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/11.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/10.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-11",
+    "code": "RP01-EXPO-10ML",
+    "shortCode": "NO.11",
+    "name": "EXTREME POWER",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 264,
+    "rank": 4,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 410,
+    "rating": 5,
+    "reviewCount": 52,
+    "description": "Authentic DLAB Extreme Power (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/11.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/12.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/11.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-12",
+    "code": "RP01-FIPL-10ML",
+    "shortCode": "NO.12",
+    "name": "FISH PLATINUM",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 96,
+    "rank": 34,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 247,
+    "rating": 4.9,
+    "reviewCount": 63,
+    "description": "Authentic DLAB Fish Platinum (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/12.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/13.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/12.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-13",
+    "code": "RP01-HARD-10ML",
+    "shortCode": "NO.13",
+    "name": "HARDWARE",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 35,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 264,
+    "rating": 4.9,
+    "reviewCount": 74,
+    "description": "Authentic DLAB Hardware (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/13.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/14.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/13.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-14",
+    "code": "RP01-HEFI-10ML",
+    "shortCode": "NO.14",
+    "name": "HELL FIRE",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 110,
+    "rank": 16,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 281,
+    "rating": 5,
+    "reviewCount": 85,
+    "description": "Authentic DLAB Hell Fire (10ml) nocturnal formulation. Engineered for ascendant synergy with intense projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/14.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/15.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/14.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-15",
+    "code": "RP01-HUULST-10ML",
+    "shortCode": "NO.15",
+    "name": "HULX ULTRA STRONG",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 50,
+    "rank": 37,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 298,
+    "rating": 4.9,
+    "reviewCount": 20,
+    "description": "Authentic DLAB Hulx Ultra Strong (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/15.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/16.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/15.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-16",
+    "code": "RP01-IRFI-10ML",
+    "shortCode": "NO.16",
+    "name": "IRON FISH",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 198,
+    "rank": 7,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 315,
+    "rating": 4.9,
+    "reviewCount": 31,
+    "description": "Authentic DLAB Iron Fish (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/16.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/17.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/16.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-17",
+    "code": "RP01-IRHO-10ML",
+    "shortCode": "NO.17",
+    "name": "IRON HORSE",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 66,
+    "rank": 39,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 332,
+    "rating": 4.9,
+    "reviewCount": 42,
+    "description": "Authentic DLAB Iron Horse (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/17.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/18.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/17.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-18",
+    "code": "RP01-JUJUBLLA-10ML",
+    "shortCode": "NO.18",
+    "name": "JUNGLE JUICE BLACK LABEL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 198,
+    "rank": 8,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 349,
+    "rating": 5,
+    "reviewCount": 53,
+    "description": "Authentic DLAB Jungle Juice Black Label (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/18.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/19.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/18.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-19",
+    "code": "RP01-JUJUGOLA-10ML",
+    "shortCode": "NO.19",
+    "name": "JUNGLE JUICE GOLD LABEL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 41,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 366,
+    "rating": 5,
+    "reviewCount": 64,
+    "description": "Authentic DLAB Jungle Juice Gold Label (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/19.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/01.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/19.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-20",
+    "code": "RP01-JUJUPLA-10ML",
+    "shortCode": "NO.20",
+    "name": "JUNGLE JUICE PLATINUM",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 154,
+    "rank": 12,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 383,
+    "rating": 5,
+    "reviewCount": 75,
+    "description": "Authentic DLAB Jungle Juice Platinum (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/20.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/20.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-21",
+    "code": "RP01-JUJUMAX-10ML",
+    "shortCode": "NO.21",
+    "name": "JUNGLE JUICE MAX",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 43,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 400,
+    "rating": 4.9,
+    "reviewCount": 86,
+    "description": "Authentic DLAB Jungle Juice Max (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/21.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/21.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-22",
+    "code": "RP01-JUJUULST-10ML",
+    "shortCode": "NO.22",
+    "name": "JUNGLE JUICE ULTRA STRONG",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 264,
+    "rank": 5,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 417,
+    "rating": 5,
+    "reviewCount": 21,
+    "description": "Authentic DLAB Jungle Juice Ultra Strong (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-23",
+    "code": "RP01-G98-10ML",
+    "shortCode": "NO.23",
+    "name": "GLENBURGIE98",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 69,
+    "rank": 45,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 254,
+    "rating": 5,
+    "reviewCount": 32,
+    "description": "Authentic DLAB Glenburgie98 (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/23.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/23.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-24",
+    "code": "RP01-LIAR-10ML",
+    "shortCode": "NO.24",
+    "name": "LIQUID AROMA",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 46,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 271,
+    "rating": 4.9,
+    "reviewCount": 43,
+    "description": "Authentic DLAB Liquid Aroma (10ml) nocturnal formulation. Engineered for universal synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/24.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/24.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "10ml-25",
+    "code": "RP01-LORO-10ML",
+    "shortCode": "NO.25",
+    "name": "LOCKER ROOM",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 47,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 288,
+    "rating": 4.9,
+    "reviewCount": 54,
+    "description": "Authentic DLAB Locker Room (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/25.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/25.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "10ml-26",
+    "code": "RP01-MAOW-10ML-BLK",
+    "shortCode": "NO.26",
+    "name": "MAN OWN (BLACK)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 108,
+    "rank": 48,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 305,
+    "rating": 4.9,
+    "reviewCount": 65,
+    "description": "Authentic DLAB Man Own (BLACK) (10ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/26.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/26.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-27",
+    "code": "RP01-MAOW-10ML-WHT",
+    "shortCode": "NO.27",
+    "name": "MAN OWN (WHITE)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 121,
+    "rank": 49,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 322,
+    "rating": 4.9,
+    "reviewCount": 76,
+    "description": "Authentic DLAB Man Own (WHITE) (10ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/27.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/27.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-28",
+    "code": "RP01-MASC-10ML",
+    "shortCode": "NO.28",
+    "name": "MAN SCENT",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 50,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 339,
+    "rating": 4.9,
+    "reviewCount": 87,
+    "description": "Authentic DLAB Man Scent (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/28.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/28.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-29",
+    "code": "RP01-PO-10ML",
+    "shortCode": "NO.29",
+    "name": "POPPERS",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 66,
+    "rank": 51,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 356,
+    "rating": 4.9,
+    "reviewCount": 22,
+    "description": "Authentic DLAB Poppers (10ml) nocturnal formulation. Engineered for universal synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/29.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/11.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/29.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-30",
+    "code": "RP01-QUSI-10ML",
+    "shortCode": "NO.30",
+    "name": "QUICK SILVER",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 75,
+    "rank": 52,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 373,
+    "rating": 5,
+    "reviewCount": 33,
+    "description": "Authentic DLAB Quick Silver (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/30.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/12.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/30.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-31",
+    "code": "RP01-7HG-10ML-BLK",
+    "shortCode": "NO.31",
+    "name": "7HG (BLACK)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 22,
+    "rank": 53,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 390,
+    "rating": 4.9,
+    "reviewCount": 44,
+    "description": "Authentic DLAB 7HG (Black) (10ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/31.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/13.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/31.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-32",
+    "code": "RP01-7HG-10ML-WHT",
+    "shortCode": "NO.32",
+    "name": "7HG (WHITE)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 44,
+    "rank": 54,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 407,
+    "rating": 4.9,
+    "reviewCount": 55,
+    "description": "Authentic DLAB 7HG (White) (10ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/32.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/14.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/32.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-33",
+    "code": "RP01-RUGO-10ML",
+    "shortCode": "NO.33",
+    "name": "R GOLD",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 114,
+    "rank": 55,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 244,
+    "rating": 4.9,
+    "reviewCount": 66,
+    "description": "Authentic DLAB R Gold (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/33.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/15.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/33.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-34",
+    "code": "RP01-RUOR-10ML",
+    "shortCode": "NO.34",
+    "name": "R ORIGINAL",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 132,
+    "rank": 14,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 261,
+    "rating": 5,
+    "reviewCount": 77,
+    "description": "Authentic DLAB R Original (10ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/34.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/16.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/34.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-35",
+    "code": "RP01-RUSU-10ML-BLK",
+    "shortCode": "NO.35",
+    "name": "R SUPER (BLACK)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 88,
+    "rank": 57,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 278,
+    "rating": 4.9,
+    "reviewCount": 88,
+    "description": "Authentic DLAB R Super (Black) (10ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/35.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/17.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/35.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-36",
+    "code": "RP01-RUSU-10ML-RED",
+    "shortCode": "NO.36",
+    "name": "R SUPER (RED)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 132,
+    "rank": 15,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 295,
+    "rating": 4.9,
+    "reviewCount": 23,
+    "description": "Authentic DLAB R Super (Red) (10ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/36.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/18.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/36.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "10ml-37",
+    "code": "RP01-RUULST-10ML-BLK",
+    "shortCode": "NO.37",
+    "name": "R ULTRA STRONG (BLACK)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 506,
+    "rank": 3,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 312,
+    "rating": 5,
+    "reviewCount": 34,
+    "description": "Authentic DLAB R Ultra Strong (Black) (10ml) nocturnal formulation. Engineered for receptive synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/37.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/19.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/37.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-38",
+    "code": "RP01-RUULST-10ML-YLW",
+    "shortCode": "NO.38",
+    "name": "R ULTRA STRONG (YELLOW)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 616,
+    "rank": 2,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 329,
+    "rating": 5,
+    "reviewCount": 45,
+    "description": "Authentic DLAB R Ultra Strong (Yellow) (10ml) nocturnal formulation. Engineered for ascendant synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/38.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/01.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/38.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-39",
+    "code": "RP01-TNT-10ML",
+    "shortCode": "NO.39",
+    "name": "TNT",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 107,
+    "rank": 61,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 346,
+    "rating": 4.9,
+    "reviewCount": 56,
+    "description": "Authentic DLAB TNT (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/39.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/39.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-40",
+    "code": "RP01-SU-10ML",
+    "shortCode": "NO.40",
+    "name": "SUPERMAN",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 120,
+    "rank": 62,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 363,
+    "rating": 5,
+    "reviewCount": 67,
+    "description": "Authentic DLAB Superman (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/40.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/40.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-41",
+    "code": "RP01-TOFI-10ML-BLU",
+    "shortCode": "NO.41",
+    "name": "TOM FINLAND (BLUE)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 176,
+    "rank": 9,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 380,
+    "rating": 5,
+    "reviewCount": 78,
+    "description": "Authentic DLAB Tom Finland (BLUE) (10ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/41.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/41.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-42",
+    "code": "RP01-TOFI-10ML-RED",
+    "shortCode": "NO.42",
+    "name": "TOM FINLAND (RED)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 66,
+    "rank": 64,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 397,
+    "rating": 5,
+    "reviewCount": 89,
+    "description": "Authentic DLAB Tom Finland (RED) (10ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/42.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/42.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "10ml-43",
+    "code": "RP01-CLWN-10ML-BLK",
+    "shortCode": "NO.43",
+    "name": "CLOWN (BLACK)",
+    "subtitle": "10ML · Ascendant Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 22,
+    "rank": 65,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 414,
+    "rating": 4.9,
+    "reviewCount": 24,
+    "description": "Authentic DLAB Clown (Black) (10ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/43.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/43.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-44",
+    "code": "RP01-CLWN-10ML-WHT",
+    "shortCode": "NO.44",
+    "name": "CLOWN (WHITE)",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 87,
+    "rank": 66,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 251,
+    "rating": 4.9,
+    "reviewCount": 35,
+    "description": "Authentic DLAB Clown (White) (10ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/44.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/44.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "10ml-45",
+    "code": "RP01-PG-10ML",
+    "shortCode": "NO.45",
+    "name": "PIG",
+    "subtitle": "10ML · Receptive Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 154,
+    "rank": 13,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 268,
+    "rating": 5,
+    "reviewCount": 46,
+    "description": "Authentic DLAB Pig (10ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/45.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/45.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": true,
+    "inStock": false
+  },
+  {
+    "id": "10ml-46",
+    "code": "RP01-BEE-10ML",
+    "shortCode": "NO.46",
+    "name": "BEE",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 68,
+    "trendingDelta": "+12% this month",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 285,
+    "rating": 4.9,
+    "reviewCount": 57,
+    "description": "Authentic DLAB Bee (10ml) nocturnal formulation. Engineered for universal synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/46.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/46.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "10ml-47",
+    "code": "RP01-JAED-10ML",
+    "shortCode": "NO.47",
+    "name": "JACKED",
+    "subtitle": "10ML · Universal Synergy",
+    "price": 82,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 69,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "10ml Pure Aroma Reserve",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 302,
+    "rating": 5,
+    "reviewCount": 68,
+    "description": "Authentic DLAB Jacked (10ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/10ml/47.webp?v=20261029c",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/30ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/10ml/47.webp?v=20261029c",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-01",
+    "code": "RP03-AMST-30ML",
+    "shortCode": "30ML · NO.01",
+    "name": "AMSTERDAM",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 66,
+    "rank": 20,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 319,
+    "rating": 4.9,
+    "reviewCount": 79,
+    "description": "Authentic DLAB Amsterdam (30ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/01.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/01.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-02",
+    "code": "RP03-BLBO-30ML",
+    "shortCode": "30ML · NO.02",
+    "name": "BLUE BOY",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 66,
+    "rank": 21,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 336,
+    "rating": 5,
+    "reviewCount": 90,
+    "description": "Authentic DLAB Blue Boy (30ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/02.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/02.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-03",
+    "code": "RP03-C4-30ML",
+    "shortCode": "30ML · NO.03",
+    "name": "C4",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 66,
+    "rank": 22,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 353,
+    "rating": 5,
+    "reviewCount": 25,
+    "description": "Authentic DLAB C4 (30ml) nocturnal formulation. Engineered for receptive synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/03.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/03.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-04",
+    "code": "RP03-ENRO-30ML",
+    "shortCode": "30ML · NO.04",
+    "name": "ENGLISH ROYAL",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 73,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 370,
+    "rating": 4.9,
+    "reviewCount": 36,
+    "description": "Authentic DLAB English Royal (30ml) nocturnal formulation. Engineered for universal synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/04.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/04.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-05",
+    "code": "RP03-JUJUBLLA-30ML",
+    "shortCode": "30ML · NO.05",
+    "name": "JUNGLE JUICE BLACK LABEL",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 74,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 387,
+    "rating": 5,
+    "reviewCount": 47,
+    "description": "Authentic DLAB Jungle Juice Black Label (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/05.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/05.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-06",
+    "code": "RP03-JUJUPLA-30ML",
+    "shortCode": "30ML · NO.06",
+    "name": "JUNGLE JUICE PLATINUM",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 75,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 404,
+    "rating": 4.9,
+    "reviewCount": 58,
+    "description": "Authentic DLAB Jungle Juice Platinum (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/06.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/06.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-07",
+    "code": "RP03-RUGO-30ML",
+    "shortCode": "30ML · NO.07",
+    "name": "R GOLD",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 47,
+    "rank": 76,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 241,
+    "rating": 4.9,
+    "reviewCount": 69,
+    "description": "Authentic DLAB R Gold (30ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/07.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/07.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-08",
+    "code": "RP03-RUOR-30ML",
+    "shortCode": "30ML · NO.08",
+    "name": "R ORIGINAL",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 110,
+    "rank": 18,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 258,
+    "rating": 5,
+    "reviewCount": 80,
+    "description": "Authentic DLAB R Original (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/08.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/08.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-09",
+    "code": "RP03-RUSU-30ML-BLK",
+    "shortCode": "30ML · NO.09",
+    "name": "R SUPER (BLACK)",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 78,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 275,
+    "rating": 4.9,
+    "reviewCount": 91,
+    "description": "Authentic DLAB R Super (Black) (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/09.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/09.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-10",
+    "code": "RP03-RUSU-30ML-YLW",
+    "shortCode": "30ML · NO.10",
+    "name": "R SUPER (YELLOW)",
+    "subtitle": "30ML · Ascendant Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 18,
+    "rank": 79,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 292,
+    "rating": 4.9,
+    "reviewCount": 26,
+    "description": "Authentic DLAB R Super (Yellow) (30ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/10.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/01.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/10.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "30ml-11",
+    "code": "RP03-RUSU-30ML-RED",
+    "shortCode": "30ML · NO.11",
+    "name": "R SUPER (RED)",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 99,
+    "rank": 80,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 309,
+    "rating": 4.9,
+    "reviewCount": 37,
+    "description": "Authentic DLAB R Super (Red) (30ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/11.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/11.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-12",
+    "code": "RP03-TOFI-30ML",
+    "shortCode": "30ML · NO.12",
+    "name": "TOM OF FINLAND",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 81,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 326,
+    "rating": 4.9,
+    "reviewCount": 48,
+    "description": "Authentic DLAB Tom of Finland (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/12.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/12.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "30ml-13",
+    "code": "RP03-JAED-30ML",
+    "shortCode": "30ML · NO.13",
+    "name": "JACKED",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 82,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 343,
+    "rating": 5,
+    "reviewCount": 59,
+    "description": "Authentic DLAB Jacked (30ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/13.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/13.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-14",
+    "code": "RP03-HEFI-30ML",
+    "shortCode": "30ML · NO.14",
+    "name": "HELL FIRE",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 53,
+    "rank": 83,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 360,
+    "rating": 5,
+    "reviewCount": 70,
+    "description": "Authentic DLAB Hell Fire (30ml) nocturnal formulation. Engineered for universal synergy with intense projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/14.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/14.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-15",
+    "code": "RP03-RAM-30ML",
+    "shortCode": "30ML · NO.15",
+    "name": "RAM",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 84,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 377,
+    "rating": 4.9,
+    "reviewCount": 81,
+    "description": "Authentic DLAB Ram (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/15.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/15.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "30ml-16",
+    "code": "RP03-PG-30ML",
+    "shortCode": "30ML · NO.16",
+    "name": "PIG",
+    "subtitle": "30ML · Receptive Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 79,
+    "rank": 85,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 394,
+    "rating": 5,
+    "reviewCount": 92,
+    "description": "Authentic DLAB Pig (30ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/16.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/16.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "30ml-17",
+    "code": "RP03-MAOW-30ML-BLK",
+    "shortCode": "30ML · NO.17",
+    "name": "MAN OWN (BLACK)",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 22,
+    "rank": 86,
+    "trendingDelta": "+12% this month",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 411,
+    "rating": 4.9,
+    "reviewCount": 27,
+    "description": "Authentic DLAB Man Own (Black) (30ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/17.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/17.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "30ml-18",
+    "code": "RP03-RUULST-30ML-YLW",
+    "shortCode": "30ML · NO.18",
+    "name": "R ULTRA STRONG (YELLOW)",
+    "subtitle": "30ML · Universal Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Universal",
+    "monthlyOrders": 110,
+    "rank": 19,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 248,
+    "rating": 5,
+    "reviewCount": 38,
+    "description": "Authentic DLAB R Ultra Strong (Yellow) (30ml) nocturnal formulation. Engineered for universal synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/18.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/18.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": true,
+    "inStock": false
+  },
+  {
+    "id": "30ml-19",
+    "code": "RP03-RUULST-30ML-BLK",
+    "shortCode": "30ML · NO.19",
+    "name": "R ULTRA STRONG (BLACK)",
+    "subtitle": "30ML · Ascendant Synergy",
+    "price": 169,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      },
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 118,
+    "rank": 88,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "30ml Atelier Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 265,
+    "rating": 5,
+    "reviewCount": 49,
+    "description": "Authentic DLAB R Ultra Strong (Black) (30ml) nocturnal formulation. Engineered for ascendant synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/30ml/19.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/30ml/19.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 18,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "40ml-01",
+    "code": "RP04-ENRO-40ML",
+    "shortCode": "40ML · NO.01",
+    "name": "ENGLISH ROYAL",
+    "subtitle": "40ML · Universal Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 46,
+    "rank": 89,
+    "trendingDelta": "+12% this month",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 282,
+    "rating": 4.9,
+    "reviewCount": 60,
+    "description": "Authentic DLAB English Royal (40ml) nocturnal formulation. Engineered for universal synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/01.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/01.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/01.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "40ml-02",
+    "code": "RP04-7HG-40ML-BLK",
+    "shortCode": "40ML · NO.02",
+    "name": "7HG (BLACK)",
+    "subtitle": "40ML · Ascendant Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Velvet Focus",
+    "synergyRole": "Ascendant",
+    "monthlyOrders": 44,
+    "rank": 90,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 299,
+    "rating": 5,
+    "reviewCount": 71,
+    "description": "Authentic DLAB 7HG (Black) (40ml) nocturnal formulation. Engineered for ascendant synergy with strong projection and a velvet focus finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/02.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/02.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/02.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": true,
+    "inStock": false
+  },
+  {
+    "id": "40ml-03",
+    "code": "RP04-7HG-40ML-WHT",
+    "shortCode": "40ML · NO.03",
+    "name": "7HG (WHITE)",
+    "subtitle": "40ML · Receptive Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 72,
+    "rank": 91,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 316,
+    "rating": 5,
+    "reviewCount": 82,
+    "description": "Authentic DLAB 7HG (White) (40ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/03.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/03.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/03.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "40ml-04",
+    "code": "RP04-AMST-40ML",
+    "shortCode": "40ML · NO.04",
+    "name": "AMSTERDAM",
+    "subtitle": "40ML · Receptive Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 85,
+    "rank": 92,
+    "trendingDelta": "+12% this month",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 333,
+    "rating": 4.9,
+    "reviewCount": 93,
+    "description": "Authentic DLAB Amsterdam (40ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/04.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/04.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/04.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "40ml-05",
+    "code": "RP04-BEE-40ML",
+    "shortCode": "40ML · NO.05",
+    "name": "BEE",
+    "subtitle": "40ML · Universal Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 93,
+    "trendingDelta": "+12% this month",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 350,
+    "rating": 4.9,
+    "reviewCount": 28,
+    "description": "Authentic DLAB Bee (40ml) nocturnal formulation. Engineered for universal synergy with mild projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/05.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/05.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/05.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "40ml-06",
+    "code": "RP04-BLBO-40ML",
+    "shortCode": "40ML · NO.06",
+    "name": "BLUE BOY",
+    "subtitle": "40ML · Receptive Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 22,
+    "rank": 94,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 367,
+    "rating": 5,
+    "reviewCount": 39,
+    "description": "Authentic DLAB Blue Boy (40ml) nocturnal formulation. Engineered for receptive synergy with mild projection and a relaxing finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/06.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/06.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/06.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "40ml-07",
+    "code": "RP04-JUJUPLA-40ML",
+    "shortCode": "40ML · NO.07",
+    "name": "JUNGLE JUICE PLATINUM",
+    "subtitle": "40ML · Universal Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 39,
+    "rank": 95,
+    "trendingDelta": "+12% this month",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 384,
+    "rating": 4.9,
+    "reviewCount": 50,
+    "description": "Authentic DLAB Jungle Juice Platinum (40ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/07.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/07.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/07.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "40ml-08",
+    "code": "RP04-BUG-40ML",
+    "shortCode": "40ML · NO.08",
+    "name": "BUG",
+    "subtitle": "40ML · Universal Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 96,
+    "trendingDelta": "+12% this month",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 401,
+    "rating": 4.9,
+    "reviewCount": 61,
+    "description": "Authentic DLAB Bug (40ml) nocturnal formulation. Engineered for universal synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/08.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/08.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/08.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "40ml-09",
+    "code": "RP04-C4-40ML",
+    "shortCode": "40ML · NO.09",
+    "name": "C4",
+    "subtitle": "40ML · Receptive Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "High-energy",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 44,
+    "rank": 97,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 418,
+    "rating": 5,
+    "reviewCount": 72,
+    "description": "Authentic DLAB C4 (40ml) nocturnal formulation. Engineered for receptive synergy with intense projection and a high-energy finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/09.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/09.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/09.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "40ml-10",
+    "code": "RP04-PG-40ML",
+    "shortCode": "40ML · NO.10",
+    "name": "PIG",
+    "subtitle": "40ML · Receptive Synergy",
+    "price": 219,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40ml Heavy Crystal Edition",
+        "price": 219
+      },
+      {
+        "ml": 30,
+        "label": "30ml Atelier Flacon",
+        "price": 169
+      },
+      {
+        "ml": 10,
+        "label": "10ml Pocket Flacon",
+        "price": 82
+      }
+    ],
+    "intensity": "Strong",
+    "experience": "Sensual",
+    "synergyRole": "Receptive",
+    "monthlyOrders": 78,
+    "rank": 98,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40ml Collector Flacon",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 255,
+    "rating": 5,
+    "reviewCount": 83,
+    "description": "Authentic DLAB Pig (40ml) nocturnal formulation. Engineered for receptive synergy with strong projection and a sensual finish.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/40ml/10.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/40ml/10.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/40ml/10.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Radiant",
+    "longevityHours": 20,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-white-10ml",
+    "code": "MKY-10ML-WHT",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (WHITE)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 91,
+    "rank": 99,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 272,
+    "rating": 4.9,
+    "reviewCount": 18,
+    "description": "Precision Mickey Cap (White) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-black-10ml",
+    "code": "MKY-10ML-BLK",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (BLACK)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 104,
+    "rank": 100,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 289,
+    "rating": 4.9,
+    "reviewCount": 29,
+    "description": "Precision Mickey Cap (Black) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-yellow-10ml",
+    "code": "MKY-10ML-YLW",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (YELLOW)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 117,
+    "rank": 101,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 306,
+    "rating": 4.9,
+    "reviewCount": 40,
+    "description": "Precision Mickey Cap (Yellow) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-dark-green-10ml",
+    "code": "MKY-10ML-DGRN",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (DARK GREEN)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 45,
+    "rank": 102,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 323,
+    "rating": 4.9,
+    "reviewCount": 51,
+    "description": "Precision Mickey Cap (Dark Green) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-skin-beige-10ml",
+    "code": "MKY-10ML-SKB",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (SKIN BEIGE)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 58,
+    "rank": 103,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 340,
+    "rating": 4.9,
+    "reviewCount": 62,
+    "description": "Precision Mickey Cap (Skin Beige) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/skin-beige.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/skin-beige.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/skin-beige.png",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-white-30ml",
+    "code": "MKY-30ML-WHT",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (WHITE)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 71,
+    "rank": 104,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 357,
+    "rating": 4.9,
+    "reviewCount": 73,
+    "description": "Precision Mickey Cap (White) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/white.webp",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-black-30ml",
+    "code": "MKY-30ML-BLK",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (BLACK)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 105,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 374,
+    "rating": 4.9,
+    "reviewCount": 84,
+    "description": "Precision Mickey Cap (Black) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/black.webp",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "mickey-cap-yellow-30ml",
+    "code": "MKY-30ML-YLW",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (YELLOW)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 97,
+    "rank": 106,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 391,
+    "rating": 4.9,
+    "reviewCount": 19,
+    "description": "Precision Mickey Cap (Yellow) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/yellow.webp",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-dark-green-30ml",
+    "code": "MKY-30ML-DGRN",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (DARK GREEN)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 110,
+    "rank": 107,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 408,
+    "rating": 4.9,
+    "reviewCount": 30,
+    "description": "Precision Mickey Cap (Dark Green) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/dark-green.webp",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-orange-30ml",
+    "code": "MKY-30ML-ORG",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (ORANGE)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 108,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 245,
+    "rating": 4.9,
+    "reviewCount": 41,
+    "description": "Precision Mickey Cap (Orange) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/orange.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/orange.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/orange.webp",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "mickey-cap-grey-30ml",
+    "code": "MKY-30ML-GRY",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (GREY)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 18,
+    "rank": 109,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 262,
+    "rating": 4.9,
+    "reviewCount": 52,
+    "description": "Precision Mickey Cap (Grey) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/grey.webp",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/grey.webp",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/grey.webp",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": false
+  },
+  {
+    "id": "mickey-cap-brown-10ml",
+    "code": "MKY-10ML-BRN",
+    "shortCode": "CAP · 10ML",
+    "name": "MICKEY CAP (BROWN)",
+    "subtitle": "10ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 19.9,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Flip-Top Cap",
+        "price": 19.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 64,
+    "rank": 110,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 279,
+    "rating": 4.9,
+    "reviewCount": 63,
+    "description": "Precision Mickey Cap (Brown) replacement cap (10ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "notes": {
+      "top": [
+        "Smoked Rum",
+        "Coriander Seed",
+        "Dried Black Plum"
+      ],
+      "heart": [
+        "Cuir de Russie",
+        "Florentine Orris Root",
+        "Cade Wood"
+      ],
+      "base": [
+        "Styrax Balsam",
+        "Atlas Cedar",
+        "Ambergris Tincture"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Leather",
+        "percentage": 48,
+        "color": "#373432"
+      },
+      {
+        "name": "Rum & Plum",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Powdery Orris",
+        "percentage": 18,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Animalic Amber",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Leather",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "mickey-cap-brown-30ml",
+    "code": "MKY-30ML-BRN",
+    "shortCode": "CAP · 30ML",
+    "name": "MICKEY CAP (BROWN)",
+    "subtitle": "30ML ACCESSORY · One-Hand Flip-Top Cap",
+    "price": 21.9,
+    "sizes": [
+      {
+        "ml": 30,
+        "label": "30ml Flip-Top Cap",
+        "price": 21.9
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 77,
+    "rank": 111,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 296,
+    "rating": 4.9,
+    "reviewCount": 74,
+    "description": "Precision Mickey Cap (Brown) replacement cap (30ml). Engineered for leak-resistant sealing and effortless single-handed nocturnal operation.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/colors/brown.png",
+    "notes": {
+      "top": [
+        "Cardamom",
+        "Violet Leaf",
+        "Sesame Milk"
+      ],
+      "heart": [
+        "Mysore Sandalwood Accord",
+        "Somali Frankincense",
+        "Papyrus"
+      ],
+      "base": [
+        "Cashmeran",
+        "White Amber",
+        "Clean Cedar"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Creamy Sandalwood",
+        "percentage": 50,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Mineral Incense",
+        "percentage": 24,
+        "color": "#969088"
+      },
+      {
+        "name": "Soft Musks",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Spiced Papyrus",
+        "percentage": 10,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "leakproof-matt-black",
+    "code": "DLAB-LEAKPROOF-MATT-BLA",
+    "shortCode": "VIAL · 10ML",
+    "name": "LEAKPROOF BOTTLE (MATT BLACK)",
+    "subtitle": "10ML ACCESSORY · Vacuum Dual-Hole Nasal Inhaler",
+    "price": 49,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Vacuum Dual-Hole Inhaler",
+        "price": 49
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 90,
+    "rank": 112,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 313,
+    "rating": 4.9,
+    "reviewCount": 85,
+    "description": "Leakproof Bottle (Matt Black) reusable vacuum-sealed dual-hole metallic inhaler vessel. Prevents accidental spills while preserving volatile aromatic esters.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/matt-black.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/matt-black.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/matt-black.png",
+    "notes": {
+      "top": [
+        "Black Pepper",
+        "Blood Mandarin",
+        "Dark Plum"
+      ],
+      "heart": [
+        "Night Tuberose",
+        "Black Jasmine Absolute",
+        "Cacao Pod"
+      ],
+      "base": [
+        "Benzoin Siam",
+        "Golden Patchouli",
+        "Crystal Musk"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Narcotic Florals",
+        "percentage": 40,
+        "color": "#e7e1de"
+      },
+      {
+        "name": "Dark Cocoa",
+        "percentage": 25,
+        "color": "#373432"
+      },
+      {
+        "name": "Warm Balsams",
+        "percentage": 22,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Animalic Musk",
+        "percentage": 13,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Floral",
+      "Amber",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "leakproof-shining-orange",
+    "code": "DLAB-LEAKPROOF-SHINING-",
+    "shortCode": "VIAL · 10ML",
+    "name": "LEAKPROOF BOTTLE (SHINING ORANGE)",
+    "subtitle": "10ML ACCESSORY · Vacuum Dual-Hole Nasal Inhaler",
+    "price": 49,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Vacuum Dual-Hole Inhaler",
+        "price": 49
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 103,
+    "rank": 113,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 330,
+    "rating": 4.9,
+    "reviewCount": 20,
+    "description": "Leakproof Bottle (Shining Orange) reusable vacuum-sealed dual-hole metallic inhaler vessel. Prevents accidental spills while preserving volatile aromatic esters.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/shining-orange.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/shining-orange.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/shining-orange.png",
+    "notes": {
+      "top": [
+        "Kashmiri Saffron",
+        "Bitter Orange Peel",
+        "Pink Peppercorn"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Smoked Labdanum",
+        "Orris Concrete"
+      ],
+      "base": [
+        "Aged Baltic Amber",
+        "Bourbon Vanilla Bean",
+        "Obsidian Resin"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Smoked Amber",
+        "percentage": 42,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Warm Resins",
+        "percentage": 28,
+        "color": "#af8d11"
+      },
+      {
+        "name": "Dark Woods",
+        "percentage": 18,
+        "color": "#373432"
+      },
+      {
+        "name": "Spiced Vanilla",
+        "percentage": 12,
+        "color": "#e9c349"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Amber",
+      "Smoky",
+      "Gourmand"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "leakproof-dark-blue",
+    "code": "DLAB-LEAKPROOF-DARK-BLU",
+    "shortCode": "VIAL · 10ML",
+    "name": "LEAKPROOF BOTTLE (DARK BLUE)",
+    "subtitle": "10ML ACCESSORY · Vacuum Dual-Hole Nasal Inhaler",
+    "price": 49,
+    "sizes": [
+      {
+        "ml": 10,
+        "label": "10ml Vacuum Dual-Hole Inhaler",
+        "price": 49
+      }
+    ],
+    "intensity": "Mild",
+    "experience": "Relaxing",
+    "synergyRole": "Universal",
+    "monthlyOrders": 116,
+    "rank": 114,
+    "trendingDelta": "+12% this month",
+    "concentration": "Precision Flacon Hardware",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Camille Reynaud",
+    "batchCount": 347,
+    "rating": 4.9,
+    "reviewCount": 31,
+    "description": "Leakproof Bottle (Dark Blue) reusable vacuum-sealed dual-hole metallic inhaler vessel. Prevents accidental spills while preserving volatile aromatic esters.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/dark-blue.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/dark-blue.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/accessories/leakproof/dark-blue.png",
+    "notes": {
+      "top": [
+        "Pink Peppercorn",
+        "Sparkling Elemi",
+        "Icy Mineral Flint"
+      ],
+      "heart": [
+        "Charred Birch Tar",
+        "Haitian Vetiver Root",
+        "Black Salt"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Metallic Musk",
+        "Dark Ambergris"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Birch & Pyrogenic",
+        "percentage": 46,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Volcanic Vetiver",
+        "percentage": 26,
+        "color": "#4b4640"
+      },
+      {
+        "name": "Metallic Spice",
+        "percentage": 16,
+        "color": "#cdc5bd"
+      },
+      {
+        "name": "Dark Resins",
+        "percentage": 12,
+        "color": "#af8d11"
+      }
+    ],
+    "sillage": "Intimate",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Smoky",
+      "Woody",
+      "Spiced"
+    ],
+    "featured": false,
+    "bestseller": false,
+    "inStock": true
+  },
+  {
+    "id": "solid-type-hello-5",
+    "code": "DLAB-SOLID-TYPE-HELLO-5",
+    "shortCode": "SOLID · 40G",
+    "name": "HELLO 5",
+    "subtitle": "40G SOLID TYPE · Zero-Spill Nocturnal Wax",
+    "price": 239,
+    "sizes": [
+      {
+        "ml": 40,
+        "label": "40g Solid Type Jar",
+        "price": 239
+      }
+    ],
+    "intensity": "Intense",
+    "experience": "Sensual",
+    "synergyRole": "Universal",
+    "monthlyOrders": 44,
+    "rank": 115,
+    "trendingDelta": "🔥 Hot Reserve",
+    "concentration": "40g Solid Balm Formulation",
+    "harvestYear": "2026 Reserve",
+    "perfumer": "Laurent Vaneau, Grasse",
+    "batchCount": 364,
+    "rating": 5,
+    "reviewCount": 42,
+    "description": "Hello 5 (40g Solid Type) high-density aromatic balm. Spill-proof solid matrix engineered for sustained slow-release diffusion and travel convenience.",
+    "safetyInstructions": [
+      "For external aromatic and ambient diffusion only.",
+      "Do not ingest. Avoid direct contact with eyes and mucous membranes.",
+      "Store in a cool, dark location away from open flames or high heat.",
+      "Keep tightly sealed when not in active use."
+    ],
+    "poeticQuote": "“Crafted in obsidian stillness, sealed in gold foil.”",
+    "primaryImage": "https://dlab-night-match.vercel.app/products/solid/hello-5.png",
+    "secondaryImage": "https://dlab-night-match.vercel.app/products/solid/hello-5.png",
+    "boxImage": "https://dlab-night-match.vercel.app/products/solid/hello-5.png",
+    "notes": {
+      "top": [
+        "Cardamom Pods",
+        "Elemi Resin",
+        "Wild Bergamot"
+      ],
+      "heart": [
+        "Turkish Rose Absolute",
+        "Cistus Labdanum",
+        "Leather Accord"
+      ],
+      "base": [
+        "Cambodian Agarwood",
+        "Indonesian Patchouli",
+        "Castoreum"
+      ]
+    },
+    "accords": [
+      {
+        "name": "Agarwood / Oud",
+        "percentage": 45,
+        "color": "#2c2a27"
+      },
+      {
+        "name": "Balsamic Smoke",
+        "percentage": 25,
+        "color": "#D4AF37"
+      },
+      {
+        "name": "Deep Rose",
+        "percentage": 18,
+        "color": "#969088"
+      },
+      {
+        "name": "Aged Patchouli",
+        "percentage": 12,
+        "color": "#4b4640"
+      }
+    ],
+    "sillage": "Heavy",
+    "longevityHours": 16,
+    "optimalHours": "22:00 — 04:00",
+    "scentFamilies": [
+      "Woody",
+      "Smoky",
+      "Leather"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "inStock": true
   }
 ];
 
@@ -626,33 +9258,406 @@ export interface LiveStreamFlacon {
 }
 
 /**
- * Authentic flacon stream items replicated from https://dlab-night-match.vercel.app/
+ * All 53 in-stock aroma flacons replicated from https://dlab-night-match.vercel.app/
  */
 export const LIVE_STREAM_FLACONS: LiveStreamFlacon[] = [
-  { code: 'NO.01', name: 'Amsterdam', ml: 10, synergy: 'Receptive', image: 'https://dlab-night-match.vercel.app/products/10ml/01.webp?v=20261029c' },
-  { code: 'NO.02', name: 'Amyl Night', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/02.webp?v=20261029c' },
-  { code: 'NO.03', name: 'Amyl', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/03.webp?v=20261029c' },
-  { code: 'NO.04', name: 'Blue Boy', ml: 10, synergy: 'Receptive', image: 'https://dlab-night-match.vercel.app/products/10ml/04.webp?v=20261029c' },
-  { code: 'NO.06', name: 'C4', ml: 10, synergy: 'Receptive', hot: true, image: 'https://dlab-night-match.vercel.app/products/10ml/06.webp?v=20261029c' },
-  { code: 'NO.07', name: 'Cannabis', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/07.webp?v=20261029c' },
-  { code: 'NO.08', name: 'Dragon Strong', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/08.webp?v=20261029c' },
-  { code: 'NO.09', name: 'English Gold Label', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/09.webp?v=20261029c' },
-  { code: 'NO.11', name: 'Extreme Power', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/11.webp?v=20261029c' },
-  { code: 'NO.12', name: 'Fish Platinum', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/12.webp?v=20261029c' },
-  { code: 'NO.13', name: 'Hardware', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/13.webp?v=20261029c' },
-  { code: 'NO.14', name: 'Hell Fire', ml: 10, synergy: 'Ascendant', image: 'https://dlab-night-match.vercel.app/products/10ml/14.webp?v=20261029c' },
-  { code: 'NO.15', name: 'Hulx Ultra Strong', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/15.webp?v=20261029c' },
-  { code: 'NO.18', name: 'Jungle Juice Black', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/18.webp?v=20261029c' },
-  { code: 'NO.22', name: 'Jungle Juice Ultra', ml: 10, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c' },
-  { code: 'NO.26', name: 'Man Own (Black)', ml: 10, synergy: 'Ascendant', image: 'https://dlab-night-match.vercel.app/products/10ml/26.webp?v=20261029c' },
-  { code: 'NO.35', name: 'R Super (Black)', ml: 10, synergy: 'Ascendant', image: 'https://dlab-night-match.vercel.app/products/10ml/35.webp?v=20261029c' },
-  { code: 'NO.37', name: 'R Ultra Strong (Black)', ml: 10, synergy: 'Receptive', hot: true, image: 'https://dlab-night-match.vercel.app/products/10ml/37.webp?v=20261029c' },
-  { code: 'NO.38', name: 'R Ultra Strong (Yellow)', ml: 10, synergy: 'Ascendant', hot: true, image: 'https://dlab-night-match.vercel.app/products/10ml/38.webp?v=20261029c' },
-  { code: 'NO.41', name: 'Tom Finland (Blue)', ml: 10, synergy: 'Ascendant', image: 'https://dlab-night-match.vercel.app/products/10ml/41.webp?v=20261029c' },
-  { code: 'NO.45', name: 'Pig Reserve', ml: 10, synergy: 'Receptive', image: 'https://dlab-night-match.vercel.app/products/10ml/45.webp?v=20261029c' },
-  { code: 'NO.03', name: 'C4 Atelier 30ml', ml: 30, synergy: 'Receptive', image: 'https://dlab-night-match.vercel.app/products/30ml/03.webp' },
-  { code: 'NO.19', name: 'R Ultra Strong 30ml', ml: 30, synergy: 'Ascendant', image: 'https://dlab-night-match.vercel.app/products/30ml/19.webp' },
-  { code: 'NO.01', name: 'English Royal 40ml', ml: 40, synergy: 'Universal', image: 'https://dlab-night-match.vercel.app/products/40ml/01.webp' }
+  {
+    "code": "NO.04",
+    "name": "Blue Boy",
+    "ml": 10,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/04.webp?v=20261029c"
+  },
+  {
+    "code": "NO.05",
+    "name": "Fist",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/05.webp?v=20261029c"
+  },
+  {
+    "code": "NO.06",
+    "name": "C4",
+    "ml": 10,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/06.webp?v=20261029c"
+  },
+  {
+    "code": "NO.07",
+    "name": "Cannabis",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/07.webp?v=20261029c"
+  },
+  {
+    "code": "NO.09",
+    "name": "English Gold Label",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/09.webp?v=20261029c"
+  },
+  {
+    "code": "NO.10",
+    "name": "English Royal",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/10.webp?v=20261029c"
+  },
+  {
+    "code": "NO.11",
+    "name": "Extreme Power",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/11.webp?v=20261029c"
+  },
+  {
+    "code": "NO.12",
+    "name": "Fish Platinum",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/12.webp?v=20261029c"
+  },
+  {
+    "code": "NO.13",
+    "name": "Hardware",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/13.webp?v=20261029c"
+  },
+  {
+    "code": "NO.14",
+    "name": "Hell Fire",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/14.webp?v=20261029c"
+  },
+  {
+    "code": "NO.15",
+    "name": "Hulx Ultra Strong",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/15.webp?v=20261029c"
+  },
+  {
+    "code": "NO.16",
+    "name": "Iron Fish",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/16.webp?v=20261029c"
+  },
+  {
+    "code": "NO.17",
+    "name": "Iron Horse",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/17.webp?v=20261029c"
+  },
+  {
+    "code": "NO.18",
+    "name": "Jungle Juice Black Label",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/18.webp?v=20261029c"
+  },
+  {
+    "code": "NO.19",
+    "name": "Jungle Juice Gold Label",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/19.webp?v=20261029c"
+  },
+  {
+    "code": "NO.20",
+    "name": "Jungle Juice Platinum",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/20.webp?v=20261029c"
+  },
+  {
+    "code": "NO.21",
+    "name": "Jungle Juice Max",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/21.webp?v=20261029c"
+  },
+  {
+    "code": "NO.22",
+    "name": "Jungle Juice Ultra Strong",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/22.webp?v=20261029c"
+  },
+  {
+    "code": "NO.23",
+    "name": "Glenburgie98",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/23.webp?v=20261029c"
+  },
+  {
+    "code": "NO.26",
+    "name": "Man Own (BLACK)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/26.webp?v=20261029c"
+  },
+  {
+    "code": "NO.27",
+    "name": "Man Own (WHITE)",
+    "ml": 10,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/27.webp?v=20261029c"
+  },
+  {
+    "code": "NO.28",
+    "name": "Man Scent",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/28.webp?v=20261029c"
+  },
+  {
+    "code": "NO.29",
+    "name": "Poppers",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/29.webp?v=20261029c"
+  },
+  {
+    "code": "NO.30",
+    "name": "Quick Silver",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/30.webp?v=20261029c"
+  },
+  {
+    "code": "NO.31",
+    "name": "7HG (Black)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/31.webp?v=20261029c"
+  },
+  {
+    "code": "NO.32",
+    "name": "7HG (White)",
+    "ml": 10,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/32.webp?v=20261029c"
+  },
+  {
+    "code": "NO.33",
+    "name": "R Gold",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/33.webp?v=20261029c"
+  },
+  {
+    "code": "NO.34",
+    "name": "R Original",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/34.webp?v=20261029c"
+  },
+  {
+    "code": "NO.35",
+    "name": "R Super (Black)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/35.webp?v=20261029c"
+  },
+  {
+    "code": "NO.37",
+    "name": "R Ultra Strong (Black)",
+    "ml": 10,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/37.webp?v=20261029c"
+  },
+  {
+    "code": "NO.38",
+    "name": "R Ultra Strong (Yellow)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/38.webp?v=20261029c"
+  },
+  {
+    "code": "NO.39",
+    "name": "TNT",
+    "ml": 10,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/39.webp?v=20261029c"
+  },
+  {
+    "code": "NO.40",
+    "name": "Superman",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/40.webp?v=20261029c"
+  },
+  {
+    "code": "NO.41",
+    "name": "Tom Finland (BLUE)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/41.webp?v=20261029c"
+  },
+  {
+    "code": "NO.42",
+    "name": "Tom Finland (RED)",
+    "ml": 10,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/42.webp?v=20261029c"
+  },
+  {
+    "code": "NO.43",
+    "name": "Clown (Black)",
+    "ml": 10,
+    "synergy": "Ascendant",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/43.webp?v=20261029c"
+  },
+  {
+    "code": "NO.44",
+    "name": "Clown (White)",
+    "ml": 10,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/10ml/44.webp?v=20261029c"
+  },
+  {
+    "code": "NO.47",
+    "name": "Jacked",
+    "ml": 10,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/10ml/47.webp?v=20261029c"
+  },
+  {
+    "code": "NO.01",
+    "name": "Amsterdam",
+    "ml": 30,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/01.webp"
+  },
+  {
+    "code": "NO.02",
+    "name": "Blue Boy",
+    "ml": 30,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/02.webp"
+  },
+  {
+    "code": "NO.03",
+    "name": "C4",
+    "ml": 30,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/03.webp"
+  },
+  {
+    "code": "NO.04",
+    "name": "English Royal",
+    "ml": 30,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/04.webp"
+  },
+  {
+    "code": "NO.05",
+    "name": "Jungle Juice Black Label",
+    "ml": 30,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/05.webp"
+  },
+  {
+    "code": "NO.06",
+    "name": "Jungle Juice Platinum",
+    "ml": 30,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/06.webp"
+  },
+  {
+    "code": "NO.07",
+    "name": "R Gold",
+    "ml": 30,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/07.webp"
+  },
+  {
+    "code": "NO.08",
+    "name": "R Original",
+    "ml": 30,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/08.webp"
+  },
+  {
+    "code": "NO.09",
+    "name": "R Super (Black)",
+    "ml": 30,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/09.webp"
+  },
+  {
+    "code": "NO.11",
+    "name": "R Super (Red)",
+    "ml": 30,
+    "synergy": "Receptive",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/11.webp"
+  },
+  {
+    "code": "NO.13",
+    "name": "Jacked",
+    "ml": 30,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/13.webp"
+  },
+  {
+    "code": "NO.14",
+    "name": "Hell Fire",
+    "ml": 30,
+    "synergy": "Universal",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/14.webp"
+  },
+  {
+    "code": "NO.16",
+    "name": "Pig",
+    "ml": 30,
+    "synergy": "Receptive",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/16.webp"
+  },
+  {
+    "code": "NO.17",
+    "name": "Man Own (Black)",
+    "ml": 30,
+    "synergy": "Universal",
+    "image": "https://dlab-night-match.vercel.app/products/30ml/17.webp"
+  },
+  {
+    "code": "NO.19",
+    "name": "R Ultra Strong (Black)",
+    "ml": 30,
+    "synergy": "Ascendant",
+    "hot": true,
+    "image": "https://dlab-night-match.vercel.app/products/30ml/19.webp"
+  }
 ];
 
 export interface WeeklyTop10Bar {
