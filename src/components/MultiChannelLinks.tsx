@@ -27,6 +27,25 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
   const { t } = useLanguage();
   const activeLabel = label || t('channels.officialLabel');
 
+  // Smart mobile deep-link handler for Shopee app
+  const handleMarketplaceClick = (e: React.MouseEvent<HTMLAnchorElement>, channelId: string, href: string) => {
+    if (channelId === 'shopee') {
+      const isMobile = typeof navigator !== 'undefined' && /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (isMobile) {
+        e.preventDefault();
+        const deepLink = `shopee://search?keyword=${encodeURIComponent(`DLAB ${productShortCode || 'Aroma Oil'}`)}`;
+        const fallbackUrl = href;
+        const start = Date.now();
+        window.location.href = deepLink;
+        setTimeout(() => {
+          if (Date.now() - start < 1500) {
+            window.open(fallbackUrl, '_blank');
+          }
+        }, 800);
+      }
+    }
+  };
+
   const compactChannels = [
     {
       id: 'shopee' as const,
@@ -76,6 +95,7 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[#151311] hover:bg-[#1E1C1A] border border-[#4b4640]/70 hover:border-[#D4AF37] rounded-[0.25rem] px-2.5 py-2 transition-all flex flex-col justify-between text-left"
+              onClick={(e) => handleMarketplaceClick(e, ch.id, ch.href)}
               aria-label={`Order via ${ch.name} (${ch.sub})`}
             >
               <div className="flex items-center justify-between gap-1">
@@ -133,6 +153,7 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
             href={generateChannelLink('webstore', undefined, undefined, shopSettings.whatsappPhone)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => handleMarketplaceClick(e, "shopee", generateChannelLink("shopee", undefined, undefined, shopSettings.whatsappPhone))}
             className="group bg-[#1E1C1A] hover:bg-[#25221F] border border-[#4b4640]/70 hover:border-[#D4AF37] rounded-[0.25rem] p-5 flex items-center justify-between transition-all text-left"
           >
             <div className="space-y-1.5">

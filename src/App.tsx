@@ -55,7 +55,7 @@ import {
 } from './data/products';
 import { CartItem, calculateCartTotals } from './utils/cartCalculations';
 import { ShopDataProvider, useShopData } from './context/ShopDataContext';
-import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield } from 'lucide-react';
+import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield, LayoutGrid, Square } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { CurrencyCode, BASE_CURRENCY } from './utils/currency';
 
@@ -73,6 +73,7 @@ function StorefrontContent() {
   const [selectedSillage, setSelectedSillage] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'longevity' | 'rank'>('featured');
   const [visibleCount, setVisibleCount] = useState(12);
+  const [mobileGridColumns, setMobileGridColumns] = useState<1 | 2>(2);
 
   // Reset pagination when filters or search change
   useEffect(() => {
@@ -376,7 +377,7 @@ function StorefrontContent() {
                     </h2>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Catalog format and category filter">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full lg:w-auto -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth" role="group" aria-label="Catalog format and category filter">
                     {(
                       [
                         { id: 'All', label: t('catalog.catAll') },
@@ -391,7 +392,7 @@ function StorefrontContent() {
                         key={tab.id}
                         type="button"
                         onClick={() => setSelectedCatalogCategory(tab.id)}
-                        className={`text-[11px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-[0.125rem] border transition-all flex items-center gap-1.5 ${
+                        className={`shrink-0 whitespace-nowrap text-[11px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-[0.125rem] border transition-all flex items-center gap-1.5 ${
                           selectedCatalogCategory === tab.id
                             ? 'border-[#D4AF37] bg-[#D4AF37] text-[#0F0E0D] font-bold'
                             : 'border-[#4b4640]/60 bg-[#151311] text-[#cdc5bd] hover:border-[#D4AF37]/60 hover:text-white'
@@ -507,29 +508,61 @@ function StorefrontContent() {
                 </div>
 
                 {/* Search result count / active filter tags */}
-                <div className="flex items-center justify-between text-xs text-[#969088]">
-                  <span>
-                    {t('catalog.displaying', { filtered: filteredProducts.length, total: products.length })}
-                    {searchQuery && <span>{t('catalog.matching', { query: searchQuery })}</span>}
-                  </span>
+                <div className="flex items-center justify-between text-xs text-[#969088] gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {t('catalog.displaying', { filtered: filteredProducts.length, total: products.length })}
+                      {searchQuery && <span>{t('catalog.matching', { query: searchQuery })}</span>}
+                    </span>
 
-                  {(searchQuery || selectedCatalogCategory !== 'All' || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
+                    {(searchQuery || selectedCatalogCategory !== 'All' || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setSelectedCatalogCategory('All');
+                          setSelectedIntensity('All');
+                          setSelectedSynergy('All');
+                          setSelectedExperience('All');
+                          setSelectedSillage('All');
+                        }}
+                        className="text-[#D4AF37] hover:underline flex items-center gap-1 text-[11px] uppercase tracking-wider ml-1"
+                      >
+                        <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                        <span>{t('catalog.resetFilters')}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Mobile 1-Column vs 2-Column Grid Toggle */}
+                  <div className="sm:hidden flex items-center gap-1 bg-[#1E1C1A] border border-[#4b4640]/50 rounded-[0.25rem] p-0.5">
                     <button
                       type="button"
-                      onClick={() => {
-                        setSearchQuery('');
-                        setSelectedCatalogCategory('All');
-                        setSelectedIntensity('All');
-                        setSelectedSynergy('All');
-                        setSelectedExperience('All');
-                        setSelectedSillage('All');
-                      }}
-                      className="text-[#D4AF37] hover:underline flex items-center gap-1 text-[11px] uppercase tracking-wider"
+                      onClick={() => setMobileGridColumns(1)}
+                      className={`p-1.5 rounded-[0.125rem] transition-colors ${
+                        mobileGridColumns === 1
+                          ? 'bg-[#D4AF37] text-[#0F0E0D]'
+                          : 'text-[#969088] hover:text-white'
+                      }`}
+                      title="1 Column View"
+                      aria-label="1 Column View"
                     >
-                      <RotateCcw className="w-3 h-3" aria-hidden="true" />
-                      <span>{t('catalog.resetFilters')}</span>
+                      <Square className="w-3.5 h-3.5" />
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setMobileGridColumns(2)}
+                      className={`p-1.5 rounded-[0.125rem] transition-colors ${
+                        mobileGridColumns === 2
+                          ? 'bg-[#D4AF37] text-[#0F0E0D]'
+                          : 'text-[#969088] hover:text-white'
+                      }`}
+                      title="2 Column Grid View"
+                      aria-label="2 Column Grid View"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -557,7 +590,7 @@ function StorefrontContent() {
                 </div>
               ) : (
                 <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div className={`grid ${mobileGridColumns === 1 ? "grid-cols-1 gap-4" : "grid-cols-2 gap-2.5"} sm:grid-cols-2 lg:grid-cols-3 sm:gap-8`}>
                   {visibleProducts.map((product, idx) => (
                     <ProductCard
                       key={product.id}
@@ -568,6 +601,7 @@ function StorefrontContent() {
                       onOpenDetail={openDetail}
                       onAddToCart={handleAddSingleToCart}
                       staggerIndex={idx}
+                      compact={mobileGridColumns === 2}
                     />
                   ))}
                 </div>

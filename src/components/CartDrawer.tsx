@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, Sparkles, Tag, ShieldCheck, ArrowRight, Check, MessageCircle, ShoppingBag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Sparkles, Tag, ShieldCheck, ArrowRight, Check, MessageCircle, ShoppingBag, Copy, QrCode, Download, Shield } from 'lucide-react';
 import { CartItem, calculateCartTotals, formatPrice } from '../utils/cartCalculations';
 import { type CurrencyCode, BASE_CURRENCY } from '../utils/currency';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -42,13 +42,29 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const { language, t } = useLanguage();
   const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
+  const [selectedCourier, setSelectedCourier] = useState<'standard' | 'express' | 'grab'>('standard');
+  const [showDuitNowModal, setShowDuitNowModal] = useState(false);
+  const [orderCopied, setOrderCopied] = useState(false);
 
   if (!isOpen) return null;
 
   const totals = calculateCartTotals(items, promoCode, shopSettings, promoCodes);
-  const freeShippingThreshold = shopSettings.freeShippingThreshold || 250;
+  // Malaysian Market Courier Pricing: Free standard delivery over RM150
+  const freeShippingThreshold = 150;
   const amountToFreeShipping = Math.max(0, freeShippingThreshold - totals.subtotal);
   const progressPercent = Math.min(100, Math.round((totals.subtotal / freeShippingThreshold) * 100));
+
+  const isFreeStandard = totals.subtotal >= freeShippingThreshold;
+  const courierFee =
+    items.length === 0
+      ? 0
+      : selectedCourier === 'standard'
+      ? (isFreeStandard ? 0 : 8)
+      : selectedCourier === 'express'
+      ? 15
+      : 25;
+
+  const adjustedTotal = Math.max(0, totals.subtotal - totals.discount + totals.monogramFee + courierFee);
 
   const availableSamples = samples.filter((s) => s.active !== false);
 
@@ -77,16 +93,36 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       monogram: it.monogram
     })),
     giftPackaging,
-    totals.total,
+    adjustedTotal,
     shopSettings.whatsappPhone,
     {
       sampleNames: pickedSampleNames,
       promoCode: promoCode || undefined,
-      formattedTotal: formatPrice(totals.total, currency),
+      formattedTotal: formatPrice(adjustedTotal, currency),
       monogramUnitFee: shopSettings.monogramPrice,
       language: language
     }
   );
+
+  const orderManifestText = [
+    '*ATELIER NOCTURNE DLAB — ORDER MANIFEST*',
+    ...items.map(
+      (it, idx) =>
+        `${idx + 1}. ${it.quantity}x ${it.product.shortCode} ${it.product.name} (${it.selectedSize.ml}ml) — ${formatPrice(it.selectedSize.price * it.quantity, currency)}${it.monogram ? ` [Laser Monogram: ${it.monogram}]` : ''}`
+    ),
+    pickedSampleNames.length > 0 ? `Samples: ${pickedSampleNames.join(', ')}` : '',
+    giftPackaging ? 'Packaging: Obsidian Gift Coffret' : '',
+    promoCode ? `Promo Code: ${promoCode}` : '',
+    `Courier: ${selectedCourier === 'standard' ? 'Standard Pos Laju / J&T' : selectedCourier === 'express' ? 'West MY 24h Air Express' : 'Penang/KV Same-Day Rider'} (${courierFee === 0 ? 'FREE' : formatPrice(courierFee, currency)})`,
+    `*TOTAL PAYABLE: ${formatPrice(adjustedTotal, currency)}*`,
+    'Please confirm stock allocation and dispatch estimate.'
+  ].filter(Boolean).join('\n');
+
+  const handleCopyOrder = () => {
+    navigator.clipboard.writeText(orderManifestText);
+    setOrderCopied(true);
+    setTimeout(() => setOrderCopied(false), 2500);
+  };
 
   return (
     <div
@@ -309,6 +345,39 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   </label>
                 </div>
 
+                {/* Malaysian Courier Delivery Options */}
+                <div className="bg-[#151311] border border-[#2c2a27] rounded-[0.25rem] p-3 space-y-2">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] block font-semibold">
+                    {t('cart.courierSelect')}
+                  </span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {[
+                      { id: 'standard' as const, label: t('cart.courierStandard'), fee: isFreeStandard ? 0 : 8, desc: isFreeStandard ? 'FREE (Orders >= RM150)' : 'RM8.00 (1-3 days)' },
+                      { id: 'express' as const, label: t('cart.courierExpress'), fee: 15, desc: 'RM15.00 (Guaranteed Next Day)' },
+                      { id: 'grab' as const, label: t('cart.courierGrab'), fee: 25, desc: 'RM25.00 (Instant Motorbike Delivery)' }
+                    ].map((cr) => (
+                      <button
+                        key={cr.id}
+                        type="button"
+                        onClick={() => setSelectedCourier(cr.id)}
+                        className={`p-2 rounded-[0.125rem] border text-left transition-all flex items-center justify-between text-xs ${
+                          selectedCourier === cr.id
+                            ? 'border-[#D4AF37] bg-[#1E1C1A] text-white'
+                            : 'border-[#4b4640]/30 bg-[#1E1C1A]/40 text-[#cdc5bd] hover:border-[#969088]'
+                        }`}
+                      >
+                        <div>
+                          <span className="font-medium block">{cr.label}</span>
+                          <span className="text-[10px] text-[#969088] font-mono">{cr.desc}</span>
+                        </div>
+                        <span className="font-mono text-xs text-[#D4AF37]">
+                          {cr.fee === 0 ? t('cart.complimentary') : formatPrice(cr.fee, currency)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Promo Code Input */}
                 <form onSubmit={handleApplyPromo} className="space-y-1">
                   <div className="flex gap-2">
@@ -366,13 +435,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <div className="flex justify-between text-[#cdc5bd]">
                   <span>{t('cart.dispatch')}</span>
                   <span className="font-mono text-white tabular-nums">
-                    {totals.shipping === 0 ? t('cart.complimentary') : formatPrice(totals.shipping, currency)}
+                    {courierFee === 0 ? t('cart.complimentary') : formatPrice(courierFee, currency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-semibold text-white pt-2 border-t border-[#2c2a27]">
                   <span className="uppercase tracking-wider">{t('cart.total')}</span>
-                  <span className="font-mono text-[#D4AF37] tabular-nums">{formatPrice(totals.total, currency)}</span>
+                  <span className="font-mono text-[#D4AF37] tabular-nums">{formatPrice(adjustedTotal, currency)}</span>
                 </div>
                 {currency !== BASE_CURRENCY && (
                   <p className="text-[10px] text-[#969088] text-center font-mono pt-1">
@@ -381,22 +450,63 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 )}
               </div>
 
-              {/* PRIMARY ACTION 1: Breathing WhatsApp Multi-Item Checkout */}
-              <a
-                href={whatsappCheckoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="animate-cta-breathe w-full bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                <span>{t('cart.sendWhatsApp', { count: items.length })}</span>
-              </a>
+              {/* High-Contrast Discreet Delivery Guarantee Badge directly above CTAs */}
+              <div className="bg-[#151311] border border-[#D4AF37]/60 rounded-[0.25rem] p-2.5 flex items-start gap-2.5 text-left shadow-sm">
+                <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-[10px] text-[#e7e1de] leading-tight font-sans">
+                  <strong className="text-[#D4AF37] font-semibold block uppercase tracking-wider text-[9px] mb-0.5">
+                    100% Discreet Delivery Guaranteed
+                  </strong>
+                  {language === 'ms'
+                    ? 'Bungkusan kurier kosong tanpa logo jenama • Pengirim disenaraikan sebagai "D-Lab Studio" • Tiada nama produk pada nota kiriman.'
+                    : 'Plain courier flyer • Sender listed as "D-Lab Studio" • Zero fragrance names on outer consignment note.'}
+                </p>
+              </div>
 
-              {/* SECONDARY ACTION: In-app card checkout */}
+              {/* PRIMARY ACTION 1: Breathing WhatsApp Multi-Item Checkout + 1-Tap Copy Fallback */}
+              <div className="flex gap-2">
+                <a
+                  href={whatsappCheckoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="animate-cta-breathe flex-1 bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
+                  <span>{t('cart.sendWhatsApp', { count: items.length })}</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={handleCopyOrder}
+                  className="px-3 bg-[#1E1C1A] hover:bg-[#2c2a27] border border-[#4b4640] hover:border-[#D4AF37] rounded-[0.25rem] text-[#cdc5bd] hover:text-white flex items-center justify-center transition-colors shrink-0"
+                  title={orderCopied ? t('cart.orderCopied') : t('cart.copyOrder')}
+                  aria-label={t('cart.copyOrder')}
+                >
+                  {orderCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {orderCopied && (
+                <p className="text-[10px] text-emerald-400 font-mono text-center">
+                  {t('cart.orderCopied')}
+                </p>
+              )}
+
+              {/* ACTION 2: Instant DuitNow QR Pay Button */}
+              <button
+                type="button"
+                onClick={() => setShowDuitNowModal(true)}
+                className="w-full bg-[#ED008C] hover:bg-[#c90076] text-white py-2.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors shadow-md"
+              >
+                <QrCode className="w-4 h-4 text-white" aria-hidden="true" />
+                <span>{t('cart.duitNowPay')}</span>
+              </button>
+
+              {/* ACTION 3: In-app card checkout */}
               <button
                 type="button"
                 onClick={onProceedToCheckout}
-                className="w-full bg-[#1E1C1A] hover:bg-[#2c2a27] text-white border border-[#4b4640] hover:border-[#D4AF37] py-2.5 text-xs font-medium tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-[#1E1C1A] hover:bg-[#2c2a27] text-white border border-[#4b4640] hover:border-[#D4AF37] py-2 text-xs font-medium tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
               >
                 <span>{t('cart.payCard')}</span>
                 <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -422,6 +532,86 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         </div>
       </div>
+
+      {/* Malaysian DuitNow QR Mobile Payment Sheet */}
+      {showDuitNowModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F0E0D]/90 backdrop-blur-md"
+          onClick={() => setShowDuitNowModal(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-[#1E1C1A] border-2 border-[#ED008C] rounded-2xl p-6 text-center text-white relative shadow-2xl animate-stagger-cascade"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowDuitNowModal(false)}
+              className="absolute top-4 right-4 p-1.5 text-[#969088] hover:text-white rounded"
+              aria-label="Close DuitNow dialog"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* DuitNow Header Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ED008C]/15 border border-[#ED008C] rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-[#ED008C] font-bold mb-3">
+              <QrCode className="w-3.5 h-3.5 text-[#ED008C]" />
+              <span>DuitNow QR PAY</span>
+            </div>
+
+            <h3 className="text-base font-bold uppercase tracking-wider text-white">
+              DLAB STUDIO ENTERPRISE
+            </h3>
+            <p className="text-[11px] text-[#969088] mt-0.5 font-mono">
+              Merchant ID: DLB-MY-2026
+            </p>
+
+            {/* Simulated DuitNow QR Code Frame */}
+            <div className="bg-white p-4 rounded-xl my-4 mx-auto w-48 h-48 flex flex-col items-center justify-center relative shadow-inner">
+              <div className="w-full h-full bg-[#0F0E0D] rounded-lg p-3 flex flex-col items-center justify-center border-4 border-[#ED008C]">
+                <QrCode className="w-24 h-24 text-white" />
+                <span className="text-[8px] font-mono text-[#ED008C] uppercase tracking-widest font-bold mt-1">
+                  MALAYSIA NATIONAL QR
+                </span>
+              </div>
+            </div>
+
+            {/* Total Payable in MYR */}
+            <div className="bg-[#151311] border border-[#2c2a27] rounded-lg p-3 mb-4">
+              <span className="text-[10px] uppercase text-[#969088] font-mono block">
+                Total Amount Payable
+              </span>
+              <span className="text-xl font-bold font-mono text-[#D4AF37] tabular-nums">
+                {formatPrice(adjustedTotal, currency)}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => {
+                  alert(language === 'ms' ? 'QR DuitNow telah disimpan ke galeri foto anda!' : 'DuitNow QR saved to your device photos!');
+                }}
+                className="w-full bg-[#ED008C] hover:bg-[#c90076] text-white py-2.5 text-xs font-semibold tracking-wider uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>{t('cart.duitNowSave')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  alert(language === 'ms' ? 'Buka aplikasi Maybank, CIMB, atau Touch n Go eWallet anda untuk imbas QR ini.' : 'Please open your Maybank2u, CIMB OCTO, or Touch n Go eWallet app to scan and complete payment.');
+                }}
+                className="w-full bg-[#151311] hover:bg-[#2c2a27] border border-[#4b4640] text-[#cdc5bd] hover:text-white py-2 text-xs font-medium tracking-wider uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
+              >
+                <span>{t('cart.duitNowOpenBank')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

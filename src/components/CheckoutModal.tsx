@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Lock, CreditCard } from 'lucide-react';
+import { X, CheckCircle2, Lock, CreditCard, ShieldCheck, QrCode } from 'lucide-react';
 import { CartItem, CartTotals, formatPrice } from '../utils/cartCalculations';
 import { type CurrencyCode, BASE_CURRENCY } from '../utils/currency';
 import { useShopData } from '../context/ShopDataContext';
@@ -53,6 +53,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [country, setCountry] = useState('Malaysia');
   const [orderRef, setOrderRef] = useState('');
   const [batchId, setBatchId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'duitnow'>('card');
 
   if (!isOpen) return null;
 
@@ -203,7 +204,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
             </div>
 
-            {/* Simulated Payment */}
+            {/* Payment Method Selection */}
             <div className="space-y-3 pt-3 border-t border-[#2c2a27]">
               <h4 className="text-xs uppercase tracking-wider text-[#969088] font-semibold flex items-center justify-between">
                 <span>{t('checkout.stepPayment')}</span>
@@ -212,18 +213,50 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </span>
               </h4>
 
-              <div className="p-3 bg-[#151311] border border-[#D4AF37]/50 rounded-[0.25rem] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-6 bg-[#2c2a27] rounded-[0.125rem] flex items-center justify-center border border-[#4b4640]">
-                    <CreditCard className="w-4 h-4 text-[#D4AF37]" />
-                  </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`p-3 rounded-[0.25rem] border text-left transition-all flex items-center gap-2.5 ${
+                    paymentMethod === 'card'
+                      ? 'border-[#D4AF37] bg-[#151311]'
+                      : 'border-[#4b4640]/50 bg-[#151311]/40 text-[#969088]'
+                  }`}
+                >
+                  <CreditCard className={`w-4 h-4 ${paymentMethod === 'card' ? 'text-[#D4AF37]' : 'text-[#969088]'}`} />
                   <div>
-                    <p className="text-xs font-semibold text-white">{t('checkout.cardTitle')}</p>
-                    <p className="text-[10px] text-[#969088]">{t('checkout.cardSub')}</p>
+                    <span className="text-xs font-semibold text-white block">Credit Card</span>
+                    <span className="text-[9px] text-[#969088] font-mono">Visa / Mastercard</span>
                   </div>
-                </div>
-                <span className="text-[10px] font-mono text-[#D4AF37] uppercase">{t('checkout.preauthorized')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('duitnow')}
+                  className={`p-3 rounded-[0.25rem] border text-left transition-all flex items-center gap-2.5 ${
+                    paymentMethod === 'duitnow'
+                      ? 'border-[#ED008C] bg-[#151311]'
+                      : 'border-[#4b4640]/50 bg-[#151311]/40 text-[#969088]'
+                  }`}
+                >
+                  <QrCode className={`w-4 h-4 ${paymentMethod === 'duitnow' ? 'text-[#ED008C]' : 'text-[#969088]'}`} />
+                  <div>
+                    <span className="text-xs font-semibold text-white block">DuitNow QR</span>
+                    <span className="text-[9px] text-[#969088] font-mono">Banks & TnG eWallet</span>
+                  </div>
+                </button>
               </div>
+
+              {paymentMethod === 'duitnow' && (
+                <div className="bg-[#151311] border border-[#ED008C]/60 rounded-[0.25rem] p-3 text-center">
+                  <span className="text-[10px] text-[#ED008C] font-mono font-bold block uppercase tracking-wider mb-1">
+                    Direct DuitNow Transfer Pre-Approved
+                  </span>
+                  <p className="text-[11px] text-[#cdc5bd]">
+                    You will receive payment verification and your official DLAB certificate immediately upon authorization.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Total breakdown */}
@@ -242,6 +275,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   plural: items.length > 1 ? 's' : ''
                 })}
               </span>
+            </div>
+
+            {/* 100% Discreet Delivery Guarantee Badge */}
+            <div className="bg-[#151311] border border-[#D4AF37]/50 rounded-[0.25rem] p-2.5 flex items-start gap-2.5 text-left shadow-sm">
+              <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" aria-hidden="true" />
+              <p className="text-[10px] text-[#e7e1de] leading-tight font-sans">
+                <strong className="text-[#D4AF37] font-semibold block uppercase tracking-wider text-[9px] mb-0.5">
+                  100% Discreet Delivery Guaranteed
+                </strong>
+                Plain courier flyer • Sender listed as "D-Lab Studio" • Zero fragrance names on outer consignment note.
+              </p>
             </div>
 
             {/* Action */}

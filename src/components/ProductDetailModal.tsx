@@ -61,11 +61,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-flacon-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#0F0E0D]/90 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-[#0F0E0D]/90 backdrop-blur-md overflow-hidden sm:overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="animate-stagger-cascade relative w-full max-w-5xl bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-2xl overflow-hidden my-auto text-[#e7e1de]"
+        className="animate-stagger-cascade relative w-full max-w-5xl bg-[#1E1C1A] border-t sm:border border-[#4b4640] rounded-t-2xl sm:rounded-[0.25rem] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] text-[#e7e1de]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -79,7 +79,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <span className="sr-only">Close</span>
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 max-h-[90vh] overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 flex-1 overflow-y-auto">
           {/* Left Column: Visual Showcase & Gold Foil Shimmer */}
           <div className="lg:col-span-5 bg-[#151311] p-6 lg:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#2c2a27]">
             <div className="gold-foil-shimmer relative aspect-[4/5] rounded-[0.25rem] overflow-hidden border border-[#4b4640]/40 bg-[#0F0E0D]">
@@ -358,79 +358,92 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Bottom Add to Bag, Breathing WhatsApp CTA & Monochrome Multi-Channel Commerce Links */}
-            <div className="space-y-3 pt-3 border-t border-[#2c2a27]">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                {/* Breathing Direct WhatsApp Message Checkout Link */}
-                <a
-                  href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml, shopSettings.whatsappPhone, language)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-4 py-3 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                  <span>{t('product.orderWhatsApp', { ml: selectedSize.ml })}</span>
-                </a>
+            {/* Monochrome Multi-Channel Commerce Links (Shopee, Lazada, Grab Delivery, TikTok) */}
+            <MultiChannelLinks
+              variant="compact"
+              productShortCode={product.shortCode}
+              volumeMl={selectedSize.ml}
+            />
+          </div>
+        </div>
 
-                {/* Add to LocalStorage Bag */}
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex items-center border border-[#4b4640] rounded-[0.25rem] bg-[#151311]">
-                    <button
-                      type="button"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="px-2.5 py-2 text-[#969088] hover:text-white"
-                      aria-label={t('product.quantityAriaDecrease')}
-                    >
-                      <Minus className="w-3.5 h-3.5" aria-hidden="true" />
-                    </button>
-                    <span className="px-2.5 py-2 text-xs font-mono font-semibold text-white tabular-nums">
-                      {quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="px-2.5 py-2 text-[#969088] hover:text-white"
-                      aria-label={t('product.quantityAriaIncrease')}
-                    >
-                      <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                    </button>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleAdd}
-                    disabled={added || !product.inStock}
-                    className={`flex-1 py-3 px-4 rounded-[0.25rem] text-xs uppercase tracking-[0.15em] font-semibold flex items-center justify-center gap-2 transition-all ${
-                      !product.inStock
-                        ? 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
-                        : added
-                        ? 'bg-emerald-800 text-white'
-                        : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] shadow-lg shadow-[#D4AF37]/15'
-                    }`}
-                  >
-                    {!product.inStock ? (
-                      <span>{t('product.soldOut')}</span>
-                    ) : added ? (
-                      <>
-                        <Check className="w-4 h-4" aria-hidden="true" />
-                        <span>{t('product.added')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                        <span>{t('product.addToBagWithPrice', { price: formatPrice(unitPrice * quantity, currency) })}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+        {/* Persistent Sticky Bottom Thumb-Zone CTA Action Bar */}
+        <div className="sticky bottom-0 z-30 bg-[#151311]/98 backdrop-blur-md p-3 sm:p-4 border-t border-[#2c2a27] shadow-[0_-6px_25px_rgba(0,0,0,0.7)]">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-[#969088] block">
+                  {selectedSize.label} · {formatPrice(unitPrice, currency)}
+                </span>
+                <span className="text-base sm:text-lg font-bold font-mono text-[#D4AF37] tabular-nums">
+                  {formatPrice(unitPrice * quantity, currency)}
+                </span>
               </div>
 
-              {/* Monochrome Multi-Channel Commerce Links (Shopee, Lazada, Grab Delivery, TikTok) */}
-              <MultiChannelLinks
-                variant="compact"
-                productShortCode={product.shortCode}
-                volumeMl={selectedSize.ml}
-              />
+              {/* Quantity Selector */}
+              <div className="flex items-center border border-[#4b4640] rounded-[0.25rem] bg-[#1E1C1A]">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-2.5 py-1.5 text-[#969088] hover:text-white"
+                  aria-label={t('product.quantityAriaDecrease')}
+                >
+                  <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+                <span className="px-2.5 py-1.5 text-xs font-mono font-semibold text-white tabular-nums">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-2.5 py-1.5 text-[#969088] hover:text-white"
+                  aria-label={t('product.quantityAriaIncrease')}
+                >
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-1 sm:max-w-md justify-end">
+              {/* WhatsApp Checkout Button */}
+              <a
+                href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml, shopSettings.whatsappPhone, language)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-3.5 py-2.5 sm:py-3 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem] flex items-center justify-center gap-1.5 transition-colors shrink-0"
+              >
+                <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
+                <span className="hidden sm:inline">{t('product.orderWhatsApp', { ml: selectedSize.ml })}</span>
+                <span className="sm:hidden">WhatsApp</span>
+              </a>
+
+              {/* Add to Bag Primary CTA */}
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={added || !product.inStock}
+                className={`flex-1 py-2.5 sm:py-3 px-4 rounded-[0.25rem] text-xs uppercase tracking-[0.15em] font-semibold flex items-center justify-center gap-2 transition-all ${
+                  !product.inStock
+                    ? 'bg-[#2c2a27] text-[#969088] cursor-not-allowed'
+                    : added
+                    ? 'bg-emerald-800 text-white'
+                    : 'bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] shadow-lg shadow-[#D4AF37]/20 active:scale-[0.98]'
+                }`}
+              >
+                {!product.inStock ? (
+                  <span>{t('product.soldOut')}</span>
+                ) : added ? (
+                  <>
+                    <Check className="w-4 h-4" aria-hidden="true" />
+                    <span>{t('product.added')}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
+                    <span>{t('product.addToBagWithPrice', { price: formatPrice(unitPrice * quantity, currency) })}</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

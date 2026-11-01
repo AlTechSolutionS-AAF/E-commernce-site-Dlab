@@ -55,7 +55,11 @@ export default defineNamespace(
     'quiz.added': 'Added',
     'quiz.addToBag': 'Add to Bag',
     'quiz.aromaProfile': 'Aroma Profile',
-    'quiz.partnerChannels': 'Or Acquire Matched Flacon via Official Channels'
+    'quiz.partnerChannels': 'Or Acquire Matched Flacon via Official Channels',
+    'quiz.mobileBannerTitle': 'Find Your Best Match',
+    'quiz.mobileBannerSubtitle': '10s fragrance diagnostic & instant recommendation',
+    'quiz.startDiagnostic': 'Start Quiz',
+    'quiz.closeQuiz': 'Close Quiz'
   },
   {
     'quiz.liveStream': 'SIARAN LANGSUNG • 53 BOTOL',
@@ -111,6 +115,10 @@ export default defineNamespace(
     'quiz.added': 'Ditambah',
     'quiz.addToBag': 'Tambah ke Beg',
     'quiz.aromaProfile': 'Profil Aroma',
-    'quiz.partnerChannels': 'Atau Dapatkan Botol via Saluran Rasmi'
+    'quiz.partnerChannels': 'Atau Dapatkan Botol via Saluran Rasmi',
+    'quiz.mobileBannerTitle': 'Cari Padanan Terbaik Anda',
+    'quiz.mobileBannerSubtitle': 'Diagnostik wangian 10s & saranan padanan pantas',
+    'quiz.startDiagnostic': 'Mula Kuiz',
+    'quiz.closeQuiz': 'Tutup Kuiz'
   }
 );

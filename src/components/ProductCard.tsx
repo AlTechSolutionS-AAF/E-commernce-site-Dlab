@@ -15,6 +15,7 @@ interface ProductCardProps {
   onOpenDetail: (product: Product) => void;
   onAddToCart: (product: Product, size: ProductSize) => void;
   staggerIndex?: number;
+  compact?: boolean;
 }
 
 // Memoized: the storefront grid renders every catalog item, so cards must skip
@@ -27,7 +28,8 @@ export const ProductCard = React.memo(function ProductCard({
   onToggleWishlist,
   onOpenDetail,
   onAddToCart,
-  staggerIndex = 0
+  staggerIndex = 0,
+  compact = false
 }: ProductCardProps) {
   const { shopSettings } = useShopData();
   const { language, t } = useLanguage();
@@ -54,7 +56,7 @@ export const ProductCard = React.memo(function ProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Top Header Information inside card */}
-      <div className="p-4 pb-2 flex items-start justify-between z-10">
+      <div className={`${compact ? "p-2.5 sm:p-4 pb-1 sm:pb-2" : "p-4 pb-2"} flex items-start justify-between z-10`}>
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold font-mono tracking-wider text-[#D4AF37]">
@@ -93,7 +95,7 @@ export const ProductCard = React.memo(function ProductCard({
 
       {/* Visual Image Showcase with Quick View overlay (Native lazy loading) */}
       <div
-        className="relative aspect-[3/4] mx-4 overflow-hidden rounded-[0.125rem] bg-[#151311] cursor-pointer"
+        className={`relative aspect-[3/4] ${compact ? "mx-2 sm:mx-4" : "mx-4"} overflow-hidden rounded-[0.125rem] bg-[#151311] cursor-pointer`}
         onClick={() => onOpenDetail(product)}
       >
         <img
@@ -141,7 +143,7 @@ export const ProductCard = React.memo(function ProductCard({
       </div>
 
       {/* Card Content & Details */}
-      <div className="p-4 pt-3 space-y-3 flex-1 flex flex-col justify-between">
+      <div className={`${compact ? "p-2.5 sm:p-4 pt-2 sm:pt-3 space-y-2 sm:space-y-3" : "p-4 pt-3 space-y-3"} flex-1 flex flex-col justify-between`}>
         <div>
           {/* Operational Attributes: Targeted Synergy + Intensity Level + Preferred Experience */}
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -158,17 +160,17 @@ export const ProductCard = React.memo(function ProductCard({
 
           <h3
             onClick={() => onOpenDetail(product)}
-            className="text-base font-semibold tracking-[-0.01em] text-[#FFFFFF] hover:text-[#D4AF37] transition-colors cursor-pointer uppercase"
+            className={`${compact ? "text-xs sm:text-base line-clamp-1 sm:line-clamp-none" : "text-base"} font-semibold tracking-[-0.01em] text-[#FFFFFF] hover:text-[#D4AF37] transition-colors cursor-pointer uppercase`}
           >
             {product.name}
           </h3>
 
-          <p className="text-xs text-[#cdc5bd] line-clamp-2 mt-1 leading-relaxed">
+          <p className={`text-xs text-[#cdc5bd] ${compact ? "hidden sm:line-clamp-2" : "line-clamp-2"} mt-1 leading-relaxed`}>
             {product.description}
           </p>
 
           {/* Key Triad Note preview */}
-          <div className="text-[11px] text-[#969088] pt-2 border-t border-[#2c2a27] mt-2 flex items-center justify-between">
+          <div className={`text-[11px] text-[#969088] pt-2 border-t border-[#2c2a27] mt-2 ${compact ? "hidden sm:flex" : "flex"} items-center justify-between`}>
             <span className="truncate">
               <strong className="text-[#cdc5bd] font-normal">{t('product.base')}</strong> {product.notes.base.slice(0, 2).join(', ')}
             </span>
@@ -209,7 +211,7 @@ export const ProductCard = React.memo(function ProductCard({
               <span className="text-xs text-[#969088] block text-[9px] uppercase tracking-wider">
                 {currentSize.label}
               </span>
-              <span className="text-base font-semibold text-[#FFFFFF] font-mono tabular-nums">
+              <span className={`${compact ? "text-sm sm:text-base" : "text-base"} font-semibold text-[#FFFFFF] font-mono tabular-nums`}>
                 {formatPrice(currentSize.price, currency)}
               </span>
             </div>

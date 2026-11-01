@@ -41,13 +41,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+
+  // Auto-collapse header on mobile when scrolling down, restore on upward scroll
+  React.useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > 70 && currentScrollY > lastScrollY) {
+        setIsHeaderCollapsed(true);
+      } else if (currentScrollY < lastScrollY || currentScrollY <= 70) {
+        setIsHeaderCollapsed(false);
+      }
+      lastScrollY = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const popularNotes = ['Oud', 'Amber', 'Leather', 'Saffron', 'Sandalwood', 'Vanilla'];
 
   return (
     <header className="sticky top-0 z-40 bg-[#0F0E0D]/95 backdrop-blur-md border-b border-[#4b4640]/40">
-      {/* Luxury Top Bar */}
-      <div className="bg-[#151311] text-[#cdc5bd] text-[11px] font-medium tracking-[0.18em] uppercase py-2 px-4 border-b border-[#2c2a27] flex flex-wrap justify-between items-center text-center gap-2">
+      {/* Luxury Top Bar (collapsible on mobile) */}
+      <div className={`bg-[#151311] text-[#cdc5bd] text-[11px] font-medium tracking-[0.18em] uppercase py-2 px-4 border-b border-[#2c2a27] flex-wrap justify-between items-center text-center gap-2 transition-all duration-300 ${isHeaderCollapsed ? 'hidden md:flex' : 'flex'}`}>
         <div className="hidden md:flex items-center gap-2 text-[#969088]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></span>
           <span>{t('nav.atelierSubtitle')}</span>
@@ -127,8 +144,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Main Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      {/* Main Navigation (condensed to 48px on mobile scroll-down) */}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 transition-all duration-300 ${isHeaderCollapsed ? 'h-12 sm:h-20' : 'h-16 sm:h-20'}`}>
         {/* Brand Logo */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentTab('catalog')}>
           <div className="flex flex-col">
@@ -296,8 +313,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
 
-      {/* Mobile Navigation bar */}
-      <div className="flex lg:hidden border-t border-[#2c2a27] bg-[#151311] overflow-x-auto no-scrollbar py-2.5 px-4 gap-4 justify-around text-[11px] uppercase tracking-wider">
+      {/* Mobile Navigation bar (collapsible on scroll down, admin button removed) */}
+      <div className={`border-t border-[#2c2a27] bg-[#151311] overflow-x-auto no-scrollbar py-2.5 px-4 gap-4 justify-around text-[11px] uppercase tracking-wider transition-all duration-300 ${isHeaderCollapsed ? 'hidden' : 'flex lg:hidden'}`}>
         <button
           onClick={() => setCurrentTab('catalog')}
           className={`${currentTab === 'catalog' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
@@ -322,13 +339,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           className={`${currentTab === 'journal' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
           {t('nav.sillageJournal')}
-        </button>
-        <button
-          onClick={() => setCurrentTab('admin')}
-          className={`flex items-center gap-1 ${currentTab === 'admin' ? 'text-[#D4AF37] font-semibold' : 'text-[#D4AF37]/80'}`}
-        >
-          <Shield className="w-3 h-3 text-[#D4AF37]" />
-          <span>{t('nav.admin')}</span>
         </button>
       </div>
     </header>

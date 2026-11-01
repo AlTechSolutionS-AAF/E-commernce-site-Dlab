@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dlab-nightmatch-v1.0.1';
+const CACHE_NAME = 'dlab-nightmatch-v1.1.0';
 
 // Core Application Shell assets
 const PRECACHE_ASSETS = [

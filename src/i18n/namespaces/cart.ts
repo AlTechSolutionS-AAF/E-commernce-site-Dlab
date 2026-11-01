@@ -29,7 +29,18 @@ export default defineNamespace(
     'cart.payCard': 'Or Pay with Card / Apple Pay',
     'cart.partnerChannels': 'Or Checkout via Official Partner Channels',
     'cart.discreetPackaging': 'Discreet Packaging',
-    'cart.whatsappConfirmation': 'Direct WhatsApp Confirmation'
+    'cart.whatsappConfirmation': 'Direct WhatsApp Confirmation',
+    'cart.courierSelect': 'Delivery Courier Option',
+    'cart.courierStandard': 'Standard (Pos Laju / J&T)',
+    'cart.courierExpress': 'West MY 24h Air Express',
+    'cart.courierGrab': 'Same-Day Rider (KV & Penang)',
+    'cart.discreetBadge': '100% Discreet Delivery Guaranteed • Plain Courier Flyer • No Product Description on Consignment Note',
+    'cart.duitNowPay': 'One-Tap DuitNow QR Pay',
+    'cart.duitNowSub': 'Instant Bank Transfer / Touch \'n Go eWallet',
+    'cart.duitNowSave': 'Save QR to Photos',
+    'cart.duitNowOpenBank': 'Open Banking App / eWallet',
+    'cart.copyOrder': 'Copy Order Text',
+    'cart.orderCopied': 'Order Copied to Clipboard!'
   },
   {
     'cart.title': 'Beg Pantas (Simpanan Tempatan)',
@@ -59,6 +70,17 @@ export default defineNamespace(
     'cart.payCard': 'Atau Bayar dengan Kad / Apple Pay',
     'cart.partnerChannels': 'Atau Buat Pesanan via Saluran Rakan Rasmi',
     'cart.discreetPackaging': 'Bungkusan Sulit & Rahsia',
-    'cart.whatsappConfirmation': 'Pengesahan Terus via WhatsApp'
+    'cart.whatsappConfirmation': 'Pengesahan Terus via WhatsApp',
+    'cart.courierSelect': 'Pilihan Kurier Penghantaran',
+    'cart.courierStandard': 'Standard (Pos Laju / J&T)',
+    'cart.courierExpress': 'Semenanjung 24j Ekspres Udara',
+    'cart.courierGrab': 'Penghantar Motosikal Hari Sama (KV & Penang)',
+    'cart.discreetBadge': '100% Penghantaran Rahsia Dijamin • Bungkusan Kurier Kosong • Tiada Penerangan Produk pada Nota Kiriman',
+    'cart.duitNowPay': 'Bayar Pantas DuitNow QR',
+    'cart.duitNowSub': 'Pindahan Bank Segera / eWallet Touch \'n Go',
+    'cart.duitNowSave': 'Simpan QR ke Galeri',
+    'cart.duitNowOpenBank': 'Buka Aplikasi Bank / eWallet',
+    'cart.copyOrder': 'Salin Teks Pesanan',
+    'cart.orderCopied': 'Teks Pesanan Berjaya Disalin!'
   }
 );
