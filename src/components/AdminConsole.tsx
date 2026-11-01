@@ -33,6 +33,7 @@ import {
 import { useShopData } from '../context/ShopDataContext';
 import { formatPrice } from '../utils/cartCalculations';
 import { type CurrencyCode } from '../utils/currency';
+import { APP_VERSION } from '../config/version';
 
 interface AdminConsoleProps {
   currency: CurrencyCode;
@@ -332,8 +333,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({ currency, onPreviewP
       <div className="bg-[#1E1C1A] border border-[#4b4640]/60 rounded-[0.25rem] p-6 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#2c2a27] pb-5">
           <div>
-            <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] block">
-              Atelier Operations & Merchandising
+            <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] flex items-center gap-2 flex-wrap">
+              <span>Atelier Operations & Merchandising</span>
+              <span className="text-[#4b4640]">•</span>
+              <span className="bg-[#151311] border border-[#D4AF37]/40 px-1.5 py-0.5 rounded text-[10px] text-[#D4AF37]">
+                v{APP_VERSION}
+              </span>
             </span>
             <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight mt-0.5">
               Shop & Product Management Console

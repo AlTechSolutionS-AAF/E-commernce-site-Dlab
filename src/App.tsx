@@ -58,6 +58,7 @@ import { ShopDataProvider, useShopData } from './context/ShopDataContext';
 import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield, LayoutGrid, Square } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { CurrencyCode, BASE_CURRENCY } from './utils/currency';
+import { APP_VERSION } from './config/version';
 
 function StorefrontContent() {
   const { products, shopSettings, promoCodes, subscribeNewsletter } = useShopData();
@@ -813,7 +814,13 @@ function StorefrontContent() {
           </div>
 
           <div className="border-t border-[#2c2a27] pt-6 flex flex-col sm:flex-row justify-between items-center text-[10px] text-[#969088] uppercase tracking-wider gap-4">
-            <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+            <div className="flex items-center gap-2">
+              <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+              <span className="text-[#4b4640]">•</span>
+              <span className="font-mono text-[#D4AF37] bg-[#151311] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded-[0.125rem]">
+                v{APP_VERSION}
+              </span>
+            </div>
             <div className="flex gap-6">
               <span>{t('footer.batchIntegrity')}</span>
               <span>{t('footer.discreetDispatch')}</span>
