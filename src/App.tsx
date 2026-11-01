@@ -56,12 +56,15 @@ import {
 import { CartItem, calculateCartTotals } from './utils/cartCalculations';
 import { ShopDataProvider, useShopData } from './context/ShopDataContext';
 import { ArrowUpDown, ShieldCheck, Check, RotateCcw, Shield } from 'lucide-react';
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import { CurrencyCode, BASE_CURRENCY } from './utils/currency';
 
 function StorefrontContent() {
   const { products, shopSettings, promoCodes, subscribeNewsletter } = useShopData();
+  const { t } = useLanguage();
 
   const [currentTab, setCurrentTab] = useState<NavTab>('catalog');
-  const [currency, setCurrency] = useState<'USD' | 'EUR' | 'GBP' | 'JPY'>('USD');
+  const [currency, setCurrency] = useState<CurrencyCode>(BASE_CURRENCY);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<CatalogCategory>('All');
   const [selectedIntensity, setSelectedIntensity] = useState<string>('All');
@@ -355,22 +358,22 @@ function StorefrontContent() {
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-4 border-b border-[#2c2a27]">
                   <div className="space-y-1 text-left">
                     <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold block">
-                      COMPLETE ARCHIVE • 93 ITEMS
+                      {t('catalog.completeArchive', { count: products.length })}
                     </span>
                     <h2 id="catalog-heading" className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white">
-                      FULL DLAB CATALOG
+                      {t('catalog.fullTitle')}
                     </h2>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Catalog format and category filter">
                     {(
                       [
-                        { id: 'All', label: 'ALL' },
-                        { id: '10ml', label: '10ML AROMA' },
-                        { id: '30ml', label: '30ML AROMA' },
-                        { id: '40ml', label: '40ML AROMA' },
-                        { id: 'solid', label: 'SOLID TYPE' },
-                        { id: 'accessory', label: 'ACCESSORIES' }
+                        { id: 'All', label: t('catalog.catAll') },
+                        { id: '10ml', label: t('catalog.cat10ml') },
+                        { id: '30ml', label: t('catalog.cat30ml') },
+                        { id: '40ml', label: t('catalog.cat40ml') },
+                        { id: 'solid', label: t('catalog.catSolid') },
+                        { id: 'accessory', label: t('catalog.catAccessory') }
                       ] as { id: CatalogCategory; label: string }[]
                     ).map((tab) => (
                       <button
@@ -403,7 +406,7 @@ function StorefrontContent() {
                   {/* Intensity Filters */}
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#969088] mr-2 shrink-0 font-mono">
-                      Intensity:
+                      {t('catalog.intensityLabel')}
                     </span>
                     {(['All', 'Mild', 'Strong', 'Intense'] as const).map((lvl) => (
                       <button
@@ -417,7 +420,7 @@ function StorefrontContent() {
                         }`}
                         aria-pressed={selectedIntensity === lvl}
                       >
-                        {lvl}
+                        {lvl === 'All' ? t('catalog.intensityAll') : lvl === 'Mild' ? t('catalog.intensityMild') : lvl === 'Strong' ? t('catalog.intensityStrong') : t('catalog.intensityIntense')}
                       </button>
                     ))}
                   </div>
@@ -426,50 +429,50 @@ function StorefrontContent() {
                   <div className="flex flex-wrap items-center gap-2.5">
                     {/* Targeted Synergy Indicator filter (↑ Ascendant, ↓ Receptive, ∞ Universal) */}
                     <div className="flex items-center gap-1 text-xs bg-[#1E1C1A] border border-[#D4AF37]/40 rounded-[0.25rem] px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wider text-[#D4AF37] font-mono">Synergy:</span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#D4AF37] font-mono">{t('catalog.synergyLabel')}</span>
                       <select
                         value={selectedSynergy}
                         onChange={(e) => setSelectedSynergy(e.target.value)}
                         className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
                         aria-label="Filter by targeted synergy indicator"
                       >
-                        <option value="All" className="bg-[#1E1C1A]">All Synergy</option>
-                        <option value="Ascendant" className="bg-[#1E1C1A]">↑ Ascendant (Top)</option>
-                        <option value="Receptive" className="bg-[#1E1C1A]">↓ Receptive (Bottom)</option>
-                        <option value="Universal" className="bg-[#1E1C1A]">∞ Universal (Dual)</option>
+                        <option value="All" className="bg-[#1E1C1A]">{t('catalog.synergyAll')}</option>
+                        <option value="Ascendant" className="bg-[#1E1C1A]">{t('catalog.synergyAscendant')}</option>
+                        <option value="Receptive" className="bg-[#1E1C1A]">{t('catalog.synergyReceptive')}</option>
+                        <option value="Universal" className="bg-[#1E1C1A]">{t('catalog.synergyUniversal')}</option>
                       </select>
                     </div>
 
                     {/* Preferred Experience dropdown */}
                     <div className="flex items-center gap-1 text-xs bg-[#1E1C1A] border border-[#4b4640]/50 rounded-[0.25rem] px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wider text-[#969088]">Vibe:</span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#969088]">{t('catalog.vibeLabel')}</span>
                       <select
                         value={selectedExperience}
                         onChange={(e) => setSelectedExperience(e.target.value)}
                         className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
                         aria-label="Filter by preferred experience"
                       >
-                        <option value="All" className="bg-[#1E1C1A]">All Vibes</option>
-                        <option value="High-energy" className="bg-[#1E1C1A]">High-Energy</option>
-                        <option value="Sensual" className="bg-[#1E1C1A]">Sensual</option>
-                        <option value="Relaxing" className="bg-[#1E1C1A]">Relaxing</option>
-                        <option value="Velvet Focus" className="bg-[#1E1C1A]">Velvet Focus</option>
+                        <option value="All" className="bg-[#1E1C1A]">{t('catalog.vibeAll')}</option>
+                        <option value="High-energy" className="bg-[#1E1C1A]">{t('catalog.vibeHighEnergy')}</option>
+                        <option value="Sensual" className="bg-[#1E1C1A]">{t('catalog.vibeSensual')}</option>
+                        <option value="Relaxing" className="bg-[#1E1C1A]">{t('catalog.vibeRelaxing')}</option>
+                        <option value="Velvet Focus" className="bg-[#1E1C1A]">{t('catalog.vibeVelvetFocus')}</option>
                       </select>
                     </div>
 
                     {/* Sillage filter */}
                     <div className="flex items-center gap-1 text-xs bg-[#1E1C1A] border border-[#4b4640]/50 rounded-[0.25rem] px-2.5 py-1">
-                      <span className="text-[10px] uppercase tracking-wider text-[#969088]">Sillage:</span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#969088]">{t('catalog.sillageLabel')}</span>
                       <select
                         value={selectedSillage}
                         onChange={(e) => setSelectedSillage(e.target.value)}
                         className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
                         aria-label="Filter by sillage cloud"
                       >
-                        <option value="All" className="bg-[#1E1C1A]">All Clouds</option>
-                        <option value="Intimate" className="bg-[#1E1C1A]">Intimate</option>
-                        <option value="Radiant" className="bg-[#1E1C1A]">Radiant</option>
-                        <option value="Heavy" className="bg-[#1E1C1A]">Heavy</option>
+                        <option value="All" className="bg-[#1E1C1A]">{t('catalog.sillageAll')}</option>
+                        <option value="Intimate" className="bg-[#1E1C1A]">{t('catalog.sillageIntimate')}</option>
+                        <option value="Radiant" className="bg-[#1E1C1A]">{t('catalog.sillageRadiant')}</option>
+                        <option value="Heavy" className="bg-[#1E1C1A]">{t('catalog.sillageHeavy')}</option>
                       </select>
                     </div>
 
@@ -482,11 +485,11 @@ function StorefrontContent() {
                         className="bg-transparent text-[#FFFFFF] text-xs focus:outline-none cursor-pointer uppercase font-mono"
                         aria-label="Sort product catalog"
                       >
-                        <option value="featured" className="bg-[#1E1C1A]">Catalog Number</option>
-                        <option value="rank" className="bg-[#1E1C1A]">Top 10 Rank</option>
-                        <option value="price-asc" className="bg-[#1E1C1A]">Price: Low to High</option>
-                        <option value="price-desc" className="bg-[#1E1C1A]">Price: High to Low</option>
-                        <option value="longevity" className="bg-[#1E1C1A]">Max Longevity</option>
+                        <option value="featured" className="bg-[#1E1C1A]">{t('catalog.sortFeatured')}</option>
+                        <option value="rank" className="bg-[#1E1C1A]">{t('catalog.sortRank')}</option>
+                        <option value="price-asc" className="bg-[#1E1C1A]">{t('catalog.sortPriceAsc')}</option>
+                        <option value="price-desc" className="bg-[#1E1C1A]">{t('catalog.sortPriceDesc')}</option>
+                        <option value="longevity" className="bg-[#1E1C1A]">{t('catalog.sortLongevity')}</option>
                       </select>
                     </div>
                   </div>
@@ -495,8 +498,8 @@ function StorefrontContent() {
                 {/* Search result count / active filter tags */}
                 <div className="flex items-center justify-between text-xs text-[#969088]">
                   <span>
-                    Displaying <strong className="text-white tabular-nums">{filteredProducts.length}</strong> of <span className="tabular-nums">{products.length}</span> Catalog Items
-                    {searchQuery && <span> matching “{searchQuery}”</span>}
+                    {t('catalog.displaying', { filtered: filteredProducts.length, total: products.length })}
+                    {searchQuery && <span>{t('catalog.matching', { query: searchQuery })}</span>}
                   </span>
 
                   {(searchQuery || selectedCatalogCategory !== 'All' || selectedIntensity !== 'All' || selectedSynergy !== 'All' || selectedExperience !== 'All' || selectedSillage !== 'All') && (
@@ -513,7 +516,7 @@ function StorefrontContent() {
                       className="text-[#D4AF37] hover:underline flex items-center gap-1 text-[11px] uppercase tracking-wider"
                     >
                       <RotateCcw className="w-3 h-3" aria-hidden="true" />
-                      <span>Reset Filters</span>
+                      <span>{t('catalog.resetFilters')}</span>
                     </button>
                   )}
                 </div>
@@ -522,9 +525,9 @@ function StorefrontContent() {
               {/* Product Grid with 50ms Staggered Entrances & Native Lazy Loading */}
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-20 bg-[#1E1C1A] rounded-[0.25rem] border border-[#4b4640]/50 space-y-4">
-                  <p className="text-base text-[#FFFFFF] uppercase tracking-wider">No matching items found.</p>
+                  <p className="text-base text-[#FFFFFF] uppercase tracking-wider">{t('catalog.noMatches')}</p>
                   <p className="text-xs text-[#cdc5bd] max-w-md mx-auto">
-                    Try adjusting your category tab, intensity level, targeted synergy, or preferred experience filter.
+                    {t('catalog.noMatchesDesc')}
                   </p>
                   <button
                     type="button"
@@ -538,7 +541,7 @@ function StorefrontContent() {
                     }}
                     className="bg-[#D4AF37] text-[#0F0E0D] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem]"
                   >
-                    Clear All Filters
+                    {t('catalog.clearFilters')}
                   </button>
                 </div>
               ) : (
@@ -623,24 +626,24 @@ function StorefrontContent() {
                 </span>
               </div>
               <p className="text-xs text-[#969088] leading-relaxed max-w-sm">
-                Haute Parfumerie & nocturnal novelties engineered for consenting adults. Direct WhatsApp ordering, Penang Same-Day Grab Delivery, Shopee, Lazada & bespoke flacons.
+                {t('footer.tagline')}
               </p>
               <div className="pt-2 text-[10px] text-[#cdc5bd] flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-                <span>18+ Age-Restricted & IFRA compliant formulation.</span>
+                <span>{t('footer.compliance')}</span>
               </div>
             </div>
 
             {/* Quick Links */}
             <div className="md:col-span-2 space-y-2.5">
               <h5 className="text-xs uppercase tracking-[0.2em] font-semibold text-white">
-                The Atelier
+                {t('footer.theAtelier')}
               </h5>
               <ul className="space-y-1 text-xs text-[#969088]">
-                <li><button type="button" onClick={() => setCurrentTab('catalog')} className="hover:text-white py-1.5 inline-block text-left">All Extraits</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('diagnostic')} className="hover:text-white py-1.5 inline-block text-left">Night Match Finder</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('archive')} className="hover:text-white py-1.5 inline-block text-left">Raw Ingredients Index</button></li>
-                <li><button type="button" onClick={() => setCurrentTab('journal')} className="hover:text-white py-1.5 inline-block text-left">Sillage Journal</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('catalog')} className="hover:text-white py-1.5 inline-block text-left">{t('footer.allExtraits')}</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('diagnostic')} className="hover:text-white py-1.5 inline-block text-left">{t('footer.nightMatchFinder')}</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('archive')} className="hover:text-white py-1.5 inline-block text-left">{t('footer.rawIngredients')}</button></li>
+                <li><button type="button" onClick={() => setCurrentTab('journal')} className="hover:text-white py-1.5 inline-block text-left">{t('footer.sillageJournal')}</button></li>
                 <li>
                   <button
                     type="button"
@@ -648,7 +651,7 @@ function StorefrontContent() {
                     className="hover:text-[#D4AF37] text-[#D4AF37]/80 flex items-center gap-1 py-1.5"
                   >
                     <Shield className="w-3 h-3" aria-hidden="true" />
-                    <span>Atelier Admin Console</span>
+                    <span>{t('footer.adminConsole')}</span>
                   </button>
                 </li>
               </ul>
@@ -657,7 +660,7 @@ function StorefrontContent() {
             {/* Client Services */}
             <div className="md:col-span-2 space-y-2.5">
               <h5 className="text-xs uppercase tracking-[0.2em] font-semibold text-white">
-                Concierge
+                {t('footer.concierge')}
               </h5>
               <ul className="space-y-1 text-xs text-[#969088]">
                 <li>
@@ -667,7 +670,7 @@ function StorefrontContent() {
                     rel="noopener noreferrer"
                     className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
-                    WhatsApp Hotline (+{shopSettings.whatsappPhone})
+                    {t('footer.whatsappHotline', { phone: shopSettings.whatsappPhone })}
                   </a>
                 </li>
                 <li>
@@ -681,7 +684,7 @@ function StorefrontContent() {
                     }}
                     className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
-                    Penang Same-Day Grab
+                    {t('footer.penangGrab')}
                   </button>
                 </li>
                 <li>
@@ -695,7 +698,7 @@ function StorefrontContent() {
                     }}
                     className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
-                    Shopee & Lazada Mall
+                    {t('footer.shopeeLazada')}
                   </button>
                 </li>
                 <li>
@@ -709,7 +712,7 @@ function StorefrontContent() {
                     }}
                     className="hover:text-white transition-colors py-1.5 inline-block text-left"
                   >
-                    Discreet Courier Dispatch
+                    {t('footer.discreetCourier')}
                   </button>
                 </li>
               </ul>
@@ -718,23 +721,23 @@ function StorefrontContent() {
             {/* Newsletter Privilege Club */}
             <div className="md:col-span-4 space-y-3">
               <h5 className="text-xs uppercase tracking-[0.2em] font-semibold text-white">
-                Atelier Nocturne Gazette
+                {t('footer.gazetteTitle')}
               </h5>
               <p className="text-xs text-[#969088] leading-relaxed">
-                Receive confidential private harvest decanting invitations and reserve codes. Enjoy 10% off your initial flacon with code <strong>NOCTURNE10</strong>.
+                {t('footer.gazetteDesc')}
               </p>
 
               {newsletterSubscribed ? (
                 <div className="bg-[#1E1C1A] border border-[#D4AF37] p-3 rounded-[0.25rem] text-xs text-[#D4AF37] flex items-center gap-2">
                   <Check className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-                  <span>Welcome. Code <strong>NOCTURNE10</strong> has been applied to your bag.</span>
+                  <span>{t('footer.welcomeApplied')}</span>
                 </div>
               ) : (
                 <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
                   <input
                     type="email"
                     required
-                    placeholder="ENTER PRIVATE EMAIL"
+                    placeholder={t('footer.emailPlaceholder')}
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     className="bg-[#1E1C1A] border border-[#4b4640] text-xs text-white px-3 py-2 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37] flex-1 font-mono uppercase text-[11px]"
@@ -743,7 +746,7 @@ function StorefrontContent() {
                     type="submit"
                     className="bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-[0.25rem] transition-colors"
                   >
-                    Join
+                    {t('footer.joinBtn')}
                   </button>
                 </form>
               )}
@@ -751,10 +754,10 @@ function StorefrontContent() {
           </div>
 
           <div className="border-t border-[#2c2a27] pt-6 flex flex-col sm:flex-row justify-between items-center text-[10px] text-[#969088] uppercase tracking-wider gap-4">
-            <p>© {new Date().getFullYear()} DLAB NIGHT MATCH • ALL RIGHTS RESERVED • dlab-night-match.vercel.app</p>
+            <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
             <div className="flex gap-6">
-              <span>Batch Integrity Guaranteed</span>
-              <span>Discreet Worldwide Dispatch</span>
+              <span>{t('footer.batchIntegrity')}</span>
+              <span>{t('footer.discreetDispatch')}</span>
             </div>
           </div>
         </div>
@@ -840,7 +843,9 @@ function StorefrontContent() {
 export default function App() {
   return (
     <ShopDataProvider>
-      <StorefrontContent />
+      <LanguageProvider>
+        <StorefrontContent />
+      </LanguageProvider>
     </ShopDataProvider>
   );
 }

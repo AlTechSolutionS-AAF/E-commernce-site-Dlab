@@ -2,12 +2,14 @@ import React from 'react';
 import { X, Heart, Plus, Trash2 } from 'lucide-react';
 import { Product } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   wishlist: Product[];
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onRemoveFromWishlist: (p: Product) => void;
   onMoveToCart: (p: Product) => void;
   onOpenDetail: (p: Product) => void;
@@ -22,6 +24,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
   onMoveToCart,
   onOpenDetail
 }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -38,7 +41,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
               <span className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
-                Saved Nocturnes
+                {t('wishlist.title')}
               </span>
               <span className="text-xs font-mono text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50">
                 {wishlist.length}
@@ -58,9 +61,9 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             {wishlist.length === 0 ? (
               <div className="text-center py-16 space-y-3">
                 <Heart className="w-8 h-8 text-[#4b4640] mx-auto" />
-                <p className="text-sm text-[#969088] uppercase tracking-wider">No fragrances bookmarked yet.</p>
+                <p className="text-sm text-[#969088] uppercase tracking-wider">{t('wishlist.emptyTitle')}</p>
                 <p className="text-xs text-[#cdc5bd] max-w-xs mx-auto">
-                  Click the heart icon on any extrait to save it for future nocturnal consideration.
+                  {t('wishlist.emptyDesc')}
                 </p>
               </div>
             ) : (
@@ -115,10 +118,10 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                           {prod.inStock ? (
                             <>
                               <Plus className="w-3 h-3" />
-                              <span>Move to Bag</span>
+                              <span>{t('wishlist.moveToBag')}</span>
                             </>
                           ) : (
-                            <span>Sold Out</span>
+                            <span>{t('wishlist.soldOut')}</span>
                           )}
                         </button>
                       </div>
@@ -135,7 +138,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
               onClick={onClose}
               className="w-full border border-[#4b4640] hover:border-[#D4AF37] text-white py-2.5 text-xs font-medium uppercase tracking-[0.2em] rounded-[0.25rem] transition-colors"
             >
-              Continue Exploring
+              {t('wishlist.continue')}
             </button>
           </div>
         </div>

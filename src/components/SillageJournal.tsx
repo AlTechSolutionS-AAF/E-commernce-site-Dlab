@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpen, Clock, Calendar, ArrowRight, X, Sparkles } from 'lucide-react';
 import { HeroSection } from './HeroSection';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface JournalArticle {
   id: string;
@@ -85,6 +86,7 @@ export const SillageJournal: React.FC<SillageJournalProps> = ({
   onStartDiagnostic,
   onExploreCatalog
 }) => {
+  const { t } = useLanguage();
   const [activeArticle, setActiveArticle] = useState<JournalArticle | null>(null);
 
   return (
@@ -105,7 +107,7 @@ export const SillageJournal: React.FC<SillageJournalProps> = ({
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.01em] text-[#FFFFFF] uppercase">
-            The Sillage Journal
+            {t('journal.title')}
           </h2>
           <p className="text-xs sm:text-sm text-[#cdc5bd] max-w-xl mx-auto">
             Essays on nocturnal chemistry, extraction ethics, and the sensory architecture of shadows.
@@ -162,7 +164,7 @@ export const SillageJournal: React.FC<SillageJournalProps> = ({
                   }}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D4AF37] uppercase tracking-[0.15em] group-hover:underline"
                 >
-                  <span>Read Full Essay</span>
+                  <span>{t('journal.readArticle')}</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                 </button>
               </div>

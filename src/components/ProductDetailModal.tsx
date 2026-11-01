@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Heart, Plus, Minus, Check, MessageCircle, ShieldAlert, ShoppingBag } from 'lucide-react';
 import { Product, ProductSize, generateWhatsAppLink } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useShopData } from '../context/ShopDataContext';
 import { SynergyBadge } from './SynergyBadge';
 import { MultiChannelLinks } from './MultiChannelLinks';
@@ -9,7 +11,7 @@ import { MultiChannelLinks } from './MultiChannelLinks';
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   isWishlisted: boolean;
   onToggleWishlist: (p: Product) => void;
   onAddToCart: (p: Product, size: ProductSize, quantity: number, monogram?: string) => void;
@@ -24,6 +26,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onAddToCart
 }) => {
   const { shopSettings } = useShopData();
+  const { language, t } = useLanguage();
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -92,7 +95,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-[#0F0E0D]/85 backdrop-blur-sm border border-[#D4AF37] px-4 py-2 text-center rounded-[0.125rem] shadow-2xl">
                     <p className="text-[8px] uppercase tracking-[0.3em] text-[#D4AF37] font-semibold">
-                      GOLD LEAF ENGRAVING
+                      {t('product.goldLeafEngraving')}
                     </p>
                     <p className="text-xl font-serif tracking-[0.4em] text-[#D4AF37] font-bold mt-0.5">
                       {monogramText.toUpperCase()}
@@ -103,7 +106,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               {/* Sillage & Batch tag */}
               <div className="absolute top-3 left-3 bg-[#0F0E0D]/85 backdrop-blur-sm border border-[#4b4640] px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] text-[#D4AF37] font-semibold rounded-[0.125rem]">
-                Batch #{product.batchCount} • Reserve
+                {t('product.batchReserve', { batch: product.batchCount })}
               </div>
             </div>
 
@@ -146,7 +149,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   aria-label={isWishlisted ? 'Saved in wishlist' : 'Save to wishlist'}
                 >
                   <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-[#D4AF37] text-[#D4AF37]' : ''}`} aria-hidden="true" />
-                  <span>{isWishlisted ? 'Saved' : 'Wishlist'}</span>
+                  <span>{isWishlisted ? t('product.savedInWishlist') : t('product.saveToWishlist')}</span>
                 </button>
               </div>
 
@@ -157,10 +160,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <SynergyBadge product={product} size="md" />
                   <span className="text-[10px] uppercase font-semibold text-[#D4AF37] bg-[#151311] px-2.5 py-1 rounded-[0.125rem] border border-[#4b4640]/50">
-                    Intensity: {product.intensity}
+                    {t('product.intensity')} {product.intensity}
                   </span>
                   <span className="text-[10px] uppercase font-semibold text-white bg-[#151311] px-2.5 py-1 rounded-[0.125rem] border border-[#4b4640]/50">
-                    Vibe: {product.experience}
+                    {t('product.vibe')} {product.experience}
                   </span>
                 </div>
               </div>
@@ -179,9 +182,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       ? 'border-[#D4AF37] text-[#D4AF37]'
                       : 'border-transparent text-[#969088] hover:text-[#FFFFFF]'
                   }`}
-                >
-                  Aroma Profile & Accords
-                </button>
+                >{t('product.tabOlfactory')}</button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('safety')}
@@ -190,9 +191,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       ? 'border-[#D4AF37] text-[#D4AF37]'
                       : 'border-transparent text-[#969088] hover:text-[#FFFFFF]'
                   }`}
-                >
-                  Safety & Compliance
-                </button>
+                >{t('product.tabSafety')}</button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('reviews')}
@@ -201,9 +200,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       ? 'border-[#D4AF37] text-[#D4AF37]'
                       : 'border-transparent text-[#969088] hover:text-[#FFFFFF]'
                   }`}
-                >
-                  Collector Reviews ({product.reviewCount})
-                </button>
+                >{t('product.tabReviews', { count: product.reviewCount })}</button>
               </div>
 
               {/* Tab 1: Olfactory Pyramid & Accords */}
@@ -212,19 +209,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="space-y-2.5 bg-[#151311] p-3.5 rounded-[0.25rem] border border-[#2c2a27]">
                     <div className="flex text-xs">
                       <span className="w-24 text-[#969088] text-[10px] uppercase tracking-wider shrink-0 font-mono">
-                        Top Notes:
+                        {t('product.topNotes')}
                       </span>
                       <span className="text-[#FFFFFF]">{product.notes.top.join(' • ')}</span>
                     </div>
                     <div className="flex text-xs border-t border-[#2c2a27] pt-2">
                       <span className="w-24 text-[#969088] text-[10px] uppercase tracking-wider shrink-0 font-mono">
-                        Heart Notes:
+                        {t('product.heartNotes')}
                       </span>
                       <span className="text-[#FFFFFF]">{product.notes.heart.join(' • ')}</span>
                     </div>
                     <div className="flex text-xs border-t border-[#2c2a27] pt-2">
                       <span className="w-24 text-[#969088] text-[10px] uppercase tracking-wider shrink-0 font-mono">
-                        Base Notes:
+                        {t('product.baseNotes')}
                       </span>
                       <span className="text-[#D4AF37] font-medium">{product.notes.base.join(' • ')}</span>
                     </div>
@@ -233,7 +230,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* Accord Composition Bar with staggered entrance */}
                   <div>
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#969088] block mb-2 font-mono">
-                      Accord Volatility & Density
+                      {t('product.accordDensity')}
                     </span>
                     <div className="space-y-2">
                       {product.accords.map((accord, idx) => (
@@ -263,7 +260,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="space-y-3 bg-[#151311] p-4 rounded-[0.25rem] border border-[#2c2a27] text-xs">
                   <div className="flex items-center gap-2 text-[#D4AF37] font-semibold uppercase tracking-wider text-[11px] pb-1 border-b border-[#2c2a27]">
                     <ShieldAlert className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-                    <span>Aromatic Safety & Usage Protocol</span>
+                    <span>{t('product.safetyTitle')}</span>
                   </div>
 
                   <ul className="space-y-2 text-[#cdc5bd] list-disc list-inside">
@@ -275,8 +272,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </ul>
 
                   <div className="pt-2 text-[10px] text-[#969088] border-t border-[#2c2a27] flex items-center justify-between">
-                    <span>18+ Adult Formulation Standard</span>
-                    <span>IFRA Certified Safe Terpenes</span>
+                    <span>{t('product.adultFormulation')}</span>
+                    <span>{t('product.ifraCertified')}</span>
                   </div>
                 </div>
               )}
@@ -287,13 +284,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="flex items-center justify-between pb-2 border-b border-[#2c2a27]">
                     <div className="flex items-center gap-1.5">
                       <span className="text-base font-bold text-[#D4AF37] tabular-nums">{product.rating}</span>
-                      <span className="text-xs text-[#969088]">/ 5.0 rating from verified collectors</span>
+                      <span className="text-xs text-[#969088]">{t('product.reviewsRating')}</span>
                     </div>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-2.5 bg-[#1E1C1A] rounded-[0.125rem] border border-[#2c2a27]">
                       <div className="flex justify-between text-[#cdc5bd] text-[10px]">
-                        <span className="font-semibold text-[#D4AF37]">Kyle Chong · Verified Patron</span>
+                        <span className="font-semibold text-[#D4AF37]">Kyle Chong · {t('product.verifiedPatron')}</span>
                         <span>★★★★★</span>
                       </div>
                       <p className="text-[#cdc5bd] mt-1 text-[11px]">
@@ -307,7 +304,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Size Configuration Selection with Staggered Entrance */}
               <div className="space-y-2 pt-1">
                 <label className="text-[10px] uppercase tracking-[0.2em] text-[#969088] block font-mono">
-                  Select Flacon Format
+                  {t('product.selectFormat')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {product.sizes.map((sz, idx) => (
@@ -341,9 +338,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       onChange={(e) => setEnableMonogram(e.target.checked)}
                       className="accent-[#D4AF37] w-4 h-4 rounded-[0.125rem]"
                     />
-                    <span className="font-medium">Bespoke Gold-Foil Monogram (+{formatPrice(shopSettings.monogramPrice, currency)})</span>
+                    <span className="font-medium">{t('product.bespokeMonogram', { fee: formatPrice(shopSettings.monogramPrice, currency) })}</span>
                   </label>
-                  <span className="text-[9px] uppercase tracking-wider text-[#D4AF37]">Hand-Stamped</span>
+                  <span className="text-[9px] uppercase tracking-wider text-[#D4AF37]">{t('product.handStamped')}</span>
                 </div>
 
                 {enableMonogram && (
@@ -351,7 +348,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <input
                       type="text"
                       maxLength={3}
-                      placeholder="INITIALS (E.G. VNC)"
+                      placeholder={t('product.initialsPlaceholder')}
                       value={monogramText}
                       onChange={(e) => setMonogramText(e.target.value.toUpperCase())}
                       className="bg-[#1E1C1A] border border-[#D4AF37] text-white text-xs px-3 py-1.5 rounded-[0.25rem] focus:outline-none uppercase tracking-[0.2em] font-mono w-full"
@@ -366,13 +363,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 {/* Breathing Direct WhatsApp Message Checkout Link */}
                 <a
-                  href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml, shopSettings.whatsappPhone)}
+                  href={generateWhatsAppLink(product.shortCode, product.name, selectedSize.ml, shopSettings.whatsappPhone, language)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-4 py-3 text-xs font-semibold uppercase tracking-wider rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                  <span>Order via WhatsApp ({selectedSize.ml}ml)</span>
+                  <span>{t('product.orderWhatsApp', { ml: selectedSize.ml })}</span>
                 </a>
 
                 {/* Add to LocalStorage Bag */}
@@ -382,7 +379,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       type="button"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       className="px-2.5 py-2 text-[#969088] hover:text-white"
-                      aria-label="Decrease quantity"
+                      aria-label={t('product.quantityAriaDecrease')}
                     >
                       <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
@@ -393,7 +390,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       type="button"
                       onClick={() => setQuantity(quantity + 1)}
                       className="px-2.5 py-2 text-[#969088] hover:text-white"
-                      aria-label="Increase quantity"
+                      aria-label={t('product.quantityAriaIncrease')}
                     >
                       <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
@@ -412,16 +409,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     }`}
                   >
                     {!product.inStock ? (
-                      <span>Out of Stock</span>
+                      <span>{t('product.soldOut')}</span>
                     ) : added ? (
                       <>
                         <Check className="w-4 h-4" aria-hidden="true" />
-                        <span>Added to Bag</span>
+                        <span>{t('product.added')}</span>
                       </>
                     ) : (
                       <>
                         <ShoppingBag className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                        <span>Add to Bag • {formatPrice(unitPrice * quantity, currency)}</span>
+                        <span>{t('product.addToBagWithPrice', { price: formatPrice(unitPrice * quantity, currency) })}</span>
                       </>
                     )}
                   </button>

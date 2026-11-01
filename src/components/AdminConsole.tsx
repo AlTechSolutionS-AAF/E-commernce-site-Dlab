@@ -32,9 +32,10 @@ import {
 } from '../data/products';
 import { useShopData } from '../context/ShopDataContext';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
 
 interface AdminConsoleProps {
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onPreviewProduct: (p: Product) => void;
 }
 

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Check, Lock } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface AgeVerificationModalProps {
   onVerified: () => void;
 }
 
 export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVerified }) => {
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -55,10 +57,10 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
             <Lock className="w-6 h-6 text-[#D4AF37]" aria-hidden="true" />
           </div>
           <span className="text-[10px] uppercase font-mono tracking-[0.3em] text-[#D4AF37] block">
-            DLAB ATELIER • AGE VERIFICATION
+            {t('age.tag')}
           </span>
           <h2 id="age-gate-title" className="text-xl sm:text-2xl font-semibold uppercase tracking-tight text-white">
-            18+ Restricted Access
+            {t('age.title')}
           </h2>
         </div>
 
@@ -66,15 +68,15 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
         <div className="p-3.5 bg-[#151311] border border-[#4b4640]/50 rounded-[0.25rem] text-xs text-[#cdc5bd] leading-relaxed text-left space-y-2">
           <div className="flex items-center gap-1.5 text-[#D4AF37] font-semibold text-[11px] uppercase tracking-wider">
             <ShieldAlert className="w-4 h-4 shrink-0" aria-hidden="true" />
-            <span>Age-Gated Nocturnal Formulations</span>
+            <span>{t('age.noticeTitle')}</span>
           </div>
           <p>
-            This atelier features concentrated aromatic extraits and nocturnal novelties intended strictly for consenting adults aged 18 or older (21 where applicable by local statute).
+            {t('age.noticeDesc')}
           </p>
         </div>
 
         <p className="text-xs text-[#969088]">
-          By entering, you confirm you meet the legal age requirement in your jurisdiction.
+          {t('age.disclaimer')}
         </p>
 
         {/* Action buttons */}
@@ -85,7 +87,7 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
             className="w-full bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] py-3.5 px-4 text-xs font-semibold uppercase tracking-[0.2em] rounded-[0.25rem] transition-colors shadow-lg shadow-[#D4AF37]/15 flex items-center justify-center gap-2"
           >
             <Check className="w-4 h-4" aria-hidden="true" />
-            <span>I Am 18 or Older — Enter Atelier</span>
+            <span>{t('age.confirm')}</span>
           </button>
 
           <button
@@ -93,7 +95,7 @@ export const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVe
             onClick={handleReject}
             className="w-full bg-transparent hover:bg-[#151311] border border-[#4b4640] hover:border-[#969088] text-[#969088] hover:text-white py-2.5 px-4 text-xs uppercase tracking-[0.15em] rounded-[0.25rem] transition-colors"
           >
-            I Am Under 18 — Exit
+            {t('age.reject')}
           </button>
         </div>
       </div>

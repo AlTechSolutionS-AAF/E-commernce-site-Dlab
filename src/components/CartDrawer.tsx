@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Trash2, Plus, Minus, Sparkles, Tag, ShieldCheck, ArrowRight, Check, MessageCircle, ShoppingBag } from 'lucide-react';
 import { CartItem, calculateCartTotals, formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode, BASE_CURRENCY } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { generateMultiItemWhatsAppLink } from '../data/products';
 import { useShopData } from '../context/ShopDataContext';
 import { MultiChannelLinks } from './MultiChannelLinks';
@@ -9,7 +11,7 @@ interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onUpdateQuantity: (index: number, quantity: number) => void;
   onRemoveItem: (index: number) => void;
   selectedSamples: string[];
@@ -37,6 +39,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onProceedToCheckout
 }) => {
   const { shopSettings, promoCodes, samples } = useShopData();
+  const { language, t } = useLanguage();
   const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
 
@@ -80,7 +83,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       sampleNames: pickedSampleNames,
       promoCode: promoCode || undefined,
       formattedTotal: formatPrice(totals.total, currency),
-      monogramUnitFee: shopSettings.monogramPrice
+      monogramUnitFee: shopSettings.monogramPrice,
+      language: language
     }
   );
 
@@ -104,10 +108,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
               <h2 id="cart-drawer-title" className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
-                Quick Bag (Local Storage)
+                {t('cart.title')}
               </h2>
               <span className="text-xs font-mono text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50 tabular-nums">
-                {items.length} {items.length === 1 ? 'Flacon' : 'Flacons'}
+                {items.length} {items.length === 1 ? t('cart.flaconSingle') : t('cart.flaconPlural')}
               </span>
             </div>
 
@@ -115,7 +119,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               type="button"
               onClick={onClose}
               className="p-1.5 text-[#cdc5bd] hover:text-white rounded-[0.25rem] border border-[#4b4640]/40"
-              aria-label="Close cart drawer"
+              aria-label={t('cart.closeAria')}
             >
               <X className="w-4 h-4" aria-hidden="true" />
               <span className="sr-only">Close</span>
@@ -128,11 +132,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <span>
                 {totals.eligibleForFreeShipping ? (
                   <span className="text-[#D4AF37] font-semibold">
-                    ✓ Complimentary Courier Shipping Unlocked
+                    {t('cart.freeShippingUnlocked')}
                   </span>
                 ) : (
                   <span>
-                    Add {formatPrice(amountToFreeShipping, currency)} for Complimentary Global Dispatch
+                    {t('cart.freeShippingNeeded', { amount: formatPrice(amountToFreeShipping, currency) })}
                   </span>
                 )}
               </span>
@@ -151,16 +155,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             {items.length === 0 ? (
               <div className="text-center py-12 space-y-3">
                 <ShoppingBag className="w-8 h-8 text-[#4b4640] mx-auto" aria-hidden="true" />
-                <p className="text-sm text-[#969088] uppercase tracking-wider">Your bag is currently empty.</p>
+                <p className="text-sm text-[#969088] uppercase tracking-wider">{t('cart.emptyTitle')}</p>
                 <p className="text-xs text-[#cdc5bd] max-w-xs mx-auto">
-                  Add flacons across 10ml, 30ml, or 40ml sizes to build your bespoke order.
+                  {t('cart.emptyDesc')}
                 </p>
                 <button
                   type="button"
                   onClick={onClose}
                   className="bg-[#D4AF37] text-[#0F0E0D] px-5 py-2 text-xs uppercase tracking-widest font-semibold rounded-[0.25rem]"
                 >
-                  Explore The Collection
+                  {t('cart.exploreCollection')}
                 </button>
               </div>
             ) : (
@@ -210,7 +214,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                       {item.monogram && (
                         <div className="inline-block bg-[#1E1C1A] border border-[#D4AF37] px-2 py-0.5 rounded-[0.125rem] text-[9px] font-mono text-[#D4AF37] uppercase">
-                          Monogram: {item.monogram}
+                          {t('cart.monogramPrefix')}{item.monogram}
                         </div>
                       )}
 
@@ -252,7 +256,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] font-semibold flex items-center gap-1.5 font-mono">
                       <Sparkles className="w-3 h-3 text-[#D4AF37]" aria-hidden="true" />
-                      Complimentary 2ml Miniatures (Select 2)
+                      {t('cart.complimentarySamples')}
                     </span>
                     <span className="text-[10px] font-mono text-[#969088] tabular-nums">
                       {selectedSamples.length} / 2
@@ -296,10 +300,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     />
                     <div className="text-left">
                       <span className="text-xs font-medium text-white block">
-                        Complimentary Obsidian Coffret Packaging
+                        {t('cart.giftPackagingTitle')}
                       </span>
                       <span className="text-[10px] text-[#969088] block mt-0.5">
-                        Delivered in matte black box with hand-stamped midnight sealing wax and black ribbon.
+                        {t('cart.giftPackagingDesc')}
                       </span>
                     </div>
                   </label>
@@ -312,7 +316,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       <Tag className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#969088]" aria-hidden="true" />
                       <input
                         type="text"
-                        placeholder="PROMO (E.G. NOCTURNE10)"
+                        placeholder={t('cart.promoPlaceholder')}
                         value={promoInput}
                         onChange={(e) => setPromoInput(e.target.value)}
                         className="bg-[#151311] border border-[#4b4640] text-xs text-white pl-8 pr-3 py-2 rounded-[0.25rem] w-full focus:outline-none focus:border-[#D4AF37] uppercase tracking-wider font-mono"
@@ -321,9 +325,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <button
                       type="submit"
                       className="px-3 py-2 bg-[#1E1C1A] border border-[#4b4640] hover:border-[#D4AF37] text-xs uppercase tracking-wider text-white rounded-[0.25rem]"
-                    >
-                      Apply
-                    </button>
+                    >{t('cart.applyPromo')}</button>
                   </div>
                   {promoCode && (
                     <p className="text-[10px] text-emerald-400">
@@ -343,35 +345,40 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="p-5 border-t border-[#2c2a27] bg-[#151311] space-y-3">
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-[#cdc5bd]">
-                  <span>Subtotal</span>
+                  <span>{t('cart.subtotal')}</span>
                   <span className="font-mono text-white tabular-nums">{formatPrice(totals.subtotal, currency)}</span>
                 </div>
 
                 {totals.monogramFee > 0 && (
                   <div className="flex justify-between text-[#cdc5bd]">
-                    <span>Bespoke Monogramming</span>
+                    <span>{t('cart.monogramFee')}</span>
                     <span className="font-mono text-white tabular-nums">{formatPrice(totals.monogramFee, currency)}</span>
                   </div>
                 )}
 
                 {totals.discount > 0 && (
                   <div className="flex justify-between text-emerald-400">
-                    <span>Atelier Privilege Discount</span>
+                    <span>{t('cart.discount')}</span>
                     <span className="font-mono tabular-nums">-{formatPrice(totals.discount, currency)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-[#cdc5bd]">
-                  <span>Insured Global Dispatch</span>
+                  <span>{t('cart.dispatch')}</span>
                   <span className="font-mono text-white tabular-nums">
-                    {totals.shipping === 0 ? 'COMPLIMENTARY' : formatPrice(totals.shipping, currency)}
+                    {totals.shipping === 0 ? t('cart.complimentary') : formatPrice(totals.shipping, currency)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-base font-semibold text-white pt-2 border-t border-[#2c2a27]">
-                  <span className="uppercase tracking-wider">Total</span>
+                  <span className="uppercase tracking-wider">{t('cart.total')}</span>
                   <span className="font-mono text-[#D4AF37] tabular-nums">{formatPrice(totals.total, currency)}</span>
                 </div>
+                {currency !== BASE_CURRENCY && (
+                  <p className="text-[10px] text-[#969088] text-center font-mono pt-1">
+                    {t('currency.note')}
+                  </p>
+                )}
               </div>
 
               {/* PRIMARY ACTION 1: Breathing WhatsApp Multi-Item Checkout */}
@@ -382,7 +389,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 className="animate-cta-breathe w-full bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
               >
                 <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                <span>Send Order via WhatsApp ({items.length} Items)</span>
+                <span>{t('cart.sendWhatsApp', { count: items.length })}</span>
               </a>
 
               {/* SECONDARY ACTION: In-app card checkout */}
@@ -391,7 +398,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 onClick={onProceedToCheckout}
                 className="w-full bg-[#1E1C1A] hover:bg-[#2c2a27] text-white border border-[#4b4640] hover:border-[#D4AF37] py-2.5 text-xs font-medium tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
               >
-                <span>Or Pay with Card / Apple Pay</span>
+                <span>{t('cart.payCard')}</span>
                 <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
 
@@ -400,15 +407,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 variant="compact"
                 productShortCode={items[0]?.product.shortCode}
                 volumeMl={items[0]?.selectedSize.ml}
-                label="Or Checkout via Official Partner Channels"
+                label={t('cart.partnerChannels')}
               />
 
               <div className="flex items-center justify-center gap-4 text-[9px] uppercase tracking-widest text-[#969088] pt-1 font-mono">
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#D4AF37]" aria-hidden="true" /> Discreet Packaging
+                  <ShieldCheck className="w-3 h-3 text-[#D4AF37]" aria-hidden="true" /> {t('cart.discreetPackaging')}
                 </span>
                 <span>•</span>
-                <span>Direct WhatsApp Confirmation</span>
+                <span>{t('cart.whatsappConfirmation')}</span>
               </div>
             </div>
           )}

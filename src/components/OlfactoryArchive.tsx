@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RAW_MATERIALS, Product } from '../data/products';
 import { Globe } from 'lucide-react';
 import { useShopData } from '../context/ShopDataContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface OlfactoryArchiveProps {
   onSelectProduct: (p: Product) => void;
@@ -9,6 +10,7 @@ interface OlfactoryArchiveProps {
 
 export const OlfactoryArchive: React.FC<OlfactoryArchiveProps> = ({ onSelectProduct }) => {
   const { products } = useShopData();
+  const { t } = useLanguage();
   const [selectedFamily, setSelectedFamily] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
@@ -27,21 +29,21 @@ export const OlfactoryArchive: React.FC<OlfactoryArchiveProps> = ({ onSelectProd
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1E1C1A] border border-[#D4AF37]/50 rounded-[0.25rem]">
           <Globe className="w-3.5 h-3.5 text-[#D4AF37]" />
           <span className="text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-            Raw Material Index
+            {t('archive.badge')}
           </span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.01em] text-[#FFFFFF] uppercase">
-          The Olfactory Archive
+          {t('archive.title')}
         </h2>
         <p className="text-xs sm:text-sm text-[#cdc5bd] max-w-2xl mx-auto">
-          Every DLAB formulation is anchored by singular botanical and resinous extractions sourced from protected terroirs, aged in darkness, and measured to thousandths of a gram.
+          {t('archive.desc')}
         </p>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-[#1E1C1A] p-3 rounded-[0.25rem] border border-[#4b4640]/50">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] uppercase tracking-wider text-[#969088] mr-2">Family:</span>
+          <span className="text-[10px] uppercase tracking-wider text-[#969088] mr-2">{t('archive.familyLabel')}</span>
           {families.map((fam) => (
             <button
               key={fam}

@@ -11,12 +11,14 @@ import {
 } from '../data/products';
 import { direct10SecondAssessment, QuickAssessmentMatch } from '../utils/scentMatcher';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useShopData } from '../context/ShopDataContext';
 import { SynergyBadge } from './SynergyBadge';
 import { MultiChannelLinks } from './MultiChannelLinks';
 
 interface DirectAssessmentQuizProps {
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onAddToCart: (product: Product, size: ProductSize) => void;
   onOpenDetail: (product: Product) => void;
 }
@@ -27,6 +29,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
   onOpenDetail
 }) => {
   const { products, shopSettings } = useShopData();
+  const { language, t } = useLanguage();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [intensity, setIntensity] = useState<IntensityLevel>('Intense');
   const [experience, setExperience] = useState<PreferredExperience>('High-energy');
@@ -125,30 +128,30 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
           <div className="inline-flex flex-wrap items-center justify-center gap-2">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#151311] border border-[#4b4640] rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-[#e7e1de]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
-              <span>LIVE STREAM • 53 FLACONS</span>
+              <span>{t('quiz.liveStream')}</span>
             </span>
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#1E1C1A] border border-[#D4AF37]/50 rounded-[0.25rem]">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" aria-hidden="true" />
               <span className="text-[10px] uppercase font-mono tracking-[0.25em] text-[#D4AF37] font-semibold">
-                DLAB · THE ELIMINATION GAME
+                {t('quiz.tagline')}
               </span>
             </span>
           </div>
 
           <h1 id="quiz-heading" className="text-3xl sm:text-5xl font-semibold tracking-tight text-white">
-            Your best match <span className="text-[#D4AF37] italic font-normal">in 10 seconds.</span>
+            {t('quiz.titleMain')}<span className="text-[#D4AF37] italic font-normal">{t('quiz.titleHighlight')}</span>
           </h1>
           <p className="text-xs sm:text-sm text-[#cdc5bd] max-w-lg mx-auto">
-            Configure your operational intensity, desired nocturnal experience, and flacon volume for an immediate single recommendation.
+            {t('quiz.subtitle')}
           </p>
         </div>
 
         {/* Progress Step Header */}
         <div className="flex items-center justify-center gap-3 pt-1">
           {[
-            { num: 1, label: 'Vibe & Intensity' },
-            { num: 2, label: 'Flacon Volume' },
-            { num: 3, label: 'The Match Reveal' }
+            { num: 1, label: t('quiz.step1') },
+            { num: 2, label: t('quiz.step2') },
+            { num: 3, label: t('quiz.step3') }
           ].map((s) => (
             <div key={s.num} className="flex items-center gap-2">
               <span
@@ -182,30 +185,30 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
               <div className="flex items-center justify-between">
                 <label className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-semibold flex items-center gap-1.5">
                   <Flame className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-                  <span>1. Operational Intensity Level</span>
+                  <span>{t('quiz.intensityTitle')}</span>
                 </label>
-                <span className="text-[10px] text-[#969088] font-mono">CONCENTRATION DENSITY</span>
+                <span className="text-[10px] text-[#969088] font-mono">{t('quiz.intensityDensity')}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   {
                     level: 'Mild' as IntensityLevel,
-                    title: 'Mild',
-                    subtitle: 'Subtle & Intimate',
-                    desc: 'A private whisper discovered only at close contact. Gentle sillage.'
+                    title: t('quiz.mildTitle'),
+                    subtitle: t('quiz.mildSub'),
+                    desc: t('quiz.mildDesc')
                   },
                   {
                     level: 'Strong' as IntensityLevel,
-                    title: 'Strong',
-                    subtitle: 'Magnetic Presence',
-                    desc: 'Commanding projection that fills a 2-meter radius with distinction.'
+                    title: t('quiz.strongTitle'),
+                    subtitle: t('quiz.strongSub'),
+                    desc: t('quiz.strongDesc')
                   },
                   {
                     level: 'Intense' as IntensityLevel,
-                    title: 'Intense',
-                    subtitle: 'High-Octane Aura',
-                    desc: 'Uncompromising 40% concentration built for maximum nocturnal endurance.'
+                    title: t('quiz.intenseTitle'),
+                    subtitle: t('quiz.intenseSub'),
+                    desc: t('quiz.intenseDesc')
                   }
                 ].map((item) => (
                   <button
@@ -234,17 +237,17 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
               <div className="flex items-center justify-between">
                 <label className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-semibold flex items-center gap-1.5">
                   <Zap className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-                  <span>2. Preferred Nocturnal Experience</span>
+                  <span>{t('quiz.experienceTitle')}</span>
                 </label>
-                <span className="text-[10px] text-[#969088] font-mono">SYNERGY TEMPERAMENT</span>
+                <span className="text-[10px] text-[#969088] font-mono">{t('quiz.experienceSub')}</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
-                  { id: 'High-energy' as PreferredExperience, name: 'High-energy', tag: '↓ Receptive / C4 Surge' },
-                  { id: 'Sensual' as PreferredExperience, name: 'Sensual', tag: '∞ Universal / Aged Resins' },
-                  { id: 'Relaxing' as PreferredExperience, name: 'Relaxing', tag: '↓ Receptive / Muscle Relaxant' },
-                  { id: 'Velvet Focus' as PreferredExperience, name: 'Velvet Focus', tag: '↑ Ascendant / Top Focus' }
+                  { id: 'High-energy' as PreferredExperience, name: t('quiz.expHighEnergy'), tag: t('quiz.expHighEnergyTag') },
+                  { id: 'Sensual' as PreferredExperience, name: t('quiz.expSensual'), tag: t('quiz.expSensualTag') },
+                  { id: 'Relaxing' as PreferredExperience, name: t('quiz.expRelaxing'), tag: t('quiz.expRelaxingTag') },
+                  { id: 'Velvet Focus' as PreferredExperience, name: t('quiz.expVelvetFocus'), tag: t('quiz.expVelvetFocusTag') }
                 ].map((exp) => (
                   <button
                     key={exp.id}
@@ -272,7 +275,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                 onClick={() => setStep(2)}
                 className="bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-6 py-2.5 text-xs font-semibold tracking-[0.2em] uppercase rounded-[0.25rem] flex items-center gap-2 transition-colors shadow-sm"
               >
-                <span>Proceed to Size Selection</span>
+                <span>{t('quiz.proceedToSize')}</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
@@ -284,10 +287,10 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
           <div className="bg-[#1E1C1A]/95 backdrop-blur-md border border-[#4b4640]/70 rounded-[0.25rem] p-6 sm:p-8 space-y-6 text-left animate-fadeIn">
             <div className="space-y-1">
               <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-semibold">
-                3. Select Desired Flacon Volume
+                {t('quiz.volumeTitle')}
               </span>
               <p className="text-xs text-[#cdc5bd]">
-                Select your preferred volume to calculate the exact formulation and direct order URL.
+                {t('quiz.volumeDesc')}
               </p>
             </div>
 
@@ -295,21 +298,21 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
               {[
                 {
                   ml: 10 as const,
-                  label: '10ml Pocket Flacon',
-                  tier: 'Portable Discovery',
-                  desc: 'Easy to carry and ideal for first-time buyers or nocturnal excursions.'
+                  label: t('quiz.vol10Title'),
+                  tier: t('quiz.vol10Tier'),
+                  desc: t('quiz.vol10Desc')
                 },
                 {
                   ml: 30 as const,
-                  label: '30ml Atelier Flacon',
-                  tier: 'Essential Rotation',
-                  desc: 'Better value for regular use with precision smoked-glass atomizer.'
+                  label: t('quiz.vol30Title'),
+                  tier: t('quiz.vol30Tier'),
+                  desc: t('quiz.vol30Desc')
                 },
                 {
                   ml: 40 as const,
-                  label: '40ml Heavy Crystal Edition',
-                  tier: 'Grand Collector',
-                  desc: 'Larger collector reserve preferred by experienced patrons.'
+                  label: t('quiz.vol40Title'),
+                  tier: t('quiz.vol40Tier'),
+                  desc: t('quiz.vol40Desc')
                 }
               ].map((vol) => (
                 <button
@@ -337,9 +340,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                 type="button"
                 onClick={() => setStep(1)}
                 className="text-xs uppercase tracking-wider text-[#969088] hover:text-white px-3 py-2 border border-[#4b4640]/40 rounded-[0.25rem]"
-              >
-                Back
-              </button>
+              >{t('quiz.back')}</button>
 
               <button
                 type="button"
@@ -347,7 +348,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                 className="bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-8 py-3 text-xs font-semibold tracking-[0.2em] uppercase rounded-[0.25rem] flex items-center gap-2 shadow-lg shadow-[#D4AF37]/20 transition-colors"
               >
                 <Sparkles className="w-4 h-4" aria-hidden="true" />
-                <span>Reveal 10-Second Best Match</span>
+                <span>{t('quiz.revealMatch')}</span>
               </button>
             </div>
           </div>
@@ -363,7 +364,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2c2a27] pb-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="bg-[#D4AF37] text-[#0F0E0D] px-2.5 py-1 text-[10px] uppercase font-bold tracking-[0.2em] rounded-[0.125rem] tabular-nums">
-                  {matchResult.confidenceScore}% MATCH CONFIDENCE
+                  {t('quiz.matchConfidence', { score: matchResult.confidenceScore })}
                 </span>
                 <span className="text-[11px] font-mono text-[#D4AF37] font-semibold">
                   {matchResult.product.shortCode} • {matchResult.product.code}
@@ -376,7 +377,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                 className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#969088] hover:text-[#D4AF37] transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Adjust Parameters</span>
+                <span>{t('quiz.adjustParams')}</span>
               </button>
             </div>
 
@@ -434,7 +435,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                     {formatPrice(matchResult.selectedSize.price, currency)}
                   </span>
                   <span className={`text-[10px] uppercase tracking-wider ${matchResult.product.inStock ? 'text-[#969088]' : 'text-rose-400'}`}>
-                    {matchResult.product.inStock ? 'In-Stock for Immediate Same-Day Dispatch' : 'Currently Out of Stock'}
+                    {matchResult.product.inStock ? t('quiz.inStockDispatch') : t('quiz.outOfStock')}
                   </span>
                 </div>
 
@@ -446,14 +447,15 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                       matchResult.product.shortCode,
                       matchResult.product.name,
                       matchResult.selectedSize.ml,
-                      shopSettings.whatsappPhone
+                      shopSettings.whatsappPhone,
+                      language
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="animate-cta-breathe flex-1 min-w-[200px] bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-5 py-3 text-xs font-semibold tracking-[0.15em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 transition-colors"
                   >
                     <MessageCircle className="w-4 h-4 text-[#0F0E0D]" aria-hidden="true" />
-                    <span>Order via WhatsApp ({matchResult.selectedSize.ml}ml)</span>
+                    <span>{t('quiz.orderWhatsApp', { ml: matchResult.selectedSize.ml })}</span>
                   </a>
 
                   {/* Add to Quick Bag */}
@@ -470,16 +472,16 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                     }`}
                   >
                     {!matchResult.product.inStock ? (
-                      <span>Sold Out</span>
+                      <span>{t('quiz.outOfStock')}</span>
                     ) : added ? (
                       <>
                         <Check className="w-4 h-4" aria-hidden="true" />
-                        <span>Added</span>
+                        <span>{t('quiz.added')}</span>
                       </>
                     ) : (
                       <>
                         <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-                        <span>Add to Bag</span>
+                        <span>{t('quiz.addToBag')}</span>
                       </>
                     )}
                   </button>
@@ -491,7 +493,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                     className="px-4 py-3 text-xs uppercase tracking-[0.15em] text-[#cdc5bd] hover:text-white border border-[#4b4640] hover:border-[#D4AF37] rounded-[0.25rem] flex items-center gap-1.5 transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Aroma Profile</span>
+                    <span>{t('quiz.aromaProfile')}</span>
                   </button>
                 </div>
 
@@ -500,7 +502,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                   variant="compact"
                   productShortCode={matchResult.product.shortCode}
                   volumeMl={matchResult.selectedSize.ml}
-                  label="Or Acquire Matched Flacon via Official Channels"
+                  label={t('quiz.partnerChannels')}
                 />
               </div>
             </div>

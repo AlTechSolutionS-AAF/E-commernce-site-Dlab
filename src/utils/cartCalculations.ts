@@ -23,6 +23,7 @@ export interface CartTotals {
   eligibleForFreeShipping: boolean;
 }
 
+// Fallback amounts in MYR, used when shop settings are unavailable.
 export const MONOGRAM_UNIT_PRICE = 20;
 export const FREE_SHIPPING_THRESHOLD = 250;
 export const STANDARD_SHIPPING_FEE = 25;
@@ -79,19 +80,6 @@ export function calculateCartTotals(
   };
 }
 
-export function formatPrice(
-  amount: number,
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' = 'USD'
-): string {
-  switch (currency) {
-    case 'EUR':
-      return `€${Math.round(amount * 0.92)}`;
-    case 'GBP':
-      return `£${Math.round(amount * 0.79)}`;
-    case 'JPY':
-      return `¥${Math.round(amount * 155).toLocaleString()}`;
-    case 'USD':
-    default:
-      return `$${amount}`;
-  }
-}
+// Prices are stored in MYR. Formatting and display-currency conversion live in ./currency.ts;
+// re-exported here so existing imports of formatPrice keep working.
+export { formatPrice } from './currency.ts';

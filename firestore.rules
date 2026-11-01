@@ -81,7 +81,7 @@ service cloud.firestore {
     //   - itemCount: number (required, 1..100)
     //   - itemsSummary: string (required, 1..600 chars)
     //   - totalAmount: number (required, 0..1000000)
-    //   - currency: string enum ['USD', 'EUR', 'GBP', 'JPY'] (required)
+    //   - currency: string enum ['MYR', 'SGD', 'USD', 'EUR', 'GBP', 'JPY'] (required; MYR is the base currency)
     //   - status: string enum ['pending', 'dispatched', 'completed'] (required)
     //   - createdAt: string ISO date (required, immutable, 10..40 chars)
     //
@@ -311,7 +311,7 @@ service cloud.firestore {
         data.itemCount is number && data.itemCount >= 1 && data.itemCount <= 100 &&
         data.itemsSummary is string && data.itemsSummary.size() >= 1 && data.itemsSummary.size() <= 600 &&
         data.totalAmount is number && data.totalAmount >= 0 && data.totalAmount <= 1000000 &&
-        data.currency in ['USD', 'EUR', 'GBP', 'JPY'] &&
+        data.currency in ['MYR', 'SGD', 'USD', 'EUR', 'GBP', 'JPY'] &&
         data.status in ['pending', 'dispatched', 'completed'] &&
         data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40;
     }

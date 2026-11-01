@@ -3,10 +3,12 @@ import { Sparkles, Check, ArrowRight, RotateCcw } from 'lucide-react';
 import { Product } from '../data/products';
 import { calculateScentMatch, ScentDiagnosticInput, ScentMatchResult } from '../utils/scentMatcher';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useShopData } from '../context/ShopDataContext';
 
 interface NightMatchFinderProps {
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onSelectProduct: (p: Product) => void;
   onAddToCart: (p: Product, size: { ml: number; label: string; price: number }) => void;
 }
@@ -17,6 +19,7 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
   onAddToCart
 }) => {
   const { products } = useShopData();
+  const { t } = useLanguage();
   const [step, setStep] = useState<number>(1);
   const [atmosphere, setAtmosphere] = useState<ScentDiagnosticInput['atmosphere']>('speakeasy');
   const [primaryFamily, setPrimaryFamily] = useState<ScentDiagnosticInput['primaryFamily']>('Amber');
@@ -106,14 +109,14 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1E1C1A] border border-[#D4AF37]/50 rounded-[0.25rem]">
           <Sparkles className="w-3 h-3 text-[#D4AF37]" />
           <span className="text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-            Bespoke Diagnostic Atelier
+            {t('finder.badge')}
           </span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-semibold tracking-[-0.01em] text-[#FFFFFF] uppercase">
-          The Night Match Engine
+          {t('finder.title')}
         </h2>
         <p className="text-xs sm:text-sm text-[#cdc5bd] max-w-xl mx-auto">
-          Through deliberate algorithmic weighting of ambient lighting, nocturnal hours, accord densities, and sillage projection, find your unmistakable signature.
+          {t('finder.desc')}
         </p>
       </div>
 
@@ -419,7 +422,7 @@ export const NightMatchFinder: React.FC<NightMatchFinderProps> = ({
                 onClick={() => setStep(step - 1)}
                 className="text-xs uppercase tracking-[0.2em] text-[#969088] hover:text-white px-4 py-2 border border-[#4b4640]/40 rounded-[0.25rem]"
               >
-                Back
+                {t('finder.back')}
               </button>
             ) : <div />}
 

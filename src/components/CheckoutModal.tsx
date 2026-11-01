@@ -1,16 +1,37 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle2, Lock, Sparkles, CreditCard, ArrowRight, Printer } from 'lucide-react';
+import { X, CheckCircle2, Lock, CreditCard } from 'lucide-react';
 import { CartItem, CartTotals, formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode, BASE_CURRENCY } from '../utils/currency';
 import { useShopData } from '../context/ShopDataContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
   totals: CartTotals;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onOrderComplete: () => void;
 }
+
+const MALAYSIAN_STATES = [
+  'Pulau Pinang',
+  'W.P. Kuala Lumpur',
+  'Selangor',
+  'Johor',
+  'Kedah',
+  'Kelantan',
+  'Melaka',
+  'Negeri Sembilan',
+  'Pahang',
+  'Perak',
+  'Perlis',
+  'Sabah',
+  'Sarawak',
+  'Terengganu',
+  'W.P. Labuan',
+  'W.P. Putrajaya'
+];
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
@@ -21,15 +42,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onOrderComplete
 }) => {
   const { submitOrder } = useShopData();
+  const { t } = useLanguage();
   const [step, setStep] = useState<'details' | 'processing' | 'confirmed'>('details');
-  const [name, setName] = useState('Alexander Vance');
-  const [email, setEmail] = useState('vance.alexander@nocturne.studio');
-  const [address, setAddress] = useState('740 Park Avenue, Penthouse 14B');
-  const [city, setCity] = useState('New York');
-  const [postal, setPostal] = useState('10021');
-  const [country, setCountry] = useState('United States');
-  const [orderRef, setOrderRef] = useState('DLAB-2026-8849');
-  const [batchId, setBatchId] = useState('OBS-9821-HARVEST');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('Pulau Pinang');
+  const [postal, setPostal] = useState('');
+  const [country, setCountry] = useState('Malaysia');
+  const [orderRef, setOrderRef] = useState('');
+  const [batchId, setBatchId] = useState('');
 
   if (!isOpen) return null;
 
@@ -57,14 +80,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       id: randomOrder.toLowerCase(),
       orderRef: randomOrder,
       batchId: randomBatch,
-      patronName: name,
-      email,
-      city,
-      country,
+      patronName: name.trim() || 'Valued Patron',
+      email: email.trim(),
+      city: state ? `${city.trim()}, ${state}` : city.trim(),
+      country: country.trim() || 'Malaysia',
       itemCount: Math.max(1, totalUnits),
       itemsSummary: summaryText || '1x Extrait Flacon',
       totalAmount: totals.total,
-      currency,
+      currency: BASE_CURRENCY,
       status: 'pending',
       createdAt: new Date().toISOString(),
     });
@@ -78,14 +101,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F0E0D]/90 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-2xl bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-2xl p-6 sm:p-8 text-[#e7e1de] my-auto">
-        
         {/* Header Close */}
         {step !== 'processing' && (
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-[#969088] hover:text-white rounded-[0.25rem]"
+            aria-label="Close checkout modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
 
@@ -94,23 +118,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <form onSubmit={handlePlaceOrder} className="space-y-6 text-left">
             <div>
               <span className="text-[10px] uppercase font-mono tracking-[0.25em] text-[#D4AF37]">
-                Discreet Nocturnal Dispatch
+                {t('checkout.eyebrow')}
               </span>
               <h3 className="text-xl sm:text-2xl font-semibold text-white uppercase mt-0.5">
-                Checkout & Authentication
+                {t('checkout.title')}
               </h3>
             </div>
 
             {/* Recipient & Address */}
             <div className="space-y-3">
               <h4 className="text-xs uppercase tracking-wider text-[#969088] font-semibold">
-                1. Recipient Coordinates
+                {t('checkout.stepRecipient')}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   type="text"
                   required
-                  placeholder="Full Legal Name"
+                  placeholder={t('checkout.namePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
@@ -118,7 +142,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="Private Email for Batch Tracking"
+                  placeholder={t('checkout.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
@@ -128,33 +152,50 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <input
                 type="text"
                 required
-                placeholder="Street Address & Suite / Penthouse"
+                placeholder={t('checkout.addressPlaceholder')}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
               />
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <input
                   type="text"
                   required
-                  placeholder="City"
+                  placeholder={t('checkout.cityPlaceholder')}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
                 />
-                <input
-                  type="text"
-                  required
-                  placeholder="Postal Code"
-                  value={postal}
-                  onChange={(e) => setPostal(e.target.value)}
+
+                <select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
                   className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
-                />
+                  aria-label={t('checkout.statePlaceholder')}
+                >
+                  {MALAYSIAN_STATES.map((st) => (
+                    <option key={st} value={st} className="bg-[#1E1C1A]">
+                      {st}
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   type="text"
                   required
-                  placeholder="Country"
+                  pattern="[0-9]{5}"
+                  title="5-digit Malaysian postcode (e.g. 10250, 50450)"
+                  placeholder={t('checkout.postalPlaceholder')}
+                  value={postal}
+                  onChange={(e) => setPostal(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                  className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37] font-mono"
+                />
+
+                <input
+                  type="text"
+                  required
+                  placeholder={t('checkout.countryPlaceholder')}
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   className="bg-[#151311] border border-[#4b4640] text-xs text-white p-2.5 rounded-[0.25rem] focus:outline-none focus:border-[#D4AF37]"
@@ -165,9 +206,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Simulated Payment */}
             <div className="space-y-3 pt-3 border-t border-[#2c2a27]">
               <h4 className="text-xs uppercase tracking-wider text-[#969088] font-semibold flex items-center justify-between">
-                <span>2. Payment Formulation</span>
-                <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> 256-bit Encrypted
+                <span>{t('checkout.stepPayment')}</span>
+                <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-mono">
+                  <Lock className="w-3 h-3" /> {t('checkout.encrypted')}
                 </span>
               </h4>
 
@@ -177,11 +218,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <CreditCard className="w-4 h-4 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-white">Obsidian Reserve Card •••• 9012</p>
-                    <p className="text-[10px] text-[#969088]">Expires 10/29 • Alexander Vance</p>
+                    <p className="text-xs font-semibold text-white">{t('checkout.cardTitle')}</p>
+                    <p className="text-[10px] text-[#969088]">{t('checkout.cardSub')}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-mono text-[#D4AF37] uppercase">Pre-authorized</span>
+                <span className="text-[10px] font-mono text-[#D4AF37] uppercase">{t('checkout.preauthorized')}</span>
               </div>
             </div>
 
@@ -189,14 +230,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="bg-[#151311] p-3.5 rounded-[0.25rem] border border-[#2c2a27] flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase tracking-wider text-[#969088] block">
-                  Total Payable Amount
+                  {t('checkout.totalPayable')}
                 </span>
-                <span className="text-lg font-bold text-white font-mono">
+                <span className="text-lg font-bold text-white font-mono tabular-nums">
                   {formatPrice(totals.total, currency)}
                 </span>
               </div>
               <span className="text-[10px] text-[#cdc5bd] uppercase tracking-wider">
-                {items.length} Extrait Flacon{items.length > 1 ? 's' : ''} + 2 Complimentary Samples
+                {t('checkout.flaconsSummary', {
+                  count: items.length,
+                  plural: items.length > 1 ? 's' : ''
+                })}
               </span>
             </div>
 
@@ -206,7 +250,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               className="w-full bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] py-3.5 text-xs font-semibold tracking-[0.2em] uppercase rounded-[0.25rem] flex items-center justify-center gap-2 shadow-lg shadow-[#D4AF37]/15 transition-colors"
             >
               <Lock className="w-4 h-4" />
-              <span>Authorize & Commission Flacons</span>
+              <span>{t('checkout.authorizeBtn')}</span>
             </button>
           </form>
         )}
@@ -216,10 +260,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <div className="py-16 text-center space-y-4">
             <div className="w-12 h-12 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto" />
             <h3 className="text-lg font-semibold text-white uppercase tracking-wider">
-              Sealing Flacon Batch Certificate...
+              {t('checkout.processingTitle')}
             </h3>
             <p className="text-xs text-[#cdc5bd] font-mono">
-              Engraving flacon glass • Hand-pouring bespoke obsidian wax seal • Assigning courier tracking
+              {t('checkout.processingDesc')}
             </p>
           </div>
         )}
@@ -230,16 +274,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="flex items-center gap-2.5 text-emerald-400">
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               <span className="text-xs font-bold uppercase tracking-[0.2em]">
-                Commission Confirmed & Authenticated
+                {t('checkout.confirmedBadge')}
               </span>
             </div>
 
             <div>
               <h3 className="text-2xl font-semibold text-white uppercase tracking-tight">
-                Order Reference: {orderRef}
+                {t('checkout.orderRef', { ref: orderRef })}
               </h3>
               <p className="text-xs text-[#cdc5bd] mt-1">
-                A formal dispatch notification and digital authenticity credential has been forwarded to <strong className="text-white">{email}</strong>.
+                {t('checkout.confirmedDesc', { email: email || 'your email' })}
               </p>
             </div>
 
@@ -251,45 +295,46 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     ATELIER NOCTURNE DLAB
                   </span>
                   <h4 className="text-sm font-semibold text-white uppercase tracking-wider mt-0.5">
-                    Certificate of Formulation & Origin
+                    {t('checkout.certTitle')}
                   </h4>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-mono text-[#D4AF37]">{batchId}</span>
-                  <p className="text-[9px] text-[#969088] uppercase">Archive Verified</p>
+                  <p className="text-[9px] text-[#969088] uppercase">{t('checkout.certArchive')}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-[10px] uppercase text-[#969088] block">Patron</span>
-                  <span className="text-white font-medium">{name}</span>
+                  <span className="text-[10px] uppercase text-[#969088] block">{t('checkout.certPatron')}</span>
+                  <span className="text-white font-medium">{name || 'Patron'}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase text-[#969088] block">Dispatched To</span>
-                  <span className="text-white font-medium">{city}, {country}</span>
+                  <span className="text-[10px] uppercase text-[#969088] block">{t('checkout.certDispatched')}</span>
+                  <span className="text-white font-medium">{city ? `${city}, ` : ''}{state}, {country}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase text-[#969088] block">Concentration Level</span>
-                  <span className="text-[#D4AF37] font-medium">35% - 40% Pure Extrait</span>
+                  <span className="text-[10px] uppercase text-[#969088] block">{t('checkout.certConcentration')}</span>
+                  <span className="text-[#D4AF37] font-medium">{t('checkout.certConcentrationVal')}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase text-[#969088] block">Packaging</span>
-                  <span className="text-white font-medium">Obsidian Coffret with Black Wax Seal</span>
+                  <span className="text-[10px] uppercase text-[#969088] block">{t('checkout.certPackaging')}</span>
+                  <span className="text-white font-medium">{t('checkout.certPackagingVal')}</span>
                 </div>
               </div>
 
               <p className="text-[10px] text-[#969088] italic pt-2 border-t border-[#2c2a27]">
-                “Each bottle has matured in temperature-regulated darkness for 180 days prior to decanting.”
+                {t('checkout.certQuote')}
               </p>
             </div>
 
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={onClose}
                 className="flex-1 bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] py-3 text-xs font-semibold uppercase tracking-[0.2em] rounded-[0.25rem] transition-colors"
               >
-                Return to The Atelier
+                {t('checkout.returnBtn')}
               </button>
             </div>
           </div>

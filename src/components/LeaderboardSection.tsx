@@ -8,11 +8,13 @@ import {
   generateWhatsAppLink
 } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useShopData } from '../context/ShopDataContext';
 import { SynergyBadge } from './SynergyBadge';
 
 interface LeaderboardSectionProps {
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   onAddToCart: (p: Product, size: ProductSize) => void;
   onOpenDetail: (p: Product) => void;
 }
@@ -23,6 +25,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
   onOpenDetail
 }) => {
   const { products, shopSettings } = useShopData();
+  const { language, locale, t } = useLanguage();
 
   // Compute rolling dates automatically so the interface never looks static/abandoned
   const dateWindow = useMemo(() => {
@@ -30,8 +33,8 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(today.getDate() - 7);
 
-    const formatter = new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' });
-    return `${formatter.format(sevenDaysAgo).toUpperCase()} – ${formatter.format(today).toUpperCase()} (ROLLING 7-DAY AUDIT)`;
+    const formatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+    return `${formatter.format(sevenDaysAgo).toUpperCase()} – ${formatter.format(today).toUpperCase()} (${t('leaderboard.rollingAudit')})`;
   }, []);
 
   const topProducts = useMemo(() => {
@@ -49,14 +52,14 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
             <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-              VERIFIED NOCTURNAL COMMISSIONS
+              {t('leaderboard.tag')}
             </span>
           </div>
           <h2 id="leaderboard-heading" className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white">
-            LIVE 30-DAY FAVORITES & WEEKLY 10ML TOP 10
+            {t('leaderboard.title')}
           </h2>
           <p className="text-xs text-[#cdc5bd]">
-            Automated rank aggregation across all 47 10ml brands and private client ateliers.
+            {t('leaderboard.desc')}
           </p>
         </div>
 
@@ -75,8 +78,8 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
         className="bg-[#151311] border border-[#D4AF37]/50 rounded-[0.25rem] p-5 sm:p-6 space-y-4 text-left"
       >
         <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-[#D4AF37]">
-          <span>WEEKLY 10ML TOP 10 • % OF WEEKLY SALES</span>
-          <span className="text-[#969088]">ALL 47 10ML BRANDS</span>
+          <span>{t('leaderboard.matrixHeader')}</span>
+          <span className="text-[#969088]">{t('leaderboard.allBrands')}</span>
         </div>
 
         {/* #1 Full-Width Crown Bar (NO.06 · 22.7%) */}
@@ -136,7 +139,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
         </div>
 
         <p className="text-[10px] font-mono text-[#969088] tracking-wider">
-          Latest complete week · All 47 10ml brands · % of that week’s verified commissions
+          {t('leaderboard.footnote')}
         </p>
       </div>
 
@@ -182,7 +185,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
                     </span>
                     {!prod.inStock && (
                       <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-rose-950/60 border border-rose-500/40 text-rose-400 rounded-[0.125rem]">
-                        Out of Stock
+                        {t('leaderboard.outOfStock')}
                       </span>
                     )}
                   </div>
@@ -200,7 +203,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
                       <span>{prod.trendingDelta}</span>
                     </span>
                     <span>•</span>
-                    <span>{prod.monthlyOrders} orders this period</span>
+                    <span>{t('leaderboard.ordersPeriod', { orders: prod.monthlyOrders })}</span>
                   </div>
                 </div>
               </div>
@@ -208,7 +211,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
               {/* Center: Aroma Accord Snippet */}
               <div className="hidden lg:block w-48 text-xs text-[#cdc5bd]">
                 <span className="text-[9px] uppercase tracking-wider text-[#969088] block font-mono">
-                  Base Notes
+                  {t('leaderboard.baseNotes')}
                 </span>
                 <p className="line-clamp-1">{prod.notes.base.join(' • ')}</p>
               </div>
@@ -226,11 +229,11 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
 
                 {/* Breathing Direct WhatsApp Ordering */}
                 <a
-                  href={generateWhatsAppLink(prod.shortCode, prod.name, defaultSize.ml, shopSettings.whatsappPhone)}
+                  href={generateWhatsAppLink(prod.shortCode, prod.name, defaultSize.ml, shopSettings.whatsappPhone, language)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] px-3 py-2 rounded-[0.25rem] text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
-                  title={`Order ${prod.shortCode} on WhatsApp`}
+                  title={t('leaderboard.orderWhatsApp', { code: prod.shortCode })}
                 >
                   <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
                   <span className="hidden sm:inline">WhatsApp</span>
@@ -243,7 +246,7 @@ export const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
                   disabled={!prod.inStock}
                   onClick={() => onAddToCart(prod, defaultSize)}
                   className="bg-[#D4AF37] hover:bg-[#e5bf43] disabled:opacity-40 disabled:cursor-not-allowed text-[#0F0E0D] p-2 rounded-[0.25rem] transition-colors"
-                  title={prod.inStock ? 'Add to Quick Bag' : 'Out of Stock'}
+                  title={prod.inStock ? 'Add to Bag' : t('leaderboard.outOfStock')}
                 >
                   <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" />
                   <span className="sr-only">Add {prod.name} to bag</span>

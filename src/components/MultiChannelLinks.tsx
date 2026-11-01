@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowUpRight, ArrowRight, Truck, ShoppingBag, Globe, Sparkles, Check } from 'lucide-react';
 import { MARKETPLACE_CHANNELS, generateChannelLink } from '../data/products';
 import { useShopData } from '../context/ShopDataContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MultiChannelLinksProps {
   variant?: 'compact' | 'section';
@@ -23,6 +24,8 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
   label = 'Multi-Channel Acquisition · Official Storefronts'
 }) => {
   const { shopSettings } = useShopData();
+  const { t } = useLanguage();
+  const activeLabel = label || t('channels.officialLabel');
 
   const compactChannels = [
     {
@@ -56,11 +59,11 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
       <div className="pt-3 border-t border-[#2c2a27] space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#969088]">
-            {label}
+            {activeLabel}
           </span>
           {productShortCode && (
             <span className="text-[9px] font-mono text-[#D4AF37]">
-              Ref: {volumeMl ? `${volumeMl}ml · ` : ''}{productShortCode}
+              {t('channels.refPrefix')}{volumeMl ? `${volumeMl}ml · ` : ''}{productShortCode}
             </span>
           )}
         </div>
@@ -111,15 +114,15 @@ export const MultiChannelLinks: React.FC<MultiChannelLinksProps> = ({
             <div className="flex items-center gap-2">
               <Globe className="w-3.5 h-3.5 text-[#D4AF37]" aria-hidden="true" />
               <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-                SHOP DLAB • OMNI-CHANNEL DISPATCH
+                {t('channels.sectionTag')}
               </span>
             </div>
             <h2 id="shop-dlab-channels-heading" className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white">
-              Choose Your Storefront
+              {t('channels.sectionTitle')}
             </h2>
           </div>
           <span className="text-xs font-mono uppercase tracking-wider text-[#969088]">
-            Verified Multi-Channel Fulfillment • Discreet Parcel Protection
+            {t('channels.sectionDesc')}
           </span>
         </div>
 

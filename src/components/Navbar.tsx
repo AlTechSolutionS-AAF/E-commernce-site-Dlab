@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Heart, Sparkles, X, ChevronDown, Compass, BookOpen, Shield } from 'lucide-react';
+import { Search, ShoppingBag, Heart, Sparkles, X, ChevronDown, Compass, BookOpen, Shield, Globe } from 'lucide-react';
 import { formatPrice } from '../utils/cartCalculations';
+import { CURRENCY_CODES, type CurrencyCode } from '../utils/currency';
 import { useShopData } from '../context/ShopDataContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export type NavTab = 'catalog' | 'diagnostic' | 'archive' | 'journal' | 'admin';
 
 interface NavbarProps {
   currentTab: NavTab;
   setCurrentTab: (tab: NavTab) => void;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
-  setCurrency: (c: 'USD' | 'EUR' | 'GBP' | 'JPY') => void;
+  currency: CurrencyCode;
+  setCurrency: (c: CurrencyCode) => void;
   cartCount: number;
   cartTotal: number;
   openCart: () => void;
@@ -35,45 +37,88 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSearchQuery,
 }) => {
   const { shopSettings } = useShopData();
+  const { language, setLanguage, languages, t } = useLanguage();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const popularNotes = ['Oud', 'Amber', 'Leather', 'Saffron', 'Sandalwood', 'Vanilla'];
 
   return (
     <header className="sticky top-0 z-40 bg-[#0F0E0D]/95 backdrop-blur-md border-b border-[#4b4640]/40">
       {/* Luxury Top Bar */}
-      <div className="bg-[#151311] text-[#cdc5bd] text-[11px] font-medium tracking-[0.18em] uppercase py-2 px-4 border-b border-[#2c2a27] flex justify-between items-center text-center">
+      <div className="bg-[#151311] text-[#cdc5bd] text-[11px] font-medium tracking-[0.18em] uppercase py-2 px-4 border-b border-[#2c2a27] flex flex-wrap justify-between items-center text-center gap-2">
         <div className="hidden md:flex items-center gap-2 text-[#969088]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></span>
-          <span>Atelier Nocturne • Haute Parfumerie</span>
+          <span>{t('nav.atelierSubtitle')}</span>
         </div>
-        <div className="w-full md:w-auto text-[#e7e1de] font-normal tracking-[0.15em]">
+        <div className="w-full md:w-auto text-[#e7e1de] font-normal tracking-[0.15em] text-xs">
           {shopSettings.announcementText}
         </div>
-        <div className="hidden md:flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 mx-auto md:mx-0">
+          {/* Language Selector */}
           <div className="relative">
             <button
-              onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
-              className="flex items-center gap-1 text-[#cdc5bd] hover:text-[#D4AF37] transition-colors py-0.5 px-2 rounded-[0.25rem] border border-[#4b4640]/40"
+              onClick={() => {
+                setLangDropdownOpen(!langDropdownOpen);
+                setCurrencyDropdownOpen(false);
+              }}
+              className="flex items-center gap-1.5 text-[#cdc5bd] hover:text-[#D4AF37] transition-colors py-0.5 px-2 rounded-[0.25rem] border border-[#4b4640]/40 text-[10px] sm:text-[11px]"
+              aria-label={t('language.selectorAria')}
             >
-              <span>{currency}</span>
-              <ChevronDown className="w-3 h-3" />
+              <Globe className="w-3 h-3 text-[#D4AF37]" aria-hidden="true" />
+              <span>{languages.find((l) => l.code === language)?.short ?? 'EN'}</span>
+              <ChevronDown className="w-3 h-3" aria-hidden="true" />
+            </button>
+            {langDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-36 bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-xl py-1 z-50 text-left">
+                {languages.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      setLanguage(l.code);
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-[11px] hover:bg-[#2c2a27] transition-colors flex items-center justify-between ${
+                      language === l.code ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'
+                    }`}
+                  >
+                    <span>{l.label}</span>
+                    <span className="text-[10px] text-[#969088] font-mono">{l.short}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Currency Selector */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setCurrencyDropdownOpen(!currencyDropdownOpen);
+                setLangDropdownOpen(false);
+              }}
+              className="flex items-center gap-1 text-[#cdc5bd] hover:text-[#D4AF37] transition-colors py-0.5 px-2 rounded-[0.25rem] border border-[#4b4640]/40 text-[10px] sm:text-[11px]"
+              aria-label={t('currency.selectorAria')}
+            >
+              <span className="font-mono font-semibold">{currency}</span>
+              <ChevronDown className="w-3 h-3" aria-hidden="true" />
             </button>
             {currencyDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-24 bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-xl py-1 z-50">
-                {(['USD', 'EUR', 'GBP', 'JPY'] as const).map((curr) => (
+              <div className="absolute right-0 mt-1 w-44 bg-[#1E1C1A] border border-[#4b4640] rounded-[0.25rem] shadow-xl py-1 z-50 text-left">
+                {CURRENCY_CODES.map((curr) => (
                   <button
                     key={curr}
                     onClick={() => {
                       setCurrency(curr);
                       setCurrencyDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-1 text-[11px] hover:bg-[#2c2a27] transition-colors ${
+                    className={`w-full text-left px-3 py-1.5 text-[11px] hover:bg-[#2c2a27] transition-colors flex items-center justify-between ${
                       currency === curr ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'
                     }`}
                   >
-                    {curr}
+                    <span className="font-mono font-semibold">{curr}</span>
+                    <span className="text-[10px] text-[#969088]">{t(`currency.${curr}` as any)}</span>
                   </button>
                 ))}
               </div>
@@ -107,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               currentTab === 'catalog' ? 'text-[#D4AF37]' : 'text-[#cdc5bd] hover:text-[#FFFFFF]'
             }`}
           >
-            The Extraits
+            {t('nav.extraits')}
             {currentTab === 'catalog' && (
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#D4AF37]" />
             )}
@@ -120,7 +165,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Night Match</span>
+            <span>{t('nav.nightMatch')}</span>
             {currentTab === 'diagnostic' && (
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#D4AF37]" />
             )}
@@ -133,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>Olfactory Index</span>
+            <span>{t('nav.olfactoryIndex')}</span>
             {currentTab === 'archive' && (
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#D4AF37]" />
             )}
@@ -146,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Sillage Journal</span>
+            <span>{t('nav.sillageJournal')}</span>
             {currentTab === 'journal' && (
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#D4AF37]" />
             )}
@@ -161,7 +206,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Shield className="w-3.5 h-3.5" />
-            <span>Admin</span>
+            <span>{t('nav.admin')}</span>
           </button>
         </nav>
 
@@ -174,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Search className="w-4 h-4 text-[#D4AF37] mr-2 shrink-0" />
                 <input
                   type="text"
-                  placeholder="Note, accord, harvest..."
+                  placeholder={t('nav.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none text-xs text-[#FFFFFF] focus:outline-none w-full placeholder-[#969088]"
@@ -188,7 +233,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 text-[#cdc5bd] hover:text-[#D4AF37] transition-colors rounded-[0.25rem] border border-transparent hover:border-[#4b4640]"
-                title="Search Fragrances & Notes"
+                title={t('nav.searchAria')}
+                aria-label={t('nav.searchAria')}
               >
                 <Search className="w-4 h-4" />
               </button>
@@ -199,7 +245,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={openWishlist}
             className="p-2 text-[#cdc5bd] hover:text-[#D4AF37] transition-colors relative rounded-[0.25rem] border border-transparent hover:border-[#4b4640]"
-            title="Saved Nocturnal Fragrances"
+            title={t('nav.wishlistAria')}
+            aria-label={t('nav.wishlistAria')}
           >
             <Heart className="w-4 h-4" />
             {wishlistCount > 0 && (
@@ -216,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <ShoppingBag className="w-4 h-4 text-[#D4AF37] group-hover:scale-110 transition-transform" />
             <span className="text-xs uppercase tracking-[0.15em] font-medium hidden sm:inline">
-              Bag
+              {t('nav.bag')}
             </span>
             <span className="text-xs font-semibold text-[#D4AF37] bg-[#0F0E0D] px-2 py-0.5 rounded-[0.125rem] border border-[#4b4640]/50 tabular-nums">
               {cartCount}
@@ -233,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Quick Search Tag Suggestions if search is active */}
       {isSearchOpen && (
         <div className="bg-[#151311] border-b border-[#2c2a27] px-4 py-2 text-center text-xs text-[#969088] flex items-center justify-center gap-2 flex-wrap">
-          <span className="uppercase tracking-widest text-[10px]">Filter by note:</span>
+          <span className="uppercase tracking-widest text-[10px]">{t('nav.filterByNote')}</span>
           {popularNotes.map((note) => (
             <button
               key={note}
@@ -255,33 +302,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => setCurrentTab('catalog')}
           className={`${currentTab === 'catalog' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
-          Catalog
+          {t('nav.catalog')}
         </button>
         <button
           onClick={() => setCurrentTab('diagnostic')}
           className={`flex items-center gap-1 ${currentTab === 'diagnostic' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
           <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-          <span>Night Match</span>
+          <span>{t('nav.nightMatch')}</span>
         </button>
         <button
           onClick={() => setCurrentTab('archive')}
           className={`${currentTab === 'archive' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
-          Olfactory Index
+          {t('nav.olfactoryIndex')}
         </button>
         <button
           onClick={() => setCurrentTab('journal')}
           className={`${currentTab === 'journal' ? 'text-[#D4AF37] font-semibold' : 'text-[#cdc5bd]'}`}
         >
-          Journal
+          {t('nav.sillageJournal')}
         </button>
         <button
           onClick={() => setCurrentTab('admin')}
           className={`flex items-center gap-1 ${currentTab === 'admin' ? 'text-[#D4AF37] font-semibold' : 'text-[#D4AF37]/80'}`}
         >
           <Shield className="w-3 h-3 text-[#D4AF37]" />
-          <span>Admin</span>
+          <span>{t('nav.admin')}</span>
         </button>
       </div>
     </header>

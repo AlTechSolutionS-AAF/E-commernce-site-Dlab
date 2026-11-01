@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, X, ShieldCheck, HelpCircle } from 'lucide-react';
 import { CONCIERGE_FAQS } from '../data/products';
+import { useLanguage } from '../i18n/LanguageContext';
 
 /**
  * Client Concierge (FAQ Accordion)
@@ -10,6 +11,7 @@ import { CONCIERGE_FAQS } from '../data/products';
  * - "Is the game anonymous?" -> "Client Privacy & Discreet Dispatch"
  */
 export const ClientConciergeFAQ: React.FC = () => {
+  const { t } = useLanguage();
   // Default open item 01 and 02 so visitors immediately see Dispatch Timelines & Synergy Symbols
   const [openNumbers, setOpenNumbers] = useState<string[]>(['01', '02']);
 
@@ -32,18 +34,18 @@ export const ClientConciergeFAQ: React.FC = () => {
             <div className="flex items-center gap-2">
               <HelpCircle className="w-3.5 h-3.5 text-[#D4AF37]" aria-hidden="true" />
               <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-                CLIENT CONCIERGE • HELP DESK
+                {t('faq.badge')}
               </span>
             </div>
             <h2
               id="concierge-faq-heading"
               className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white"
             >
-              Atelier Protocols & Q&A
+              {t('faq.title')}
             </h2>
           </div>
           <span className="text-xs font-mono text-[#969088]">
-            Quick answers · Tap to expand
+            {t('faq.subtitle')}
           </span>
         </div>
 
@@ -123,7 +125,7 @@ export const ClientConciergeFAQ: React.FC = () => {
         {/* Bottom Privacy & Compliance Stamp */}
         <div className="pt-4 border-t border-[#2c2a27] flex items-center justify-center gap-2 text-[11px] font-mono uppercase tracking-widest text-[#969088]">
           <ShieldCheck className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
-          <span>18+ · Anonymous Consultation · Zero Personal Telemetry Collected</span>
+          <span>{t('faq.complianceStamp')}</span>
         </div>
       </div>
     </section>

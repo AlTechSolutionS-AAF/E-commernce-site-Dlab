@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Heart, Eye, Plus, Check, MessageCircle, Clock, Flame, Zap } from 'lucide-react';
 import { Product, ProductSize, generateWhatsAppLink, getProductSynergy } from '../data/products';
 import { formatPrice } from '../utils/cartCalculations';
+import { type CurrencyCode } from '../utils/currency';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useShopData } from '../context/ShopDataContext';
 import { SynergyBadge } from './SynergyBadge';
 
 interface ProductCardProps {
   product: Product;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: CurrencyCode;
   isWishlisted: boolean;
   onToggleWishlist: (product: Product) => void;
   onOpenDetail: (product: Product) => void;
@@ -28,6 +30,7 @@ export const ProductCard = React.memo(function ProductCard({
   staggerIndex = 0
 }: ProductCardProps) {
   const { shopSettings } = useShopData();
+  const { language, t } = useLanguage();
   const [selectedSizeIndex, setSelectedSizeIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [addedAnimation, setAddedAnimation] = useState(false);
@@ -61,9 +64,7 @@ export const ProductCard = React.memo(function ProductCard({
               {product.code}
             </span>
             {product.bestseller && (
-              <span className="text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.2 bg-[#D4AF37] text-[#0F0E0D] rounded-[0.125rem]">
-                HOT
-              </span>
+              <span className="text-[8px] font-mono font-bold uppercase tracking-widest px-1.5 py-0.2 bg-[#D4AF37] text-[#0F0E0D] rounded-[0.125rem]">{t('product.hot')}</span>
             )}
           </div>
           <p className="text-[10px] uppercase tracking-[0.15em] text-[#cdc5bd] font-medium mt-0.5">
@@ -113,7 +114,7 @@ export const ProductCard = React.memo(function ProductCard({
 
         {!product.inStock && (
           <div className="absolute top-2 right-2 bg-rose-950/90 border border-rose-500/50 px-2 py-0.5 rounded-[0.125rem] text-[9px] uppercase tracking-wider text-rose-300 font-semibold font-mono">
-            Sold Out
+            {t('product.soldOut')}
           </div>
         )}
 
@@ -128,14 +129,14 @@ export const ProductCard = React.memo(function ProductCard({
             className="flex items-center gap-2 bg-[#1E1C1A] text-[#FFFFFF] border border-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0E0D] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-medium rounded-[0.25rem] transition-colors shadow-lg"
           >
             <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Examine Aroma Profile</span>
+            <span>{t('product.examine')}</span>
           </button>
         </div>
 
         {/* Longevity badge */}
         <div className="absolute bottom-2 left-2 bg-[#0F0E0D]/90 border border-[#4b4640]/80 px-2 py-0.5 rounded-[0.125rem] text-[9px] uppercase tracking-wider text-[#cdc5bd] flex items-center gap-1 font-mono tabular-nums">
           <Clock className="w-2.5 h-2.5 text-[#D4AF37]" aria-hidden="true" />
-          <span>{product.longevityHours}h retention</span>
+          <span>{t('product.retention', { hours: product.longevityHours })}</span>
         </div>
       </div>
 
@@ -147,11 +148,11 @@ export const ProductCard = React.memo(function ProductCard({
             <SynergyBadge product={product} />
             <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 border border-[#4b4640]/60 text-[#cdc5bd] rounded-[0.125rem] bg-[#151311] flex items-center gap-1">
               <Flame className="w-2.5 h-2.5 text-[#D4AF37]" aria-hidden="true" />
-              <span>Intensity: <strong className="text-white">{product.intensity}</strong></span>
+              <span>{t('product.intensity')} <strong className="text-white">{product.intensity}</strong></span>
             </span>
             <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 border border-[#4b4640]/60 text-[#cdc5bd] rounded-[0.125rem] bg-[#151311] flex items-center gap-1">
               <Zap className="w-2.5 h-2.5 text-[#D4AF37]" aria-hidden="true" />
-              <span>Vibe: <strong className="text-white">{product.experience}</strong></span>
+              <span>{t('product.vibe')} <strong className="text-white">{product.experience}</strong></span>
             </span>
           </div>
 
@@ -169,7 +170,7 @@ export const ProductCard = React.memo(function ProductCard({
           {/* Key Triad Note preview */}
           <div className="text-[11px] text-[#969088] pt-2 border-t border-[#2c2a27] mt-2 flex items-center justify-between">
             <span className="truncate">
-              <strong className="text-[#cdc5bd] font-normal">Base:</strong> {product.notes.base.slice(0, 2).join(', ')}
+              <strong className="text-[#cdc5bd] font-normal">{t('product.base')}</strong> {product.notes.base.slice(0, 2).join(', ')}
             </span>
           </div>
         </div>
@@ -216,7 +217,7 @@ export const ProductCard = React.memo(function ProductCard({
             <div className="flex items-center gap-1.5 flex-1 justify-end">
               {/* Breathing Pre-filled WhatsApp direct button */}
               <a
-                href={generateWhatsAppLink(product.shortCode, product.name, currentSize.ml, shopSettings.whatsappPhone)}
+                href={generateWhatsAppLink(product.shortCode, product.name, currentSize.ml, shopSettings.whatsappPhone, language)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="animate-cta-breathe bg-[#25D366] hover:bg-[#20ba59] text-[#0F0E0D] p-2 rounded-[0.25rem] transition-colors flex items-center justify-center shrink-0"
@@ -241,16 +242,16 @@ export const ProductCard = React.memo(function ProductCard({
                 }`}
               >
                 {!product.inStock ? (
-                  <span>Sold Out</span>
+                  <span>{t('product.soldOut')}</span>
                 ) : addedAnimation ? (
                   <>
                     <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Added</span>
+                    <span>{t('product.added')}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Bag</span>
+                    <span>{t('product.bag')}</span>
                   </>
                 )}
               </button>

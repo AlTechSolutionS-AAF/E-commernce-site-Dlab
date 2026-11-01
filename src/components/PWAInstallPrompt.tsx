@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Sparkles } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -7,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export const PWAInstallPrompt: React.FC = () => {
+  const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -60,16 +62,16 @@ export const PWAInstallPrompt: React.FC = () => {
         </div>
         <div className="flex-1 text-left">
           <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
-            Install DLAB App
+            {t('pwa.title')}
           </h4>
           <p className="text-[11px] text-[#cdc5bd] mt-1 leading-snug">
-            Add to home screen for instant offline catalog access, nocturnal sillage journal, and faster ordering.
+            {t('pwa.desc')}
           </p>
         </div>
         <button
           onClick={handleDismiss}
           className="text-[#969088] hover:text-white p-1 rounded transition-colors"
-          aria-label="Dismiss install banner"
+          aria-label={t('pwa.dismissAria')}
         >
           <X className="w-4 h-4" />
         </button>
@@ -81,14 +83,12 @@ export const PWAInstallPrompt: React.FC = () => {
           className="flex-1 bg-[#D4AF37] hover:bg-[#e5bf43] text-[#0F0E0D] px-3 py-1.5 rounded-[0.125rem] text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
         >
           <Download className="w-3.5 h-3.5" />
-          <span>Install Now</span>
+          <span>{t('pwa.install')}</span>
         </button>
         <button
           onClick={handleDismiss}
           className="px-3 py-1.5 text-xs text-[#969088] hover:text-white uppercase tracking-wider"
-        >
-          Later
-        </button>
+        >{t('pwa.later')}</button>
       </div>
     </div>
   );

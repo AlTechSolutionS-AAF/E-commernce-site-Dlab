@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Star, Pause, Play, ShieldCheck, X, Quote, Sparkles } from 'lucide-react';
 import { ATELIER_COMMENDATIONS, ClientCommendation } from '../data/products';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const AtelierCommendations: React.FC = () => {
+  const { t } = useLanguage();
   const [isPaused, setIsPaused] = useState(false);
   const [activeReview, setActiveReview] = useState<ClientCommendation | null>(null);
 
@@ -21,17 +23,17 @@ export const AtelierCommendations: React.FC = () => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#D4AF37]" aria-hidden="true" />
             <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-              VERIFIED PATRON TESTIMONIALS
+              {t('commendations.tag')}
             </span>
           </div>
           <h2
             id="commendations-heading"
             className="text-2xl sm:text-3xl font-semibold uppercase tracking-tight text-white"
           >
-            Atelier Commendations
+            {t('commendations.title')}
           </h2>
           <p className="text-xs text-[#cdc5bd]">
-            Authentic shopping and formulation experiences from verified Shopee, Lazada, and direct webstore patrons, in their own words.
+            {t('commendations.desc')}
           </p>
         </div>
 
@@ -45,12 +47,12 @@ export const AtelierCommendations: React.FC = () => {
           {isPaused ? (
             <>
               <Play className="w-3.5 h-3.5 text-[#D4AF37]" aria-hidden="true" />
-              <span>RESUME</span>
+              <span>{t('commendations.resume')}</span>
             </>
           ) : (
             <>
               <Pause className="w-3.5 h-3.5 text-[#D4AF37]" aria-hidden="true" />
-              <span>PAUSE</span>
+              <span>{t('commendations.pause')}</span>
             </>
           )}
         </button>

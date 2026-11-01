@@ -159,6 +159,12 @@ export interface SampleItem {
   active: boolean;
 }
 
+/** Currencies a shopper can browse prices in. MYR is the base currency every catalog price is stored in. */
+export type CurrencyCode = 'MYR' | 'SGD' | 'USD';
+
+/** Currencies an order document may carry: the selectable ones plus legacy values from earlier orders. */
+export type OrderCurrency = CurrencyCode | 'EUR' | 'GBP' | 'JPY';
+
 export interface OrderSummary {
   id: string;
   orderRef: string;
@@ -170,7 +176,7 @@ export interface OrderSummary {
   itemCount: number;
   itemsSummary: string;
   totalAmount: number;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: OrderCurrency;
   status: 'pending' | 'dispatched' | 'completed';
   createdAt: string;
 }
@@ -189,8 +195,24 @@ export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
   freeShippingThreshold: 250,
   standardShippingFee: 25,
   monogramPrice: 20,
-  announcementText: 'COMPLIMENTARY OVERNIGHT DISPATCH OVER $250 • PENANG SAME-DAY GRAB DELIVERY AVAILABLE'
+  announcementText: 'COMPLIMENTARY OVERNIGHT DISPATCH OVER RM250 • PENANG SAME-DAY GRAB DELIVERY AVAILABLE'
 };
+
+/** Earlier default banners (written when prices were shown in dollars). They are still treated as "the default". */
+const LEGACY_ANNOUNCEMENT_TEXTS = [
+  'COMPLIMENTARY OVERNIGHT DISPATCH OVER $250 • PENANG SAME-DAY GRAB DELIVERY AVAILABLE'
+];
+
+/**
+ * True when the banner is one of the built-in defaults rather than copy the shop owner typed in the admin
+ * console. Default banners are rendered from a translated template so they follow the shopper's language.
+ */
+export function isDefaultAnnouncement(text: string | undefined): boolean {
+  const clean = (text || '').trim();
+  return (
+    clean === DEFAULT_SHOP_SETTINGS.announcementText || LEGACY_ANNOUNCEMENT_TEXTS.includes(clean)
+  );
+}
 
 export const DEFAULT_PROMO_CODES: PromoCodeItem[] = [
   {
@@ -213,22 +235,61 @@ export const DEFAULT_PROMO_CODES: PromoCodeItem[] = [
   }
 ];
 
+/** Languages the storefront (and the WhatsApp order messages it generates) supports. */
+export type MessageLanguage = 'en' | 'ms';
+
+const WHATSAPP_PHRASES: Record<
+  MessageLanguage,
+  {
+    single: (code: string, name: string, ml: number) => string;
+    greeting: string;
+    samples: string;
+    promo: string;
+    total: string;
+    packaging: string;
+    confirm: string;
+  }
+> = {
+  en: {
+    single: (code, name, ml) => `I want to order ${code} ${name} (${ml}ml)`,
+    greeting: 'Hello DLAB Atelier, I want to place an order:',
+    samples: 'Complimentary 2ml Samples',
+    promo: 'Promo Code Applied',
+    total: 'Total Amount',
+    packaging: 'Packaging: Complimentary Obsidian Coffret with Black Wax Seal',
+    confirm: 'Please confirm availability and dispatch timeline.'
+  },
+  ms: {
+    single: (code, name, ml) => `Saya ingin membeli ${code} ${name} (${ml}ml)`,
+    greeting: 'Hai DLAB Atelier, saya ingin membuat pesanan:',
+    samples: 'Sampel 2ml Percuma',
+    promo: 'Kod Promo Digunakan',
+    total: 'Jumlah Keseluruhan',
+    packaging: 'Pembungkusan: Kotak Obsidian Percuma dengan Meterai Lilin Hitam',
+    confirm: 'Sila sahkan stok dan tempoh penghantaran.'
+  }
+};
+
 export function generateWhatsAppLink(
   productCode: string,
   productName: string,
   volumeMl: number,
-  phone: string = WHATSAPP_PHONE
+  phone: string = WHATSAPP_PHONE,
+  language: MessageLanguage = 'en'
 ): string {
   const cleanPhone = (phone || WHATSAPP_PHONE).replace(/[^0-9]/g, '');
-  const text = `I want to order ${productCode} ${productName} (${volumeMl}ml)`;
+  const text = WHATSAPP_PHRASES[language].single(productCode, productName, volumeMl);
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 }
 
 export interface WhatsAppMultiOrderOptions {
   sampleNames?: string[];
   promoCode?: string;
+  /** Pre-formatted grand total. Orders are always charged in MYR, so callers should format it as MYR. */
   formattedTotal?: string;
   monogramUnitFee?: number;
+  /** Language of the generated message. Defaults to English. */
+  language?: MessageLanguage;
 }
 
 export function generateMultiItemWhatsAppLink(
@@ -240,33 +301,31 @@ export function generateMultiItemWhatsAppLink(
 ): string {
   const cleanPhone = (phone || WHATSAPP_PHONE).replace(/[^0-9]/g, '');
   const monogramFee = options?.monogramUnitFee ?? 20;
-  const lines: string[] = [
-    'Hello DLAB Atelier, I want to place an order:',
-    ''
-  ];
+  const phrases = WHATSAPP_PHRASES[options?.language ?? 'en'];
+  const lines: string[] = [phrases.greeting, ''];
 
   items.forEach((item, i) => {
     const unitPrice = item.size.price + (item.monogram ? monogramFee : 0);
     const monogramSuffix = item.monogram ? ` [Monogram: ${item.monogram}]` : '';
     lines.push(
-      `${i + 1}. ${item.product.shortCode} ${item.product.name} (${item.size.ml}ml)${monogramSuffix} x ${item.quantity} - $${unitPrice * item.quantity}`
+      `${i + 1}. ${item.product.shortCode} ${item.product.name} (${item.size.ml}ml)${monogramSuffix} x ${item.quantity} - RM${unitPrice * item.quantity}`
     );
   });
 
   if (options?.sampleNames && options.sampleNames.length > 0) {
-    lines.push(`Complimentary 2ml Samples: ${options.sampleNames.join(', ')}`);
+    lines.push(`${phrases.samples}: ${options.sampleNames.join(', ')}`);
   }
 
   if (options?.promoCode) {
-    lines.push(`Promo Code Applied: ${options.promoCode}`);
+    lines.push(`${phrases.promo}: ${options.promoCode}`);
   }
 
   lines.push('');
-  lines.push(`Total Amount: ${options?.formattedTotal || `$${totalAmount}`}`);
+  lines.push(`${phrases.total}: ${options?.formattedTotal || `RM${totalAmount}`}`);
   if (giftPackaging) {
-    lines.push('Packaging: Complimentary Obsidian Coffret with Black Wax Seal');
+    lines.push(phrases.packaging);
   }
-  lines.push('Please confirm availability and dispatch timeline.');
+  lines.push(phrases.confirm);
 
   const text = lines.join('\n');
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
