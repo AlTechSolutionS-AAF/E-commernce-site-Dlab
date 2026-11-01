@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Content visibility optimization for below-the-fold sections */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 600px;
+}
+
 /* 1. The Match Reveal (The Climax): 1.5s fade-in + translateY(15px) -> 0 */
 @keyframes climaxReveal {
   0% {
@@ -49,33 +55,38 @@
   transform: translateX(-140%) skewX(-22deg);
   animation: goldFoilSweep 4.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   pointer-events: none;
+  contain: strict;
 }
 
 /* 2. The "Shadow" Review Marquee */
 @keyframes marqueeLeft {
   0% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 @keyframes marqueeRight {
   0% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
   100% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
 }
 
 .animate-marquee-left {
   animation: marqueeLeft 52s linear infinite;
+  will-change: transform;
+  contain: layout paint;
 }
 
 .animate-marquee-right {
   animation: marqueeRight 58s linear infinite;
+  will-change: transform;
+  contain: layout paint;
 }
 
 .animate-paused {
@@ -125,26 +136,32 @@
 .stagger-delay-10 { animation-delay: 500ms; }
 .stagger-delay-11 { animation-delay: 550ms; }
 
-/* 5. Floating 53-Product Live Stream Backdrop */
+/* 5. Floating Product Live Stream Backdrop */
 @keyframes floatStreamUp {
   0% {
-    transform: translateY(0%);
+    transform: translate3d(0%, 0, 0);
   }
   100% {
-    transform: translateY(-50%);
+    transform: translate3d(0, -50%, 0);
   }
 }
 
 .animate-float-stream-slow {
   animation: floatStreamUp 46s linear infinite;
+  will-change: transform;
+  contain: layout paint;
 }
 
 .animate-float-stream-med {
   animation: floatStreamUp 36s linear infinite;
+  will-change: transform;
+  contain: layout paint;
 }
 
 .animate-float-stream-fast {
   animation: floatStreamUp 30s linear infinite;
+  will-change: transform;
+  contain: layout paint;
 }
 
 @keyframes fadeIn {
@@ -160,4 +177,16 @@
 
 .animate-fadeIn {
   animation: fadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Reduced motion support for accessibility and low-power CPU benchmarks */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right,
+  .animate-float-stream-slow,
+  .animate-float-stream-med,
+  .animate-float-stream-fast,
+  .gold-foil-shimmer::after {
+    animation: none !important;
+  }
 }

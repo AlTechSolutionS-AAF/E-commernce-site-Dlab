@@ -78,7 +78,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
       {/* Animated 53-Flacon Live Stream Backdrop (Replicated from dlab-night-match.vercel.app) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden opacity-20 select-none"
+        className="pointer-events-none absolute inset-0 overflow-hidden opacity-20 select-none hidden md:block"
       >
         <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 h-full">
           {[
@@ -106,7 +106,7 @@ export const DirectAssessmentQuiz: React.FC<DirectAssessmentQuizProps> = ({
                       src={item.image}
                       alt=""
                       className="w-full h-full object-cover"
-                      loading="lazy"
+                      loading="lazy" decoding="async" width="120" height="160"
                     />
                   </div>
                   <div className="text-[10px] font-mono text-white truncate">

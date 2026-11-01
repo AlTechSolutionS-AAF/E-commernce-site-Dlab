@@ -41,7 +41,8 @@ export default defineNamespace(
     'catalog.resetFilters': 'Reset Filters',
     'catalog.noMatches': 'No matching items found.',
     'catalog.noMatchesDesc': 'Try adjusting your category tab, intensity level, targeted synergy, or preferred experience filter.',
-    'catalog.clearFilters': 'Clear All Filters'
+    'catalog.clearFilters': 'Clear All Filters',
+    'catalog.loadMore': 'Load More Flacons ({current} of {total})'
   },
   {
     'catalog.completeArchive': 'ARKIB LENGKAP • {count} ITEM',
@@ -83,6 +84,7 @@ export default defineNamespace(
     'catalog.resetFilters': 'Tetapkan Semula Penapis',
     'catalog.noMatches': 'Tiada item yang sepadan ditemui.',
     'catalog.noMatchesDesc': 'Cuba sesuaikan tab kategori, tahap keamatan, penunjuk sinergi atau pilihan suasana anda.',
-    'catalog.clearFilters': 'Kosongkan Semua Penapis'
+    'catalog.clearFilters': 'Kosongkan Semua Penapis',
+    'catalog.loadMore': 'Muat Lebih Banyak Flacon ({current} drp {total})'
   }
 );

@@ -72,6 +72,12 @@ function StorefrontContent() {
   const [selectedExperience, setSelectedExperience] = useState<string>('All');
   const [selectedSillage, setSelectedSillage] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'longevity' | 'rank'>('featured');
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  // Reset pagination when filters or search change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [searchQuery, selectedCatalogCategory, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
 
   // Modals & Drawers
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -294,6 +300,11 @@ function StorefrontContent() {
     else if (sortBy === 'rank') result.sort((a, b) => a.rank - b.rank);
     return result;
   }, [catalogIndex, deferredSearchQuery, selectedCatalogCategory, selectedIntensity, selectedSynergy, selectedExperience, selectedSillage, sortBy]);
+
+  const visibleProducts = useMemo(
+    () => filteredProducts.slice(0, visibleCount),
+    [filteredProducts, visibleCount]
+  );
 
   const wishlistIds = useMemo(() => new Set(wishlist.map((p) => p.id)), [wishlist]);
   const cartCount = useMemo(() => cartItems.reduce((acc, item) => acc + item.quantity, 0), [cartItems]);
@@ -545,8 +556,9 @@ function StorefrontContent() {
                   </button>
                 </div>
               ) : (
+                <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                  {filteredProducts.map((product, idx) => (
+                  {visibleProducts.map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
@@ -559,6 +571,19 @@ function StorefrontContent() {
                     />
                   ))}
                 </div>
+
+                {visibleCount < filteredProducts.length && (
+                  <div className="mt-12 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 12)}
+                      className="inline-flex items-center justify-center px-8 py-3.5 border border-[#D4AF37]/60 text-xs font-mono uppercase tracking-[0.2em] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0E0D] transition-colors rounded-[0.25rem] cursor-pointer"
+                    >
+                      {t('catalog.loadMore', { current: Math.min(visibleCount, filteredProducts.length), total: filteredProducts.length })}
+                    </button>
+                  </div>
+                )}
+              </>
               )}
             </section>
 

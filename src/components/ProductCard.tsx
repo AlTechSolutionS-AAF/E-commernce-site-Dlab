@@ -100,7 +100,7 @@ export const ProductCard = React.memo(function ProductCard({
           src={isHovered ? product.secondaryImage : product.primaryImage}
           alt={`Flacon of ${product.shortCode} ${product.name}`}
           className="w-full h-full object-cover object-center filter brightness-95 group-hover:scale-105 transition-all duration-500"
-          loading="lazy"
+          loading="lazy" decoding="async" width="300" height="400"
         />
 
         {/* Top-Left Geometric Synergy Indicator Badge on Flacon */}
